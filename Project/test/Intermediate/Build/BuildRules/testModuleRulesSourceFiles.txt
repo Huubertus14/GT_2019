@@ -1,3 +1,0 @@
-D:\GT_2019\GT_2019\Project\test\Source\test\test.Build.cs
-D:\GT_2019\GT_2019\Project\test\Source\test.Target.cs
-D:\GT_2019\GT_2019\Project\test\Source\testEditor.Target.cs
