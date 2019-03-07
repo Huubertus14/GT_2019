@@ -1,4 +1,0 @@
-﻿  Creating makefile for hot reloading testEditor (no existing makefile)
-  Compiling game modules for hot reload
-  Performing full C++ include scan (no include cache file)
-C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.MakeFile.Targets(41,5): warning MSB5021: "cmd" and its child processes are being terminated in order to cancel the build.
