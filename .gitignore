@@ -66,6 +66,7 @@ SourceArt/**/*.tga
 # Binary Files
 Binaries/*
 Plugins/*/Binaries/*
+Project/StealthGame 4.21/Binaries/*
 
 # Builds
 Build/*
