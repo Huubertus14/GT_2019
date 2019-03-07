@@ -1,3 +1,21 @@
+Skip to content
+ 
+Search or jump to…
+
+Pull requests
+Issues
+Marketplace
+Explore
+ @Huubertus14 Sign out
+2,752
+79,972 38,425 github/gitignore
+ Code  Pull requests 85  Projects 0  Insights
+gitignore/UnrealEngine.gitignore
+fcb1dbf  on 18 Jun 2018
+@jayvdb jayvdb Revert "add the *.VC.db to unreal engine ignore"
+@samsheff @calben @vvolkgang @robipresotto @jayvdb @NuLL3rr0r @hzor3000 @halbich @gagallo7 @shiftkey @BGR360
+75 lines (58 sloc)  946 Bytes
+    
 # Visual Studio 2015 user specific files
 .vs/
 
@@ -48,6 +66,7 @@ SourceArt/**/*.tga
 # Binary Files
 Binaries/*
 Plugins/*/Binaries/*
+Project/StealthGame 4.21/Binaries/*
 
 # Builds
 Build/*
@@ -72,3 +91,15 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+© 2019 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
