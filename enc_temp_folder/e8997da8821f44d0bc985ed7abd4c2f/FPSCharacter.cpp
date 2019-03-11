@@ -62,8 +62,12 @@ void AFPSCharacter::Tick(float DeltaTime)
 }
 
 void AFPSCharacter::DestroyPlayer() {
-	
-	Destroy();
+
+	APlayerController* killedPlayer = Cast<APlayerController>(this);
+
+	if (killedPlayer) {
+		killedPlayer->Destroy();
+	}
 
 }
 void AFPSCharacter::Fire()

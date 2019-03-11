@@ -34,7 +34,12 @@ protected:
 	UCameraComponent* CameraComponent;
 
 public:
+	
+	void DestroyPlayer();
+
 	AFPSCharacter();
+
+	float Life;
 
 	/** Projectile class to spawn */
 	UPROPERTY(EditDefaultsOnly, Category="Projectile")
