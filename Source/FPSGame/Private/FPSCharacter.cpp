@@ -11,6 +11,13 @@
 
 AFPSCharacter::AFPSCharacter()
 {
+
+	//Check here if player is server or not
+	if (GetNetMode() == ENetMode::NM_ListenServer)
+	{
+		return;
+	}
+
 	// Create a CameraComponent	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	CameraComponent->SetupAttachment(GetCapsuleComponent());
