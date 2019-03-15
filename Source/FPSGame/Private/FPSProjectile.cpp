@@ -1,6 +1,7 @@
 // Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
 
 #include "FPSProjectile.h"
+#include "FPSCharacter.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Net/UnrealNetwork.h"
@@ -41,8 +42,17 @@ void AFPSProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPr
 	// Only add impulse and destroy projectile if we hit a physics
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL) && OtherComp->IsSimulatingPhysics())
 	{
-		OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
+		OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());		
+		
+		
+	}
 
+	AFPSCharacter* charHit = Cast<AFPSCharacter>(OtherActor);
+	if (charHit) {
+		charHit->Life -= 5;
+		if (charHit->Life == 0) {
+			charHit->DestroyPlayer();
+		}
 	}
 
 	if (Role == ROLE_Authority)
