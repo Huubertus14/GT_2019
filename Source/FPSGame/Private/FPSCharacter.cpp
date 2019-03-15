@@ -75,21 +75,24 @@ void AFPSCharacter::DestroyPlayer() {
 
 	UE_LOG(LogTemp, Warning, TEXT("Player left"));
 
-	UWorld* TheWorld = GetWorld();
-	FString CurrentLevel = TheWorld->GetMapName();
-
-	if (CurrentLevel == "Map2") // player is in a session
+	if (GetNetMode() != ENetMode::NM_ListenServer)
 	{
-		//Change to the main menu
-		UGameplayStatics::OpenLevel(GetWorld(), "FirstPersonExampleMap");
-	}
-	else {
-		UE_LOG(LogTemp, Warning, TEXT("WTF... Which lvl are you playing"));
-	}
-	//Destroy();
-	LeaveGame();
+		UWorld* TheWorld = GetWorld();
+		FString CurrentLevel = TheWorld->GetMapName();
 
-	UGameplayStatics::OpenLevel(this, FName(TEXT("FirstPersonExampleMap")));
+		if (CurrentLevel == "Map2") // player is in a session
+		{
+			//Change to the main menu
+			UGameplayStatics::OpenLevel(GetWorld(), "FirstPersonExampleMap");
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("WTF... Which lvl are you playing"));
+		}
+		//Destroy();
+		LeaveGame();
+
+		UGameplayStatics::OpenLevel(this, FName(TEXT("FirstPersonExampleMap")));
+	}
 }
 
 void AFPSCharacter::Fire()
@@ -117,6 +120,8 @@ void AFPSCharacter::Fire()
 
 void AFPSCharacter::DestroySessionAndLeaveGame()
 {
+	//Need to leave the session from here
+
 	/*IOnlineSubsystem* OnlineSub = IOnlineSubsystem::Get();
 	if (OnlineSub)
 	{
