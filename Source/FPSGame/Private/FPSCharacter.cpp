@@ -63,6 +63,8 @@ void AFPSCharacter::Tick(float DeltaTime)
 
 void AFPSCharacter::DestroyPlayer() {
 	
+	//Leave the player from the session
+
 	Destroy();
 
 }
