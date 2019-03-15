@@ -5,8 +5,9 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/GameplayStatics.h"
 
-AFPSProjectile::AFPSProjectile() 
+AFPSProjectile::AFPSProjectile()
 {
 	// Use a sphere as a simple collision representation
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
@@ -42,16 +43,29 @@ void AFPSProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPr
 	// Only add impulse and destroy projectile if we hit a physics
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL) && OtherComp->IsSimulatingPhysics())
 	{
-		OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());		
-		
-		
+		OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
 	}
 
 	AFPSCharacter* charHit = Cast<AFPSCharacter>(OtherActor);
+
+
 	if (charHit) {
-		charHit->Life -= 5;
-		if (charHit->Life == 0) {
-			charHit->DestroyPlayer();
+
+		if (charHit->Role < ROLE_Authority)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Play who hit is server"));
+		}
+
+		//UE_LOG(LogTemp, Warning, TEXT("Player Hit"));
+		charHit->Life -= 40;
+		if (charHit->Life <= 0) {
+
+			if (charHit->IsLocallyControlled())
+			{
+				//UE_LOG(LogTemp, Warning, TEXT("Player Die"));
+				charHit->DestroyPlayer();
+			}
+
 		}
 	}
 
