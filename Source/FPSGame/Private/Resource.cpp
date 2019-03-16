@@ -2,22 +2,27 @@
 
 #include "Resource.h"
 
-Resource::Resource()
+// Sets default values
+AResource::AResource()
 {
+	SetReplicates(true);
+	ResetAmount();
 }
 
-Resource::~Resource()
-{
-}
 
-bool Resource::AddAmount(int Number) {
-	Amount += Number;
+void AResource::AddAmount(int Number) {
+		Amount += Number;
 	//Needs to be server validation;
-	return true;
 }
-bool Resource::RemoveAmount(int Number) {
+void AResource::RemoveAmount(int Number) {
 	Amount -= Number;
 	//Needs to be server validation;
-	return true;
 }
 
+void AResource::ResetAmount() {
+	Amount = 0;
+}
+
+int AResource::GetAmount() {
+	return Amount;
+}

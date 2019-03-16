@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Resource.h"
 #include "GameFramework/Character.h"
-
 #include "PlayerCharacter.generated.h"
 
 
@@ -20,7 +19,13 @@ public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
 	
-	TArray<Resource> Resources;
+	TArray<AResource*> Resources;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AResource> toCreate;
+
+	UFUNCTION()
+	bool Spawn();
 
 protected:
 	// Called when the game starts or when spawned

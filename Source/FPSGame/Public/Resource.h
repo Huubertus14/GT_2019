@@ -3,22 +3,26 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
+#include "Resource.generated.h"
 
-/**
- * 
- */
-class FPSGAME_API Resource
+UCLASS()
+class FPSGAME_API AResource : public AActor
 {
-
-public:
+	GENERATED_BODY()
 	
-	Resource();
-	~Resource();
+public:	
 
-	bool AddAmount(int Number);
+	// Sets default values for this actor's properties
+	AResource();
+	void AddAmount(int Number);
+	void RemoveAmount(int Number);
 
-	bool RemoveAmount(int Number);
-
+	void ResetAmount();
+	int GetAmount();
 private:
 	int Amount;
+
+public:	
+
 };

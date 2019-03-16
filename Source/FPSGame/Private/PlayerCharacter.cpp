@@ -3,17 +3,30 @@
 #include "PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Engine.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
+	//Finds the resource bp.
+	static ConstructorHelpers::FClassFinder<AResource> PlayerPawnClassFinder(TEXT("/Game/Blueprints/BP_Resource"));
+	toCreate = PlayerPawnClassFinder.Class;
+
 	for (int i = 0; i < 3; i++)
 	{
-		Resources.Emplace();
+		//creates 3 resources for this player.
+		if (Spawn()) {
+			UE_LOG(LogTemp, Warning, TEXT("Made a Resource"));
+		}
 	}
 
-	Resources[0].AddAmount(10);
+	//Adds a small amount to resource 0
+	if (Resources.Num() > 0) {
+		Resources[0]->AddAmount(10);
+		UE_LOG(LogTemp, Warning, TEXT("Total amount of cash: %i"), Resources[0]->GetAmount());
+	}
 
+	UE_LOG(LogTemp, Warning, TEXT("Total amount of Resources: %i"), Resources.Num());
 	// Create a CameraComponent	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	CameraComponent->SetupAttachment(GetCapsuleComponent());
@@ -70,4 +83,20 @@ void APlayerCharacter::MoveRight(float Value)
 		AddMovementInput(GetActorRightVector(), Value);
 
 	}
+}
+
+bool APlayerCharacter::Spawn() {
+	if (toCreate) {
+		UWorld* world = GetWorld();
+		if (world) {
+			FActorSpawnParameters spawnParams;
+			spawnParams.Owner = this;
+
+			FRotator rotator = FRotator(0,0,0);
+			FVector spawnLocation = FVector(0,0,0);
+			Resources.Emplace(world->SpawnActor<AResource>(toCreate, spawnLocation, rotator, spawnParams));
+			return true;
+		}
+	}
+	return false;
 }
