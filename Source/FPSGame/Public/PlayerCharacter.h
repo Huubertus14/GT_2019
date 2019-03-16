@@ -3,8 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Resource.h"
 #include "GameFramework/Character.h"
+
 #include "PlayerCharacter.generated.h"
+
 
 class UCameraComponent;
 
@@ -16,6 +19,8 @@ class FPSGAME_API APlayerCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
+	
+	TArray<Resource> Resources;
 
 protected:
 	// Called when the game starts or when spawned

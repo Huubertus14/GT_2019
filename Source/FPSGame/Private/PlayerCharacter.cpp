@@ -7,6 +7,13 @@
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
+	for (int i = 0; i < 3; i++)
+	{
+		Resources.Emplace();
+	}
+
+	Resources[0].AddAmount(10);
+
 	// Create a CameraComponent	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	CameraComponent->SetupAttachment(GetCapsuleComponent());
