@@ -4,6 +4,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine.h"
+#include "Ore.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -50,6 +51,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::PerformMineCast);
 }
 
 // Called when the game starts or when spawned
@@ -99,4 +102,25 @@ bool APlayerCharacter::Spawn() {
 		}
 	}
 	return false;
+}
+
+void APlayerCharacter::PerformMineCast() {
+	FVector StartTrace = GetActorLocation();
+	FHitResult* HitResult = new FHitResult();
+	FVector ForwardVector = CameraComponent->GetForwardVector();
+	FVector EndTrace = StartTrace + (ForwardVector * 1000.f);
+	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
+	TraceParams->AddIgnoredActor(this);
+	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
+		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
+		FString temp = HitResult->Location.ToString();
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
+		//Cast from hitResult to if possible Ore.
+		AOre* hitTemp = Cast<AOre>(HitResult->Actor);
+		if (hitTemp) {
+			hitTemp->OreHitSpawn(HitResult->Location);
+			FString temp2 = "Ore";
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp2);
+		}
+	}
 }
