@@ -7,7 +7,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
-
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
 AFPSCharacter::AFPSCharacter()
 {
@@ -28,8 +28,20 @@ AFPSCharacter::AFPSCharacter()
 	GunMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_Gun"));
 	GunMeshComponent->CastShadow = false;
 	GunMeshComponent->SetupAttachment(Mesh1PComponent, "GripPoint");
+
+	Life = 100;
 }
 
+void AFPSCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	//Leave the player from the session
+
+	UE_LOG(LogTemp, Warning, TEXT("Player Left the game"))
+
+		DestroySessionAndLeaveGame();
+
+	Super::EndPlay(EndPlayReason);
+}
 
 void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -59,12 +71,34 @@ void AFPSCharacter::Tick(float DeltaTime)
 	}
 }
 
+void AFPSCharacter::DestroyPlayer() {
+
+	UE_LOG(LogTemp, Warning, TEXT("Player left"));
+
+	if (GetNetMode() != ENetMode::NM_ListenServer)
+	{
+		UWorld* TheWorld = GetWorld();
+		FString CurrentLevel = TheWorld->GetMapName();
+
+		if (CurrentLevel == "Map2") // player is in a session
+		{
+			//Change to the main menu
+			UGameplayStatics::OpenLevel(GetWorld(), "FirstPersonExampleMap");
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("WTF... Which lvl are you playing"));
+		}
+		//Destroy();
+		LeaveGame();
+
+		UGameplayStatics::OpenLevel(this, FName(TEXT("FirstPersonExampleMap")));
+	}
+}
 
 void AFPSCharacter::Fire()
 {
 	ServerFire();
 	// try and fire a projectile
-	
 
 	// try and play the sound if specified
 	if (FireSound)
@@ -82,7 +116,35 @@ void AFPSCharacter::Fire()
 			AnimInstance->PlaySlotAnimationAsDynamicMontage(FireAnimation, "Arms", 0.0f);
 		}
 	}
-} 
+}
+
+void AFPSCharacter::DestroySessionAndLeaveGame()
+{
+	//Need to leave the session from here
+
+	/*IOnlineSubsystem* OnlineSub = IOnlineSubsystem::Get();
+	if (OnlineSub)
+	{
+		IOnlineSessionPtr Sessions = OnlineSub->GetSessionInterface();
+
+		if (Sessions.IsValid())
+		{
+			Sessions->AddOnDestroySessionCompleteDelegate_Handle(OnDestroySessionCompleteDelegate);
+
+			Sessions->DestroySession(GameSessionName);
+		}
+	}*/
+}
+
+
+void AFPSCharacter::LeaveGame_Implementation()
+{
+	Destroy();
+}
+bool AFPSCharacter::LeaveGame_Validate()
+{
+	return true;
+}
 
 void AFPSCharacter::ServerFire_Implementation()
 {

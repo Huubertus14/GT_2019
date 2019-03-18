@@ -9,5 +9,6 @@ public class FPSGameTarget : TargetRules
 	{
 		Type = TargetType.Game;
 		ExtraModuleNames.Add("FPSGame");
-	}
+       // DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
+    }
 }

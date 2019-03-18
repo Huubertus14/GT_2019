@@ -22,39 +22,54 @@ class AFPSCharacter : public ACharacter
 protected:
 
 	/** Pawn mesh: 1st person view  */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Mesh")
-	USkeletalMeshComponent* Mesh1PComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+		USkeletalMeshComponent* Mesh1PComponent;
 
 	/** Gun mesh: 1st person view (seen only by self) */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
-	USkeletalMeshComponent* GunMeshComponent;
+		USkeletalMeshComponent* GunMeshComponent;
 
 	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	UCameraComponent* CameraComponent;
+		UCameraComponent* CameraComponent;
 
 public:
+
+
+	void DestroyPlayer();
+
 	AFPSCharacter();
 
+	float Life;
+
+	UFUNCTION()
+		virtual void EndPlay(const EEndPlayReason::Type EndPlayReason)override;
+
 	/** Projectile class to spawn */
-	UPROPERTY(EditDefaultsOnly, Category="Projectile")
-	TSubclassOf<AFPSProjectile> ProjectileClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
+		TSubclassOf<AFPSProjectile> ProjectileClass;
 
 	/** Sound to play each time we fire */
-	UPROPERTY(EditDefaultsOnly, Category="Gameplay")
-	USoundBase* FireSound;
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+		USoundBase* FireSound;
 
 	/** AnimMontage to play each time we fire */
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-	UAnimSequence* FireAnimation;
-	
+		UAnimSequence* FireAnimation;
+
 protected:
-	
+
 	/** Fires a projectile. */
 	void Fire();
 
+	UFUNCTION(BlueprintCallable, Category = "Network|Test")
+		void DestroySessionAndLeaveGame();
+
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerFire();
+		void LeaveGame();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerFire();
 
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
@@ -71,7 +86,7 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return CameraComponent; }
 
-	virtual void Tick( float DeltaTime) override;
+	virtual void Tick(float DeltaTime) override;
 
 };
 
