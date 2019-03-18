@@ -33,10 +33,19 @@ APlayerCharacter::APlayerCharacter()
 	CameraComponent->SetupAttachment(GetCapsuleComponent());
 	CameraComponent->RelativeLocation = FVector(0, 0, BaseEyeHeight); // Position the camera
 	CameraComponent->bUsePawnControlRotation = true;
- 	
+
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+
+	//Replication
+	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
+	bReplicates = true;
+	bReplicateMovement = true;
+
+
+	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -59,7 +68,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
@@ -95,8 +104,8 @@ bool APlayerCharacter::Spawn() {
 			FActorSpawnParameters spawnParams;
 			spawnParams.Owner = this;
 
-			FRotator rotator = FRotator(0,0,0);
-			FVector spawnLocation = FVector(0,0,0);
+			FRotator rotator = FRotator(0, 0, 0);
+			FVector spawnLocation = FVector(0, 0, 0);
 			Resources.Emplace(world->SpawnActor<AResource>(toCreate, spawnLocation, rotator, spawnParams));
 			return true;
 		}
@@ -104,7 +113,10 @@ bool APlayerCharacter::Spawn() {
 	return false;
 }
 
+FHitResult* hitres;
+
 void APlayerCharacter::PerformMineCast() {
+
 	FVector StartTrace = GetActorLocation();
 	FHitResult* HitResult = new FHitResult();
 	FVector ForwardVector = CameraComponent->GetForwardVector();
@@ -112,15 +124,24 @@ void APlayerCharacter::PerformMineCast() {
 	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
 	TraceParams->AddIgnoredActor(this);
 	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
+
 		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
+
 		FString temp = HitResult->Location.ToString();
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
-		//Cast from hitResult to if possible Ore.
-		AOre* hitTemp = Cast<AOre>(HitResult->Actor);
+		hitres = HitResult;
+		
+		//hitres->Actor->Attach
+
+		AOre* hitTemp = Cast<AOre>(hitres->Actor);
 		if (hitTemp) {
-			hitTemp->OreHitSpawn(HitResult->Location);
+			//GiveServerOwner();
+			hitTemp->OreHitSpawn(hitres->Location);
+
 			FString temp2 = "Ore";
+
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp2);
 		}
 	}
 }
+

@@ -28,6 +28,7 @@ AResourcePickUpTrigger::AResourcePickUpTrigger()
 
 	SetReplicates(true);
 	SetReplicateMovement(true);
+
 }
 
 
@@ -35,7 +36,6 @@ AResourcePickUpTrigger::AResourcePickUpTrigger()
 void AResourcePickUpTrigger::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 
@@ -45,19 +45,18 @@ void AResourcePickUpTrigger::OnOverlapBegin(class AActor* OverlappedActor, class
 	if (OtherActor && (OtherActor != this)) {
 		// print to screen using above defined method when actor enters trigger box
 
-		//collisionActor = OtherActor;
-		if (Role == ROLE_Authority)
-		{
-			if (OtherActor && (OtherActor != this)) {
-				APlayerCharacter* tempPlayer = Cast<APlayerCharacter>(OtherActor);
+		//if (Role == ROLE_Authority)
+		//{
+		if (OtherActor && (OtherActor != this)) {
+			APlayerCharacter* tempPlayer = Cast<APlayerCharacter>(OtherActor);
 
-				if (tempPlayer) {
-					tempPlayer->Resources[1]->AddAmount(10);
-					print("Server picked up");
-					Destroy(MeshComp);
-				}
+			if (tempPlayer) {
+				tempPlayer->Resources[1]->AddAmount(10);
+				print("Server picked up");
+				Destroy(MeshComp);
 			}
 		}
+		//}
 	}
 }
 

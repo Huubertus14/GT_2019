@@ -5,8 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ResourcePickUpTrigger.h"
-#include "Ore.generated.h"
+#include "PlayerCharacter.h"
 
+#include "Ore.generated.h"
 
 UCLASS()
 class FPSGAME_API AOre : public AActor
@@ -29,15 +30,20 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	FVector OreDirection(FVector hitPoint);
+	UFUNCTION()
+		FVector OreDirection(FVector hitPoint);
 
-	void OreHitSpawn(FVector hitPoint);
+	UFUNCTION()
+		void OreHitSpawn(FVector hitPoint);
 
 	UFUNCTION(Server, Reliable, WithValidation)
 		void OreServerSpawn();
 
+	UFUNCTION(Server, Reliable, WithValidation)
+		void OreServerDestroy();
+
 	UPROPERTY(EditAnywhere, Category = "ToSpawn")
-		TSubclassOf<class AResourcePickUpTrigger> PickUpItem;
+		TSubclassOf<AResourcePickUpTrigger> PickUpItem;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 		UStaticMeshComponent* MeshComp;
