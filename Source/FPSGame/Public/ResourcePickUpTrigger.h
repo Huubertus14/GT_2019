@@ -7,7 +7,7 @@
 #include "ResourcePickUpTrigger.generated.h"
 
 /**
- * 
+ *
  */
 class UShapeComponent;
 UCLASS()
@@ -19,19 +19,22 @@ public:
 
 	// constructor sets default values for this actor's properties
 	AResourcePickUpTrigger();
-	
+
 	void BeginPlay();
-	
+
 	UFUNCTION()
-	void OnOverlapBegin(AActor * OverlappedActor, AActor * OtherActor);
+		void OnOverlapBegin(AActor * OverlappedActor, AActor * OtherActor);
 	UFUNCTION()
-	void OnOverlapEnd(AActor * OverlappedActor, AActor * OtherActor);
+		void OnOverlapEnd(AActor * OverlappedActor, AActor * OtherActor);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* MeshComp;
+		UStaticMeshComponent* MeshComp;
 
-	
+protected:
+	AActor* collisionActor;
+private:
+
 };

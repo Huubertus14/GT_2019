@@ -12,8 +12,8 @@ UCLASS()
 class FPSGAME_API AOre : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AOre();
 
@@ -23,18 +23,23 @@ protected:
 
 private:
 	int Life;
+	FVector HitPoint;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	FVector OreDirection(FVector hitPoint);
+
 	void OreHitSpawn(FVector hitPoint);
 
+	UFUNCTION(Server, Reliable, WithValidation)
+		void OreServerSpawn();
+
 	UPROPERTY(EditAnywhere, Category = "ToSpawn")
-	TSubclassOf<class AResourcePickUpTrigger> PickUpItem;
+		TSubclassOf<class AResourcePickUpTrigger> PickUpItem;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* MeshComp;
+		UStaticMeshComponent* MeshComp;
 
 };

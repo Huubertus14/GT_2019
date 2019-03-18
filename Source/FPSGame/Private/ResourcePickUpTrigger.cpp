@@ -19,7 +19,7 @@ AResourcePickUpTrigger::AResourcePickUpTrigger()
 	OnActorEndOverlap.AddDynamic(this, &AResourcePickUpTrigger::OnOverlapEnd);
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	RootComponent = MeshComp;
-	MeshComp->SetWorldScale3D(FVector(0.2f,0.2f,0.2f));
+	MeshComp->SetWorldScale3D(FVector(0.2f, 0.2f, 0.2f));
 	UShapeComponent* newColl = GetCollisionComponent();
 	newColl->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
@@ -27,6 +27,7 @@ AResourcePickUpTrigger::AResourcePickUpTrigger()
 	PrimaryActorTick.bCanEverTick = true;
 
 	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 
@@ -43,12 +44,19 @@ void AResourcePickUpTrigger::OnOverlapBegin(class AActor* OverlappedActor, class
 	// check if Actors do not equal nullptr and that 
 	if (OtherActor && (OtherActor != this)) {
 		// print to screen using above defined method when actor enters trigger box
-		print("Overlap Begin");
-		printFString("Overlapped Actor = %s", *OverlappedActor->GetName());
-		APlayerCharacter* tempPlayer = Cast<APlayerCharacter>(OtherActor);
-		if (tempPlayer) {
-			tempPlayer->Resources[1]->AddAmount(10);
-			Destroy();
+
+		//collisionActor = OtherActor;
+		if (Role == ROLE_Authority)
+		{
+			if (OtherActor && (OtherActor != this)) {
+				APlayerCharacter* tempPlayer = Cast<APlayerCharacter>(OtherActor);
+
+				if (tempPlayer) {
+					tempPlayer->Resources[1]->AddAmount(10);
+					print("Server picked up");
+					Destroy(MeshComp);
+				}
+			}
 		}
 	}
 }
@@ -57,8 +65,9 @@ void AResourcePickUpTrigger::OnOverlapEnd(class AActor* OverlappedActor, class A
 {
 	if (OtherActor && (OtherActor != this)) {
 		// print to screen using above defined method when actor leaves trigger box
-		print("Overlap Ended");
-		printFString("%s has left the Trigger Box", *OtherActor->GetName());
+		//print("Overlap Ended");
+		//printFString("%s has left the Trigger Box", *OtherActor->GetName());
+
 	}
 }
 
@@ -67,4 +76,5 @@ void AResourcePickUpTrigger::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
+
 
