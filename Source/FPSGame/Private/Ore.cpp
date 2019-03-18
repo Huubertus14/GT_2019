@@ -34,8 +34,19 @@ FVector AOre::OreDirection(FVector hitPoint) {
 }
 
 void AOre::OreHitSpawn(FVector hitPoint) {
-	OreDirection(hitPoint);
+	FVector outwardVector = OreDirection(hitPoint);
+	outwardVector.Normalize(1.f);
 	Life--;
+	if (PickUpItem) {
+		UWorld* world = GetWorld();
+		FActorSpawnParameters spawnParams;
+		spawnParams.Owner = this;
+		FRotator rotator = FRotator(0.f,0.f,0.f);
+		FVector spawnLocation = outwardVector + hitPoint;
+
+		world->SpawnActor<AResourcePickUpTrigger>(PickUpItem, spawnLocation, rotator, spawnParams);
+
+	}
 	if (Life <= 0) {
 		Destroy();
 		//Needs server validation.

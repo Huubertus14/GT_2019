@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ResourcePickUpTrigger.h"
 #include "Ore.generated.h"
+
 
 UCLASS()
 class FPSGAME_API AOre : public AActor
@@ -28,6 +30,9 @@ public:
 
 	FVector OreDirection(FVector hitPoint);
 	void OreHitSpawn(FVector hitPoint);
+
+	UPROPERTY(EditAnywhere, Category = "ToSpawn")
+	TSubclassOf<class AResourcePickUpTrigger> PickUpItem;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* MeshComp;

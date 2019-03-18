@@ -3,6 +3,7 @@
 #include "ResourcePickUpTrigger.h"
 #include "DrawDebugHelpers.h"
 #include "Components/SphereComponent.h"
+#include "PlayerCharacter.h"
 
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green,text)
 #define printFString(text, fstring) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT(text), fstring))
@@ -44,6 +45,11 @@ void AResourcePickUpTrigger::OnOverlapBegin(class AActor* OverlappedActor, class
 		// print to screen using above defined method when actor enters trigger box
 		print("Overlap Begin");
 		printFString("Overlapped Actor = %s", *OverlappedActor->GetName());
+		APlayerCharacter* tempPlayer = Cast<APlayerCharacter>(OtherActor);
+		if (tempPlayer) {
+			tempPlayer->Resources[1]->AddAmount(10);
+			Destroy();
+		}
 	}
 }
 
