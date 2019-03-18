@@ -1,0 +1,19 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UE4Editor-Shoot-410.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"D:\Program Files (x86)\UnrealProjects\Shoot\Intermediate\Build\Win64\ShootEditor\Development\Engine\SharedPCH.Engine.h.obj"
+"D:\Program Files (x86)\UnrealProjects\Shoot\Intermediate\Build\Win64\UE4Editor\Development\Shoot\Arrow.cpp.obj"
+"D:\Program Files (x86)\UnrealProjects\Shoot\Intermediate\Build\Win64\UE4Editor\Development\Shoot\Shoot.cpp.obj"
+"D:\Program Files (x86)\UnrealProjects\Shoot\Intermediate\Build\Win64\UE4Editor\Development\Shoot\ShootGameModeBase.cpp.obj"
+"D:\Program Files (x86)\UnrealProjects\Shoot\Intermediate\Build\Win64\UE4Editor\Development\Shoot\test.cpp.obj"
+"D:\Program Files (x86)\UnrealProjects\Shoot\Intermediate\Build\Win64\UE4Editor\Development\Shoot\Arrow.gen.cpp.obj"
+"D:\Program Files (x86)\UnrealProjects\Shoot\Intermediate\Build\Win64\UE4Editor\Development\Shoot\Shoot.init.gen.cpp.obj"
+"D:\Program Files (x86)\UnrealProjects\Shoot\Intermediate\Build\Win64\UE4Editor\Development\Shoot\ShootGameModeBase.gen.cpp.obj"
+"D:\Program Files (x86)\UnrealProjects\Shoot\Intermediate\Build\Win64\UE4Editor\Development\Shoot\test.gen.cpp.obj"
+"D:\Program Files (x86)\UnrealProjects\Shoot\Intermediate\Build\Win64\UE4Editor\Development\Shoot\PCLaunch.rc.res"
+/OUT:"D:\Program Files (x86)\UnrealProjects\Shoot\Intermediate\Build\Win64\UE4Editor\Development\Shoot\UE4Editor-Shoot-410.lib"

@@ -1,0 +1,10 @@
+﻿  Creating makefile for ShootEditor (source directory changed)
+  Using Visual Studio 2017 14.16.27023 toolchain (C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023) and Windows 10.0.16299.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+  Building 3 actions with 8 processes...
+    [1/3] Bow.cpp
+    [2/3] UE4Editor-Shoot.lib
+       Creating library D:\Program Files\Epic Games\Projects\Shoot\Intermediate\Build\Win64\UE4Editor\Development\Shoot\UE4Editor-Shoot.lib and object D:\Program Files\Epic Games\Projects\Shoot\Intermediate\Build\Win64\UE4Editor\Development\Shoot\UE4Editor-Shoot.exp
+    [3/3] UE4Editor-Shoot.dll
+       Creating library D:\Program Files\Epic Games\Projects\Shoot\Intermediate\Build\Win64\UE4Editor\Development\Shoot\UE4Editor-Shoot.suppressed.lib and object D:\Program Files\Epic Games\Projects\Shoot\Intermediate\Build\Win64\UE4Editor\Development\Shoot\UE4Editor-Shoot.suppressed.exp
+  Deploying ShootEditor Win64 Development...
+  Total build time: 323.89 seconds (Parallel executor: 277.67 seconds)

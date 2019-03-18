@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="..\..\Shoot.uproject" />
+    <Filter Include="Source">
+      <UniqueIdentifier>{516E4612-2B46-4030-9F21-E9FE16605369}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Source\Shoot.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <None Include="..\..\Source\ShootEditor.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <Filter Include="Config">
+      <UniqueIdentifier>{4BA1C016-D974-4A18-A37C-8586AEE00B0B}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Config\DefaultEditor.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultEngine.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultGame.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultInput.ini">
+      <Filter>Config</Filter>
+    </None>
+    <Filter Include="Source\Shoot">
+      <UniqueIdentifier>{BEA77831-E564-4AEA-9622-2C4A173B89AF}</UniqueIdentifier>
+    </Filter>
+    <ClCompile Include="..\..\Source\Shoot\Arrow.cpp">
+      <Filter>Source\Shoot</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\Shoot\Arrow.h">
+      <Filter>Source\Shoot</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\Shoot\Bow.cpp">
+      <Filter>Source\Shoot</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\Shoot\Bow.h">
+      <Filter>Source\Shoot</Filter>
+    </ClInclude>
+    <None Include="..\..\Source\Shoot\Shoot.Build.cs">
+      <Filter>Source\Shoot</Filter>
+    </None>
+    <ClCompile Include="..\..\Source\Shoot\Shoot.cpp">
+      <Filter>Source\Shoot</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\Shoot\Shoot.h">
+      <Filter>Source\Shoot</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\Shoot\ShootGameModeBase.cpp">
+      <Filter>Source\Shoot</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\Shoot\ShootGameModeBase.h">
+      <Filter>Source\Shoot</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\Shoot\test.cpp">
+      <Filter>Source\Shoot</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\Shoot\test.h">
+      <Filter>Source\Shoot</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\Shoot\testPawn.cpp">
+      <Filter>Source\Shoot</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\Shoot\testPawn.h">
+      <Filter>Source\Shoot</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
