@@ -35,6 +35,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComponent;
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerFire();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

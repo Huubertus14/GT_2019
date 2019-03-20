@@ -38,6 +38,8 @@ APlayerCharacter::APlayerCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	SetReplicates(true);
+
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -62,7 +64,32 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+}
+
+void APlayerCharacter::ServerFire_Implementation()
+{
+	FVector pos = GetActorLocation();
+	FRotator rot = GetActorRotation();
+	FVector f = GetActorForwardVector();
+	FRotator camera = CameraComponent->GetComponentRotation();
+
+	pos.X += f.X * 100;
+	pos.Y += f.Y * 100;
+	FActorSpawnParameters spawnParams;
+	spawnParams.Owner = this;
+	spawnParams.Instigator = Instigator;
+	if (spawnTime < 0) {
+		AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(AArrow::StaticClass(), pos, camera, spawnParams);
+		newArrow->speed = power;
+		spawnTime = 60;
+		power = 0;
+	}
+	isDrawn = false;
+}
+
+bool APlayerCharacter::ServerFire_Validate()
+{
+	return true;
 }
 
 // Called every frame
@@ -152,22 +179,7 @@ void APlayerCharacter::DrawArrow()
 
 void APlayerCharacter::FireArrow()
 {
-	FVector pos = GetActorLocation();
-	FRotator rot = GetActorRotation();
-	FVector f = GetActorForwardVector();
-	FRotator camera = CameraComponent->GetComponentRotation();
+	ServerFire();
 	
-	pos.X += f.X * 100;
-	pos.Y += f.Y * 100;
-	FActorSpawnParameters spawnParams;
-	spawnParams.Owner = this;
-	spawnParams.Instigator = Instigator;
-	if (spawnTime < 0) {
-		AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(AArrow::StaticClass(), pos, camera, spawnParams);
-		newArrow->speed = power;
-		spawnTime = 60;
-		power = 0;
-	}
-	isDrawn = false;
 	UE_LOG(LogTemp, Warning, TEXT("arrow"));
 }

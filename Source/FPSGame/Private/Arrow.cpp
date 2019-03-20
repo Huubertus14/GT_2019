@@ -30,17 +30,14 @@ AArrow::AArrow()
 	gravity = .1;
 	lifeSpan = 300;
 
-
-	//col
-
-
+	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 // Called when the game starts or when spawned
 void AArrow::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 // Called every frame
