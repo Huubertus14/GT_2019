@@ -48,4 +48,11 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	void PerformMineCast();
+	void DrawArrow();
+	void FireArrow();
+	//Arrow variables
+	float power;
+	bool isDrawn;
+	float spawnTime;
+	FRotator arrowRotation;
 };

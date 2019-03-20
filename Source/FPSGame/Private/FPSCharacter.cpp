@@ -2,6 +2,7 @@
 
 #include "FPSCharacter.h"
 #include "FPSProjectile.h"
+#include "Arrow.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -116,6 +117,7 @@ void AFPSCharacter::Fire()
 			AnimInstance->PlaySlotAnimationAsDynamicMontage(FireAnimation, "Arms", 0.0f);
 		}
 	}
+	UE_LOG(LogTemp, Warning, TEXT("Fire"));
 }
 
 void AFPSCharacter::DestroySessionAndLeaveGame()
@@ -159,7 +161,25 @@ void AFPSCharacter::ServerFire_Implementation()
 
 		// spawn the projectile at the muzzle
 		GetWorld()->SpawnActor<AFPSProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, ActorSpawnParams);
+
+
 	}
+
+	FVector pos = GetActorLocation();
+	FRotator rot = GetActorRotation();
+	pos.Z += 20;
+	FActorSpawnParameters spawnParams;
+	spawnParams.Owner = this;
+	spawnParams.Instigator = Instigator;
+	if (true/*spawnTime < 0*/) {
+		AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(AArrow::StaticClass(), pos, rot, spawnParams);
+		newArrow->speed = 10;//power;
+		//spawnTime = 60;
+		//power = 0;
+	}
+	//isDrawn = false;
+	UE_LOG(LogTemp,Warning,TEXT("arrow"));
+
 }
 
 bool AFPSCharacter::ServerFire_Validate()
