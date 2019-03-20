@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine.h"
 #include "Ore.h"
+#include "Arrow.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -53,6 +54,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::PerformMineCast);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::DrawArrow);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::FireArrow);
 }
 
 // Called when the game starts or when spawned
@@ -66,6 +69,22 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	{
+		if (!IsLocallyControlled())
+		{
+			arrowRotation = CameraComponent->RelativeRotation;
+			arrowRotation.Pitch = RemoteViewPitch * 360.0f / 255.0f; // convert to right Uint8
+
+			CameraComponent->SetRelativeRotation(arrowRotation);
+		}
+		if (isDrawn) {
+			power += .5f;
+		}
+		else {
+			power = 0;
+		}
+		spawnTime--;
+	}
 
 }
 
@@ -123,4 +142,32 @@ void APlayerCharacter::PerformMineCast() {
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp2);
 		}
 	}
+	
+}
+
+void APlayerCharacter::DrawArrow()
+{
+	isDrawn = true;
+}
+
+void APlayerCharacter::FireArrow()
+{
+	FVector pos = GetActorLocation();
+	FRotator rot = GetActorRotation();
+	FVector f = GetActorForwardVector();
+	FRotator camera = CameraComponent->GetComponentRotation();
+	
+	pos.X += f.X * 100;
+	pos.Y += f.Y * 100;
+	FActorSpawnParameters spawnParams;
+	spawnParams.Owner = this;
+	spawnParams.Instigator = Instigator;
+	if (spawnTime < 0) {
+		AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(AArrow::StaticClass(), pos, camera, spawnParams);
+		newArrow->speed = power;
+		spawnTime = 60;
+		power = 0;
+	}
+	isDrawn = false;
+	UE_LOG(LogTemp, Warning, TEXT("arrow"));
 }
