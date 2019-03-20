@@ -26,7 +26,7 @@ AArrow::AArrow()
 
 	location = GetActorLocation();
 	forward = 0;
-	speed = 8;
+	speed = 60;
 	gravity = .1;
 	lifeSpan = 300;
 
@@ -38,6 +38,17 @@ AArrow::AArrow()
 void AArrow::BeginPlay()
 {
 	Super::BeginPlay();
+
+}
+
+void AArrow::ServerMovement_Implementation(FVector _pos, FRotator _rot)
+{
+	SetActorLocationAndRotation(_pos, _rot);
+}
+
+bool AArrow::ServerMovement_Validate(FVector _pos, FRotator _rot)
+{
+	return true;
 }
 
 // Called every frame
@@ -57,7 +68,6 @@ void AArrow::Tick(float DeltaTime)
 	//SetActorLocation(pos);
 	SetActorLocationAndRotation(pos, rot);
 
-
 	lifeSpan--;
 	if (lifeSpan < 0) {
 		Destroy();
@@ -71,7 +81,7 @@ void AArrow::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimit
 	{
 		if (GEngine && (OtherActor->GetName() != "Plane_2"))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("I just hit: %s"), *OtherActor->GetName()));
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("I just hit: %s"), *OtherActor->GetName()));
 		}
 
 		gravity = 0;

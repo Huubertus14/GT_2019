@@ -18,17 +18,17 @@ APlayerCharacter::APlayerCharacter()
 	{
 		//creates 3 resources for this player.
 		if (Spawn()) {
-			UE_LOG(LogTemp, Warning, TEXT("Made a Resource"));
+			//UE_LOG(LogTemp, Warning, TEXT("Made a Resource"));
 		}
 	}
 
 	//Adds a small amount to resource 0
 	if (Resources.Num() > 0) {
 		Resources[0]->AddAmount(10);
-		UE_LOG(LogTemp, Warning, TEXT("Total amount of cash: %i"), Resources[0]->GetAmount());
+		//UE_LOG(LogTemp, Warning, TEXT("Total amount of cash: %i"), Resources[0]->GetAmount());
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Total amount of Resources: %i"), Resources.Num());
+	//UE_LOG(LogTemp, Warning, TEXT("Total amount of Resources: %i"), Resources.Num());
 	// Create a CameraComponent	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	CameraComponent->SetupAttachment(GetCapsuleComponent());
@@ -69,7 +69,6 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::ServerFire_Implementation()
 {
 	FVector pos = GetActorLocation();
-	FRotator rot = GetActorRotation();
 	FVector f = GetActorForwardVector();
 	FRotator camera = CameraComponent->GetComponentRotation();
 
@@ -78,9 +77,11 @@ void APlayerCharacter::ServerFire_Implementation()
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
 	spawnParams.Instigator = Instigator;
+
+	
 	if (spawnTime < 0) {
 		AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(AArrow::StaticClass(), pos, camera, spawnParams);
-		newArrow->speed = power;
+		//newArrow->speed = power;
 		spawnTime = 60;
 		power = 0;
 	}
@@ -181,5 +182,5 @@ void APlayerCharacter::FireArrow()
 {
 	ServerFire();
 	
-	UE_LOG(LogTemp, Warning, TEXT("arrow"));
+	//UE_LOG(LogTemp, Warning, TEXT("arrow"));
 }
