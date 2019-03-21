@@ -19,7 +19,7 @@ AResourcePickUpTrigger::AResourcePickUpTrigger()
 	OnActorEndOverlap.AddDynamic(this, &AResourcePickUpTrigger::OnOverlapEnd);
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	RootComponent = MeshComp;
-	MeshComp->SetWorldScale3D(FVector(0.2f,0.2f,0.2f));
+	//MeshComp->SetWorldScale3D(FVector(0.2f,0.2f,0.2f));
 	UShapeComponent* newColl = GetCollisionComponent();
 	newColl->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
