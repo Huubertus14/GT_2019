@@ -34,6 +34,7 @@ FVector AOre::OreDirection(FVector hitPoint) {
 }
 
 void AOre::OreHitSpawn(FVector hitPoint) {
+
 	FVector outwardVector = OreDirection(hitPoint);
 	outwardVector.Normalize(1.f);
 	Life--;
@@ -42,7 +43,7 @@ void AOre::OreHitSpawn(FVector hitPoint) {
 		FActorSpawnParameters spawnParams;
 		spawnParams.Owner = this;
 		FRotator rotator = FRotator(0.f,0.f,0.f);
-		FVector spawnLocation = outwardVector + hitPoint;
+		FVector spawnLocation = hitPoint;
 
 		world->SpawnActor<AResourcePickUpTrigger>(PickUpItem, spawnLocation, rotator, spawnParams);
 

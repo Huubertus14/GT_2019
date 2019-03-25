@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine.h"
 #include "Ore.h"
+#include "NewOre.h"
 #include "Arrow.h"
 
 // Sets default values
@@ -34,7 +35,7 @@ APlayerCharacter::APlayerCharacter()
 	CameraComponent->SetupAttachment(GetCapsuleComponent());
 	CameraComponent->RelativeLocation = FVector(0, 0, BaseEyeHeight); // Position the camera
 	CameraComponent->bUsePawnControlRotation = true;
- 	
+
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -64,6 +65,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	Life = 100;
 }
 
 void APlayerCharacter::ServerFire_Implementation()
@@ -78,7 +80,7 @@ void APlayerCharacter::ServerFire_Implementation()
 	spawnParams.Owner = this;
 	spawnParams.Instigator = Instigator;
 
-	
+
 	if (spawnTime < 0) {
 		AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(AArrow::StaticClass(), pos, camera, spawnParams);
 		//newArrow->speed = power;
@@ -88,9 +90,43 @@ void APlayerCharacter::ServerFire_Implementation()
 	isDrawn = false;
 }
 
+
+void APlayerCharacter::LeaveGame_Implementation()
+{
+	Destroy();
+}
+bool APlayerCharacter::LeaveGame_Validate()
+{
+	return true;
+}
+
 bool APlayerCharacter::ServerFire_Validate()
 {
 	return true;
+}
+
+void APlayerCharacter::DestroyPlayer()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Player left"));
+
+	if (GetNetMode() != ENetMode::NM_ListenServer)
+	{
+		UWorld* TheWorld = GetWorld();
+		FString CurrentLevel = TheWorld->GetMapName();
+
+		if (CurrentLevel == "Map2") // player is in a session
+		{
+			//Change to the main menu
+			UGameplayStatics::OpenLevel(GetWorld(), "FirstPersonExampleMap");
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("WTF... Which lvl are you playing"));
+		}
+		//Destroy();
+		LeaveGame();
+
+		UGameplayStatics::OpenLevel(this, FName(TEXT("FirstPersonExampleMap")));
+	}
 }
 
 // Called every frame
@@ -142,8 +178,8 @@ bool APlayerCharacter::Spawn() {
 			FActorSpawnParameters spawnParams;
 			spawnParams.Owner = this;
 
-			FRotator rotator = FRotator(0,0,0);
-			FVector spawnLocation = FVector(0,0,0);
+			FRotator rotator = FRotator(0, 0, 0);
+			FVector spawnLocation = FVector(0, 0, 0);
 			Resources.Emplace(world->SpawnActor<AResource>(toCreate, spawnLocation, rotator, spawnParams));
 			return true;
 		}
@@ -169,8 +205,19 @@ void APlayerCharacter::PerformMineCast() {
 			FString temp2 = "Ore";
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp2);
 		}
+		else {
+			ANewOre* newOrdeTemp = Cast<ANewOre>(HitResult ->Actor);
+			if (newOrdeTemp)
+			{
+
+				UE_LOG(LogTemp, Warning, TEXT("Called from player"));
+				newOrdeTemp->OreHitSpawn(HitResult->Location);
+				FString temp2 = "New Ore";
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, temp2);
+			}
+		}
 	}
-	
+
 }
 
 void APlayerCharacter::DrawArrow()
@@ -181,6 +228,6 @@ void APlayerCharacter::DrawArrow()
 void APlayerCharacter::FireArrow()
 {
 	ServerFire();
-	
+
 	//UE_LOG(LogTemp, Warning, TEXT("arrow"));
 }

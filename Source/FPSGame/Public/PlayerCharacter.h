@@ -21,6 +21,8 @@ public:
 	
 	TArray<AResource*> Resources;
 	
+	float Life;
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AResource> toCreate;
 
@@ -39,6 +41,12 @@ protected:
 	void ServerFire();
 
 public:	
+
+
+	UFUNCTION(Server, Reliable, WithValidation)
+		void LeaveGame();
+
+	void DestroyPlayer();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

@@ -1,4 +1,5 @@
 #include "Arrow.h"
+#include "PlayerCharacter.h"
 #include "Engine/World.h"
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
 #include "Components/StaticMeshComponent.h"
@@ -87,11 +88,37 @@ void AArrow::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimit
 		gravity = 0;
 		speed = 0;
 		FString s = "Target";
-		if (OtherActor->GetName() == s) {
+		//if (OtherActor->GetName() == s) {
 			mesh->SetSimulatePhysics(false);
+		//}
+
+		APlayerCharacter* charHit = Cast<APlayerCharacter>(OtherActor);
+
+		if (charHit) {
+
+			if (charHit->Role < ROLE_Authority)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Play who hit is server"));
+			}
+
+			//UE_LOG(LogTemp, Warning, TEXT("Player Hit"));
+			charHit->Life -= 40;
+			if (charHit->Life <= 0) {
+
+				if (charHit->IsLocallyControlled())
+				{
+					//UE_LOG(LogTemp, Warning, TEXT("Player Die"));
+					charHit->DestroyPlayer();
+				}
+
+			}
 		}
 
-
+		if (Role == ROLE_Authority)
+		{
+			//server things
+			Destroy();
+		}
 
 	}
 }
