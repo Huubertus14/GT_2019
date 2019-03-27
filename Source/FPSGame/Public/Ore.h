@@ -29,12 +29,19 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	FVector OreDirection(FVector hitPoint);
+
 	void OreHitSpawn(FVector hitPoint);
+
+	void AddPoint(FVector hitPoint);
+
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UStaticMeshComponent* MeshComp;
+
+	UPROPERTY(VisibleAnywhere, Replicated, Category = "SpawnList")
+	TArray<FVector> HitPoints;
 
 	UPROPERTY(EditAnywhere, Category = "ToSpawn")
 	TSubclassOf<class AResourcePickUpTrigger> PickUpItem;
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* MeshComp;
 
 };

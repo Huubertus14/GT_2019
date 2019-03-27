@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Resource.h"
 #include "GameFramework/Character.h"
+#include "Ore.h"
 #include "PlayerCharacter.generated.h"
 
 
@@ -20,20 +21,27 @@ public:
 	APlayerCharacter();
 	
 	TArray<AResource*> Resources;
-	
-	float Life;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AResource> toCreate;
 
+	float Life;
+
 	UFUNCTION()
 	bool Spawn();
+
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPCFunction();
+
+
+	AOre* hitTemp;
+	FHitResult* HitResult;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComponent;
 
@@ -44,7 +52,7 @@ public:
 
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void LeaveGame();
+	void LeaveGame();
 
 	void DestroyPlayer();
 	// Called every frame

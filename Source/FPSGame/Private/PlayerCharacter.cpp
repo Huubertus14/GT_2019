@@ -4,8 +4,6 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine.h"
-#include "Ore.h"
-#include "NewOre.h"
 #include "Arrow.h"
 
 // Sets default values
@@ -57,6 +55,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::PerformMineCast);
+
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::DrawArrow);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::FireArrow);
 }
@@ -156,7 +155,7 @@ void APlayerCharacter::MoveForward(float Value)
 {
 	if (Value != 0.0f)
 	{
-		// add movement in that direction
+		// add movement in horizontal direction
 		AddMovementInput(GetActorForwardVector(), Value);
 	}
 }
@@ -165,12 +164,13 @@ void APlayerCharacter::MoveRight(float Value)
 {
 	if (Value != 0.0f)
 	{
-		// add movement in that direction
+		// add movement in horizontal direction
 		AddMovementInput(GetActorRightVector(), Value);
 
 	}
 }
 
+//Spawns the 3 resources a player can stack.
 bool APlayerCharacter::Spawn() {
 	if (toCreate) {
 		UWorld* world = GetWorld();
@@ -187,34 +187,51 @@ bool APlayerCharacter::Spawn() {
 	return false;
 }
 
+void APlayerCharacter::ServerRPCFunction_Implementation()
+{
+	hitTemp->AddPoint(HitResult->Location);
+}
+
+
+bool APlayerCharacter::ServerRPCFunction_Validate()
+{
+	return true;
+}
+
 void APlayerCharacter::PerformMineCast() {
+	
+	//resultRaycast
+	 HitResult = new FHitResult();
+	//Startpoint raycast
 	FVector StartTrace = GetActorLocation();
-	FHitResult* HitResult = new FHitResult();
+	//Direction raycast
 	FVector ForwardVector = CameraComponent->GetForwardVector();
+	//Endpoint raycast
 	FVector EndTrace = StartTrace + (ForwardVector * 1000.f);
+	//List of items to not collide with.
 	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
 	TraceParams->AddIgnoredActor(this);
+
+	//Attempt raycast
 	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
+
+		//Info of jus cast raycast
 		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
 		FString temp = HitResult->Location.ToString();
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
-		//Cast from hitResult to if possible Ore.
-		AOre* hitTemp = Cast<AOre>(HitResult->Actor);
-		if (hitTemp) {
-			hitTemp->OreHitSpawn(HitResult->Location);
-			FString temp2 = "Ore";
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp2);
-		}
-		else {
-			ANewOre* newOrdeTemp = Cast<ANewOre>(HitResult ->Actor);
-			if (newOrdeTemp)
-			{
 
-				UE_LOG(LogTemp, Warning, TEXT("Called from player"));
-				newOrdeTemp->OreHitSpawn(HitResult->Location);
-				FString temp2 = "New Ore";
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, temp2);
+		//check if it was a ore.
+		hitTemp = Cast<AOre>(HitResult->Actor);
+		if (hitTemp) {
+			
+			if (Role == ROLE_Authority) {
+				hitTemp->AddPoint(HitResult->Location);
 			}
+			else {
+				ServerRPCFunction_Implementation();
+			}
+			
+
 		}
 	}
 
@@ -228,6 +245,4 @@ void APlayerCharacter::DrawArrow()
 void APlayerCharacter::FireArrow()
 {
 	ServerFire();
-
-	//UE_LOG(LogTemp, Warning, TEXT("arrow"));
 }
