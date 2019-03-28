@@ -30,11 +30,6 @@ public:
 	UFUNCTION()
 	bool Spawn();
 
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPCFunction();
-
-
 	AOre* hitTemp;
 	FHitResult* HitResult;
 
@@ -66,7 +61,10 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(Server, Reliable, WithValidation)
 	void PerformMineCast();
+
+
 	void DrawArrow();
 	void FireArrow();
 	//Arrow variables

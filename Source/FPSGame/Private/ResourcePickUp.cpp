@@ -13,6 +13,7 @@ AResourcePickUp::AResourcePickUp()
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	RootComponent = MeshComp;
+
 	ShpereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	ShpereComp->SetupAttachment(MeshComp);
 }
@@ -21,7 +22,7 @@ AResourcePickUp::AResourcePickUp()
 void AResourcePickUp::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame

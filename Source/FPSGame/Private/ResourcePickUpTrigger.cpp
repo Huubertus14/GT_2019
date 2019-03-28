@@ -16,17 +16,15 @@ AResourcePickUpTrigger::AResourcePickUpTrigger()
 
 	//Register Events
 	OnActorBeginOverlap.AddDynamic(this, &AResourcePickUpTrigger::OnOverlapBegin);
-	OnActorEndOverlap.AddDynamic(this, &AResourcePickUpTrigger::OnOverlapEnd);
+
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	RootComponent = MeshComp;
-	//MeshComp->SetWorldScale3D(FVector(0.2f,0.2f,0.2f));
+	
 	UShapeComponent* newColl = GetCollisionComponent();
 	newColl->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
-	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
 	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 
@@ -34,7 +32,6 @@ AResourcePickUpTrigger::AResourcePickUpTrigger()
 void AResourcePickUpTrigger::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 
@@ -42,29 +39,14 @@ void AResourcePickUpTrigger::OnOverlapBegin(class AActor* OverlappedActor, class
 {
 	// check if Actors do not equal nullptr and that 
 	if (OtherActor && (OtherActor != this)) {
-		// print to screen using above defined method when actor enters trigger box
-		print("Overlap Begin");
-		printFString("Overlapped Actor = %s", *OverlappedActor->GetName());
 		APlayerCharacter* tempPlayer = Cast<APlayerCharacter>(OtherActor);
 		if (tempPlayer) {
-			tempPlayer->Resources[1]->AddAmount(10);
-			Destroy();
+			if (Role = ROLE_Authority) {
+				tempPlayer->Resources[1]->AddAmount(10);
+				Destroy();
+			}
 		}
 	}
 }
 
-void AResourcePickUpTrigger::OnOverlapEnd(class AActor* OverlappedActor, class AActor* OtherActor)
-{
-	if (OtherActor && (OtherActor != this)) {
-		// print to screen using above defined method when actor leaves trigger box
-		print("Overlap Ended");
-		printFString("%s has left the Trigger Box", *OtherActor->GetName());
-	}
-}
-
-// Called every frame
-void AResourcePickUpTrigger::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
 
