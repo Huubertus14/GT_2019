@@ -4,7 +4,6 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine.h"
-#include "Ore.h"
 #include "Arrow.h"
 
 // Sets default values
@@ -34,7 +33,7 @@ APlayerCharacter::APlayerCharacter()
 	CameraComponent->SetupAttachment(GetCapsuleComponent());
 	CameraComponent->RelativeLocation = FVector(0, 0, BaseEyeHeight); // Position the camera
 	CameraComponent->bUsePawnControlRotation = true;
- 	
+
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -56,6 +55,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::PerformMineCast);
+
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::DrawArrow);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::FireArrow);
 }
@@ -64,6 +64,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	Life = 100;
 }
 
 void APlayerCharacter::ServerFire_Implementation()
@@ -78,7 +79,7 @@ void APlayerCharacter::ServerFire_Implementation()
 	spawnParams.Owner = this;
 	spawnParams.Instigator = Instigator;
 
-	
+
 	if (spawnTime < 0) {
 		AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(AArrow::StaticClass(), pos, camera, spawnParams);
 		//newArrow->speed = power;
@@ -88,9 +89,43 @@ void APlayerCharacter::ServerFire_Implementation()
 	isDrawn = false;
 }
 
+
+void APlayerCharacter::LeaveGame_Implementation()
+{
+	Destroy();
+}
+bool APlayerCharacter::LeaveGame_Validate()
+{
+	return true;
+}
+
 bool APlayerCharacter::ServerFire_Validate()
 {
 	return true;
+}
+
+void APlayerCharacter::DestroyPlayer()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Player left"));
+
+	if (GetNetMode() != ENetMode::NM_ListenServer)
+	{
+		UWorld* TheWorld = GetWorld();
+		FString CurrentLevel = TheWorld->GetMapName();
+
+		if (CurrentLevel == "Map2") // player is in a session
+		{
+			//Change to the main menu
+			UGameplayStatics::OpenLevel(GetWorld(), "FirstPersonExampleMap");
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("WTF... Which lvl are you playing"));
+		}
+		//Destroy();
+		LeaveGame();
+
+		UGameplayStatics::OpenLevel(this, FName(TEXT("FirstPersonExampleMap")));
+	}
 }
 
 // Called every frame
@@ -120,7 +155,7 @@ void APlayerCharacter::MoveForward(float Value)
 {
 	if (Value != 0.0f)
 	{
-		// add movement in that direction
+		// add movement in horizontal direction
 		AddMovementInput(GetActorForwardVector(), Value);
 	}
 }
@@ -129,12 +164,13 @@ void APlayerCharacter::MoveRight(float Value)
 {
 	if (Value != 0.0f)
 	{
-		// add movement in that direction
+		// add movement in horizontal direction
 		AddMovementInput(GetActorRightVector(), Value);
 
 	}
 }
 
+//Spawns the 3 resources a player can stack.
 bool APlayerCharacter::Spawn() {
 	if (toCreate) {
 		UWorld* world = GetWorld();
@@ -142,8 +178,8 @@ bool APlayerCharacter::Spawn() {
 			FActorSpawnParameters spawnParams;
 			spawnParams.Owner = this;
 
-			FRotator rotator = FRotator(0,0,0);
-			FVector spawnLocation = FVector(0,0,0);
+			FRotator rotator = FRotator(0, 0, 0);
+			FVector spawnLocation = FVector(0, 0, 0);
 			Resources.Emplace(world->SpawnActor<AResource>(toCreate, spawnLocation, rotator, spawnParams));
 			return true;
 		}
@@ -151,26 +187,54 @@ bool APlayerCharacter::Spawn() {
 	return false;
 }
 
+void APlayerCharacter::ServerRPCFunction_Implementation()
+{
+	hitTemp->AddPoint(HitResult->Location);
+}
+
+
+bool APlayerCharacter::ServerRPCFunction_Validate()
+{
+	return true;
+}
+
 void APlayerCharacter::PerformMineCast() {
+	
+	//resultRaycast
+	 HitResult = new FHitResult();
+	//Startpoint raycast
 	FVector StartTrace = GetActorLocation();
-	FHitResult* HitResult = new FHitResult();
+	//Direction raycast
 	FVector ForwardVector = CameraComponent->GetForwardVector();
+	//Endpoint raycast
 	FVector EndTrace = StartTrace + (ForwardVector * 1000.f);
+	//List of items to not collide with.
 	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
 	TraceParams->AddIgnoredActor(this);
+
+	//Attempt raycast
 	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
+
+		//Info of jus cast raycast
 		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
 		FString temp = HitResult->Location.ToString();
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
-		//Cast from hitResult to if possible Ore.
-		AOre* hitTemp = Cast<AOre>(HitResult->Actor);
+
+		//check if it was a ore.
+		hitTemp = Cast<AOre>(HitResult->Actor);
 		if (hitTemp) {
-			hitTemp->OreHitSpawn(HitResult->Location);
-			FString temp2 = "Ore";
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp2);
+			
+			if (Role == ROLE_Authority) {
+				hitTemp->AddPoint(HitResult->Location);
+			}
+			else {
+				ServerRPCFunction_Implementation();
+			}
+			
+
 		}
 	}
-	
+
 }
 
 void APlayerCharacter::DrawArrow()
@@ -181,6 +245,4 @@ void APlayerCharacter::DrawArrow()
 void APlayerCharacter::FireArrow()
 {
 	ServerFire();
-	
-	//UE_LOG(LogTemp, Warning, TEXT("arrow"));
 }
