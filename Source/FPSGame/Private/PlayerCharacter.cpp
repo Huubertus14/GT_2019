@@ -187,18 +187,7 @@ bool APlayerCharacter::Spawn() {
 	return false;
 }
 
-void APlayerCharacter::ServerRPCFunction_Implementation()
-{
-	hitTemp->AddPoint(HitResult->Location);
-}
-
-
-bool APlayerCharacter::ServerRPCFunction_Validate()
-{
-	return true;
-}
-
-void APlayerCharacter::PerformMineCast() {
+void APlayerCharacter::PerformMineCast_Implementation() {
 	
 	//resultRaycast
 	 HitResult = new FHitResult();
@@ -223,18 +212,14 @@ void APlayerCharacter::PerformMineCast() {
 		//check if it was a ore.
 		hitTemp = Cast<AOre>(HitResult->Actor);
 		if (hitTemp) {
-			
-			if (Role == ROLE_Authority) {
-				hitTemp->AddPoint(HitResult->Location);
-			}
-			else {
-				ServerRPCFunction_Implementation();
-			}
-			
-
+				hitTemp->OreHitSpawn(HitResult->Location);
 		}
 	}
 
+}
+
+bool APlayerCharacter::PerformMineCast_Validate() {
+	return true;
 }
 
 void APlayerCharacter::DrawArrow()
@@ -246,3 +231,4 @@ void APlayerCharacter::FireArrow()
 {
 	ServerFire();
 }
+

@@ -24,11 +24,7 @@ public:
 	
 	UFUNCTION()
 	void OnOverlapBegin(AActor * OverlappedActor, AActor * OtherActor);
-	UFUNCTION()
-	void OnOverlapEnd(AActor * OverlappedActor, AActor * OtherActor);
 
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* MeshComp;
