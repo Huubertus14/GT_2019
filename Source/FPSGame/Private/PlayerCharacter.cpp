@@ -69,12 +69,13 @@ void APlayerCharacter::BeginPlay()
 
 void APlayerCharacter::ServerFire_Implementation()
 {
-	FVector pos = GetActorLocation();
+	FVector pos = CameraComponent->GetComponentLocation();
 	FVector f = GetActorForwardVector();
 	FRotator camera = CameraComponent->GetComponentRotation();
 
-	pos.X += f.X * 100;
-	pos.Y += f.Y * 100;
+	pos.X += f.X * 50;
+	pos.Y += f.Y * 50;
+
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
 	spawnParams.Instigator = Instigator;
@@ -83,7 +84,7 @@ void APlayerCharacter::ServerFire_Implementation()
 	if (spawnTime < 0) {
 		AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(AArrow::StaticClass(), pos, camera, spawnParams);
 		//newArrow->speed = power;
-		spawnTime = 60;
+		spawnTime = 1;
 		power = 0;
 	}
 	isDrawn = false;
@@ -188,11 +189,11 @@ bool APlayerCharacter::Spawn() {
 }
 
 void APlayerCharacter::PerformMineCast_Implementation() {
-	
+
 	//resultRaycast
-	 HitResult = new FHitResult();
+	HitResult = new FHitResult();
 	//Startpoint raycast
-	FVector StartTrace = GetActorLocation();
+	FVector StartTrace = CameraComponent->GetComponentLocation();
 	//Direction raycast
 	FVector ForwardVector = CameraComponent->GetForwardVector();
 	//Endpoint raycast
@@ -212,7 +213,7 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 		//check if it was a ore.
 		hitTemp = Cast<AOre>(HitResult->Actor);
 		if (hitTemp) {
-				hitTemp->OreHitSpawn(HitResult->Location);
+			hitTemp->OreHitSpawn(HitResult->Location);
 		}
 	}
 
