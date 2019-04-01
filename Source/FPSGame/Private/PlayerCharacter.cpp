@@ -84,6 +84,7 @@ void APlayerCharacter::ServerFire_Implementation()
 	if (spawnTime < 0) {
 		AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(AArrow::StaticClass(), pos, camera, spawnParams);
 		//newArrow->speed = power;
+		
 		spawnTime = 1;
 		power = 0;
 	}

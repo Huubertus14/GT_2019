@@ -7,7 +7,7 @@ AOre::AOre()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	Life = 100;
+	Life = FMath::RandRange(5,11);
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	RootComponent = MeshComp;
 	MeshComp->SetWorldScale3D(FVector(0.2f, 0.2f, 0.2f));
@@ -42,6 +42,11 @@ void AOre::OreHitSpawn(FVector hitPoint)
 			FRotator rotator = FRotator(0.f, 0.f, 0.f);
 			FVector spawnLocation = hitPoint;
 			GetWorld()->SpawnActor<AResourcePickUpTrigger>(PickUpItem, spawnLocation, rotator ,spawnParams);
+		}
+
+		if (Life <= 0)
+		{
+			Destroy();
 		}
 	}
 }
