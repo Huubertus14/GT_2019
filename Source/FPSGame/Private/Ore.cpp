@@ -22,8 +22,6 @@ void AOre::BeginPlay()
 	
 }
 
-
-
 FVector AOre::OreDirection(FVector hitPoint) 
 {
 	FVector CenterPoint = GetActorLocation();
@@ -43,7 +41,7 @@ void AOre::OreHitSpawn(FVector hitPoint)
 			spawnParams.Owner = this;
 			FRotator rotator = FRotator(0.f, 0.f, 0.f);
 			FVector spawnLocation = hitPoint;
-			GetWorld()->SpawnActor<AResourcePickUpTrigger>(PickUpItem, GetTransform(), spawnParams);
+			GetWorld()->SpawnActor<AResourcePickUpTrigger>(PickUpItem, spawnLocation, rotator ,spawnParams);
 		}
 	}
 }
