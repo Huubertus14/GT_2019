@@ -69,12 +69,13 @@ void APlayerCharacter::BeginPlay()
 
 void APlayerCharacter::ServerFire_Implementation()
 {
-	FVector pos = GetActorLocation();
+	FVector pos = CameraComponent->GetComponentLocation();
 	FVector f = GetActorForwardVector();
 	FRotator camera = CameraComponent->GetComponentRotation();
 
-	pos.X += f.X * 100;
-	pos.Y += f.Y * 100;
+	pos.X += f.X * 50;
+	pos.Y += f.Y * 50;
+
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
 	spawnParams.Instigator = Instigator;
@@ -83,7 +84,7 @@ void APlayerCharacter::ServerFire_Implementation()
 	if (spawnTime < 0) {
 		AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(AArrow::StaticClass(), pos, camera, spawnParams);
 		//newArrow->speed = power;
-		spawnTime = 60;
+		spawnTime = 1;
 		power = 0;
 	}
 	isDrawn = false;
