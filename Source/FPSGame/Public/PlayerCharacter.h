@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Resource.h"
 #include "GameFramework/Character.h"
+#include "PickUpThrow.h"
+#include "Resource.h"
 #include "Ore.h"
 #include "PlayerCharacter.generated.h"
 
@@ -16,7 +17,20 @@ class FPSGAME_API APlayerCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+	/** Location on gun mesh where projectiles should spawn*/
+	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+	USceneComponent* FP_MuzzleLocation;
+
+	/**First person camera*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent* CameraComponent;
+
+	/** Holding Component*/
+	UPROPERTY(EditAnywhere)
+	USceneComponent* HoldingComponent;
+
 public:
+
 	// Sets default values for this character's properties
 	APlayerCharacter();
 	
@@ -34,22 +48,20 @@ public:
 	FHitResult* HitResult;
 
 protected:
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	UCameraComponent* CameraComponent;
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerFire();
 
 public:	
 
-
 	UFUNCTION(Server, Reliable, WithValidation)
 	void LeaveGame();
 
 	void DestroyPlayer();
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -64,12 +76,34 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void PerformMineCast();
 
-
+	//Arrow functions
 	void DrawArrow();
 	void FireArrow();
+
 	//Arrow variables
 	float power;
 	bool isDrawn;
 	float spawnTime;
 	FRotator arrowRotation;
+
+	/**PickUpThrow functions*/
+	void OnAction();
+	void ToggleItemPickup();
+
+	/**PickUpThrow variables*/
+	APickUpThrow* CurrentItem;
+
+	bool bCanMove;
+	bool bHoldingItem;
+
+	FVector HoldingComp;
+
+	FVector Start;
+	FVector ForwardVector;
+	FVector End;
+
+	FHitResult Hit;
+
+	FComponentQueryParams DefaultComponentQueryParams;
+	FCollisionResponseParams DefaultResponseParam;
 };

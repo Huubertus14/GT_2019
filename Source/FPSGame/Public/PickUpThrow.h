@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Camera/CameraComponent.h"
-#include "PlayerCharacter.h"
 #include "PickUpThrow.generated.h"
 
 UCLASS()
@@ -25,24 +24,19 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* MyMesh;
 
 	UPROPERTY(EditAnywhere)
 	USceneComponent* HoldingComp;
-
-	// No creo que se utilice
-	UFUNCTION()
-	void RotateActor();
 
 	UFUNCTION()
 	void Pickup();
 
 	bool bHolding;
 	bool bGravity;
-
-	FRotator ControlRotation; // No creo ue se utilice
-	APlayerCharacter* MyCharacter;
+ 
+	ACharacter* MyCharacter;
 	UCameraComponent* PlayerCamera;
 	FVector ForwardVector;
 

@@ -3,12 +3,24 @@
 #include "PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Engine.h"
+#include "DrawDebugHelpers.h"
+#include "MotionControllerComponent.h"
 #include "Arrow.h"
+
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
+	//Creating the HoldingComponent
+	HoldingComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HoldingComponent"));
+	HoldingComponent->RelativeLocation.X = 50.0f;
+	HoldingComponent->SetupAttachment(FP_MuzzleLocation);
+
+	CurrentItem = NULL;
+	bCanMove = true;
+
 	//Finds the resource bp.
 	static ConstructorHelpers::FClassFinder<AResource> PlayerPawnClassFinder(TEXT("/Game/Blueprints/BP_Resource"));
 	toCreate = PlayerPawnClassFinder.Class;
@@ -58,12 +70,15 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::DrawArrow);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::FireArrow);
+
+	PlayerInputComponent->BindAction("Pickup", IE_Pressed, this, &APlayerCharacter::OnAction);
 }
 
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
 	Life = 100;
 }
 
@@ -132,6 +147,26 @@ void APlayerCharacter::DestroyPlayer()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	Start = CameraComponent->GetComponentLocation();
+	ForwardVector = CameraComponent->GetForwardVector();
+	End = ((ForwardVector * 200.f) + Start);
+	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1, 0, 1);
+	if (!bHoldingItem) 
+	{
+		if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, DefaultComponentQueryParams, DefaultResponseParam)) 
+		{
+			if (Hit.GetActor()->GetClass()->IsChildOf(APickUpThrow::StaticClass()))
+			{
+				CurrentItem = Cast<APickUpThrow>(Hit.GetActor());
+			}
+		}
+		else
+		{
+			CurrentItem = NULL;
+		}
+	
+	}
 	{
 		if (!IsLocallyControlled())
 		{
@@ -232,3 +267,24 @@ void APlayerCharacter::FireArrow()
 	ServerFire();
 }
 
+void APlayerCharacter::OnAction() 
+{
+	if (CurrentItem) 
+	{
+		ToggleItemPickup();
+	}
+}
+
+void APlayerCharacter::ToggleItemPickup() 
+{
+	if (CurrentItem)
+	{
+		bHoldingItem = !bHoldingItem;
+		CurrentItem->Pickup();
+
+		if (!bHoldingItem) 
+		{
+			CurrentItem = NULL;
+		}
+	}
+}
