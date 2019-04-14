@@ -34,6 +34,12 @@ APlayerCharacter::APlayerCharacter()
 	CameraComponent->RelativeLocation = FVector(0, 0, BaseEyeHeight); // Position the camera
 	CameraComponent->bUsePawnControlRotation = true;
 
+	//test animation change
+	MeshPit = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh"));
+	MeshPit->SetupAttachment(CameraComponent);
+	MeshPit->CastShadow = false;
+
+
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 

@@ -25,6 +25,11 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AResource> toCreate;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	USkeletalMeshComponent* MeshPit;
+
+	
+
 	float Life;
 
 	UFUNCTION()
