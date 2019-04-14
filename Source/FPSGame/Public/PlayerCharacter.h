@@ -66,7 +66,6 @@ public:
 
 
 	void DrawArrow();
-	void FireArrow();
 	//Arrow variables
 	float power;
 	bool isDrawn;

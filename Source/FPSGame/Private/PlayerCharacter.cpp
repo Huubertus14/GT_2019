@@ -57,7 +57,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::PerformMineCast);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::DrawArrow);
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::FireArrow);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerFire);
 }
 
 // Called when the game starts or when spawned
@@ -82,13 +82,18 @@ void APlayerCharacter::ServerFire_Implementation()
 
 	if (spawnTime < 0) {
 		AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(AArrow::StaticClass(), pos, camera, spawnParams);
-		//newArrow->speed = power;
+		newArrow->mesh->AddForce(f*power);
 		spawnTime = 60;
 		power = 0;
 	}
 	isDrawn = false;
 }
 
+
+bool APlayerCharacter::ServerFire_Validate()
+{
+	return true;
+}
 
 void APlayerCharacter::LeaveGame_Implementation()
 {
@@ -99,10 +104,6 @@ bool APlayerCharacter::LeaveGame_Validate()
 	return true;
 }
 
-bool APlayerCharacter::ServerFire_Validate()
-{
-	return true;
-}
 
 void APlayerCharacter::DestroyPlayer()
 {
@@ -225,10 +226,5 @@ bool APlayerCharacter::PerformMineCast_Validate() {
 void APlayerCharacter::DrawArrow()
 {
 	isDrawn = true;
-}
-
-void APlayerCharacter::FireArrow()
-{
-	ServerFire();
 }
 
