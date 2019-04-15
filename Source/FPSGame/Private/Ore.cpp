@@ -33,7 +33,7 @@ FVector AOre::OreDirection(FVector hitPoint)
 void AOre::OreHitSpawn(FVector hitPoint) 
 {
 	if (Role == ROLE_Authority) {
-		FVector outwardVector = hitPoint;
+		FVector outwardVector = OreDirection(hitPoint);
 		outwardVector.Normalize(1.f);
 		Life--;
 		if (PickUpItem) {
@@ -42,7 +42,9 @@ void AOre::OreHitSpawn(FVector hitPoint)
 			spawnParams.Owner = this;
 			FRotator rotator = FRotator(0.f, 0.f, 0.f);
 			FVector spawnLocation = hitPoint;
-			GetWorld()->SpawnActor<AResourcePickUpTrigger>(PickUpItem, spawnLocation, rotator ,spawnParams);
+			AResourcePickUpTrigger* newPickup = GetWorld()->SpawnActor<AResourcePickUpTrigger>(PickUpItem, spawnLocation, rotator ,spawnParams);
+			UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newPickup->GetRootComponent());
+			meshComp->AddForce(10000.f*meshComp->GetMass()*outwardVector);
 		}
 
 		if (Life <= 0)
