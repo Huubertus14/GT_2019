@@ -4,6 +4,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine.h"
+#include "MeatActor.h"
 #include "Arrow.h"
 #include "UnrealNetwork.h"
 
@@ -69,7 +70,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	Life = 100;
+	life = 100;
 }
 
 void APlayerCharacter::ServerFire_Implementation()
@@ -82,12 +83,14 @@ void APlayerCharacter::ServerFire_Implementation()
 		spawnParams.Owner = this;
 		spawnParams.Instigator = Instigator;
 
-		AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(arrowToCreate, pos, camera, spawnParams);
-		UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newArrow->GetRootComponent());
-		if (meshComp) {
-			meshComp->AddForce(f*100000.f*meshComp->GetMass()*power);
+		if (power > 1)
+		{
+			AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(arrowToCreate, pos, camera, spawnParams);
+			UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newArrow->GetRootComponent());
+			if (meshComp) {
+				meshComp->AddForce(f*100000.f*meshComp->GetMass()*power);
+			}
 		}
-
 		isDrawn = false;
 }
 
@@ -191,9 +194,24 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
 
 		//check if it was a ore.
-		hitTemp = Cast<AOre>(HitResult->Actor);
+		AOre* hitTemp = Cast<AOre>(HitResult->Actor);
+
 		if (hitTemp) {
 			hitTemp->OreHitSpawn(HitResult->Location);
+		}
+
+		AMeatActor* meattemp = Cast<AMeatActor>(HitResult->Actor);
+
+		if (meattemp)//Check if the raycasted thing is meat
+		{
+			//Debug tool
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "YAY VLEES!");
+
+			//Increase life and stamina
+			life += 50;
+
+			//destroy meat object
+			meattemp->EatMeat();
 		}
 	}
 

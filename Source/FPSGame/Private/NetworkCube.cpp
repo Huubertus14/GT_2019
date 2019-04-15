@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "NetworkCube.h"
+#include "UnrealNetwork.h"
+#include "Engine.h"
 
 // Sets default values
 ANetworkCube::ANetworkCube()
@@ -17,16 +19,6 @@ void ANetworkCube::BeginPlay()
 	SetReplicates(true);
 	SetReplicateMovement(true);
 
-	if (Role<ROLE_Authority)
-	{
-		mesh->SetSimulatePhysics(false);
-	}
 }
 
-// Called every frame
-void ANetworkCube::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 

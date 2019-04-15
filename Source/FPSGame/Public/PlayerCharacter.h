@@ -19,25 +19,21 @@ class FPSGAME_API APlayerCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
-	
+
 	TArray<AResource*> Resources;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AResource> toCreate;
-
-
+		TSubclassOf<class AResource> toCreate;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AArrow> arrowToCreate;
+		TSubclassOf<class AArrow> arrowToCreate;
 
-
-	float Life;
-
+	float life;
 
 	UFUNCTION()
-	bool Spawn();
+		bool Spawn();
 
-	AOre* hitTemp;
+	
 	FHitResult* HitResult;
 
 protected:
@@ -45,16 +41,15 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	UCameraComponent* CameraComponent;
+		UCameraComponent* CameraComponent;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerFire();
+		void ServerFire();
 
-public:	
-
+public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void LeaveGame();
+		void LeaveGame();
 
 	void DestroyPlayer();
 
@@ -65,19 +60,18 @@ public:
 
 	void MoveRight(float Value);
 
-
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void PerformMineCast();
+		void PerformMineCast();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void DrawArrow();
+		void DrawArrow();
 	//Arrow variables
 	UPROPERTY(Replicated)
-	float power;
+		float power;
 	UPROPERTY(Replicated)
-	bool isDrawn;
+		bool isDrawn;
 
 };
