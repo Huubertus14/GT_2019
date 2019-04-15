@@ -7,18 +7,19 @@ AOre::AOre()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	Life = FMath::RandRange(5,11);
+	Life = 2;// FMath::RandRange(5, 11);
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	RootComponent = MeshComp;
 	MeshComp->SetWorldScale3D(FVector(0.2f, 0.2f, 0.2f));
 
-	SetReplicates(true);
+	
 }
 
 // Called when the game starts or when spawned
 void AOre::BeginPlay()
 {
 	Super::BeginPlay();
+	SetReplicates(true);
 	
 }
 
