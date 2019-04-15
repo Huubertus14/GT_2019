@@ -169,9 +169,9 @@ bool APlayerCharacter::Spawn() {
 }
 
 void APlayerCharacter::PerformMineCast_Implementation() {
-	
+
 	//resultRaycast
-	 HitResult = new FHitResult();
+	HitResult = new FHitResult();
 	//Startpoint raycast
 	FVector StartTrace = CameraComponent->GetComponentLocation();
 	//Direction raycast
@@ -193,7 +193,7 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 		//check if it was a ore.
 		hitTemp = Cast<AOre>(HitResult->Actor);
 		if (hitTemp) {
-				hitTemp->OreHitSpawn(HitResult->Location);
+			hitTemp->OreHitSpawn(HitResult->Location);
 		}
 	}
 
