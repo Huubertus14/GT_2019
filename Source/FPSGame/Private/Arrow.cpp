@@ -50,19 +50,12 @@ bool AArrow::ServerMovement_Validate(FVector _pos, FRotator _rot)
 void AArrow::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//forward += 1;
-	//location.X = forward;
-	//speed = speed * 0.99;
-	//gravity = gravity * 1.04;
-	//FVector pos = GetActorLocation();
-	//FVector f = GetActorForwardVector();
-	//pos += f * speed;
-	//pos.Z -= gravity;
-	//FRotator rot = GetActorRotation();
-	//rot.Pitch -= gravity / 4;
-	//SetActorLocation(pos);
-	//SetActorLocationAndRotation(pos, rot);
-	
+	if (GetVelocity() != FVector(0.f,0.f,0.f)) {
+		FVector dir = GetVelocity();
+		FRotator rot = FRotationMatrix::MakeFromX(dir).Rotator();
+		SetActorRotation(rot);
+
+	}
 	lifeSpan--;
 	if (lifeSpan < 0) {
 		Destroy();
