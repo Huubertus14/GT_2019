@@ -25,7 +25,14 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AResource> toCreate;
 
+
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AArrow> arrowToCreate;
+
+
 	float Life;
+
 
 	UFUNCTION()
 	bool Spawn();
@@ -50,6 +57,7 @@ public:
 	void LeaveGame();
 
 	void DestroyPlayer();
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -64,12 +72,12 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void PerformMineCast();
 
-
+	UFUNCTION(Server, Reliable, WithValidation)
 	void DrawArrow();
-	void FireArrow();
 	//Arrow variables
+	UPROPERTY(Replicated)
 	float power;
+	UPROPERTY(Replicated)
 	bool isDrawn;
-	float spawnTime;
-	FRotator arrowRotation;
+
 };

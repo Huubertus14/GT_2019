@@ -5,7 +5,9 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine.h"
 #include "Arrow.h"
+#include "UnrealNetwork.h"
 
+#define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green,text)
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
@@ -37,7 +39,10 @@ APlayerCharacter::APlayerCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	//SetReplicateMovement(true);
 	SetReplicates(true);
+	bReplicates = true;
+
 
 }
 
@@ -57,7 +62,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::PerformMineCast);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::DrawArrow);
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::FireArrow);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerFire);
 }
 
 // Called when the game starts or when spawned
@@ -69,87 +74,61 @@ void APlayerCharacter::BeginPlay()
 
 void APlayerCharacter::ServerFire_Implementation()
 {
-	FVector pos = CameraComponent->GetComponentLocation();
-	FVector f = GetActorForwardVector();
-	FRotator camera = CameraComponent->GetComponentRotation();
+		FVector f = CameraComponent->GetForwardVector();
+		FRotator camera = CameraComponent->GetComponentRotation();
+		FVector pos = CameraComponent->GetComponentLocation();
+		pos += f * 100.f;
+		FActorSpawnParameters spawnParams;
+		spawnParams.Owner = this;
+		spawnParams.Instigator = Instigator;
 
-	pos.X += f.X * 50;
-	pos.Y += f.Y * 50;
+		AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(arrowToCreate, pos, camera, spawnParams);
+		UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newArrow->GetRootComponent());
+		if (meshComp) {
+			meshComp->AddForce(f*100000.f*meshComp->GetMass()*power);
+		}
 
-	FActorSpawnParameters spawnParams;
-	spawnParams.Owner = this;
-	spawnParams.Instigator = Instigator;
-
-
-	if (spawnTime < 0) {
-		AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(AArrow::StaticClass(), pos, camera, spawnParams);
-		//newArrow->speed = power;
-		
-		spawnTime = 1;
-		power = 0;
-	}
-	isDrawn = false;
+		isDrawn = false;
 }
 
-
-void APlayerCharacter::LeaveGame_Implementation()
-{
-	Destroy();
-}
-bool APlayerCharacter::LeaveGame_Validate()
-{
-	return true;
-}
 
 bool APlayerCharacter::ServerFire_Validate()
 {
 	return true;
 }
 
-void APlayerCharacter::DestroyPlayer()
+
+
+void APlayerCharacter::DrawArrow_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Player left"));
-
-	if (GetNetMode() != ENetMode::NM_ListenServer)
-	{
-		UWorld* TheWorld = GetWorld();
-		FString CurrentLevel = TheWorld->GetMapName();
-
-		if (CurrentLevel == "Map2") // player is in a session
-		{
-			//Change to the main menu
-			UGameplayStatics::OpenLevel(GetWorld(), "FirstPersonExampleMap");
-		}
-		else {
-			UE_LOG(LogTemp, Warning, TEXT("WTF... Which lvl are you playing"));
-		}
-		//Destroy();
-		LeaveGame();
-
-		UGameplayStatics::OpenLevel(this, FName(TEXT("FirstPersonExampleMap")));
-	}
+	isDrawn = true;
 }
+
+bool APlayerCharacter::DrawArrow_Validate()
+{
+	return true;
+}
+
+
 
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	{
-		if (!IsLocallyControlled())
-		{
-			arrowRotation = CameraComponent->RelativeRotation;
-			arrowRotation.Pitch = RemoteViewPitch * 360.0f / 255.0f; // convert to right Uint8
-
-			CameraComponent->SetRelativeRotation(arrowRotation);
-		}
+	
 		if (isDrawn) {
-			power += .5f;
+			power += .05f;
 		}
 		else {
-			power = 0;
+			power = 0.f;
 		}
-		spawnTime--;
-	}
+
+		if (!IsLocallyControlled()) {
+			FRotator newRot = CameraComponent->RelativeRotation;
+			newRot.Pitch = RemoteViewPitch * 360.0f / 255.0f;
+
+			CameraComponent->SetRelativeRotation(newRot);
+		}
 
 }
 
@@ -224,13 +203,44 @@ bool APlayerCharacter::PerformMineCast_Validate() {
 	return true;
 }
 
-void APlayerCharacter::DrawArrow()
+void APlayerCharacter::DestroyPlayer()
 {
-	isDrawn = true;
+	UE_LOG(LogTemp, Warning, TEXT("Player left"));
+
+	if (GetNetMode() != ENetMode::NM_ListenServer)
+	{
+		UWorld* TheWorld = GetWorld();
+		FString CurrentLevel = TheWorld->GetMapName();
+
+		if (CurrentLevel == "Map2") // player is in a session
+		{
+			//Change to the main menu
+			UGameplayStatics::OpenLevel(GetWorld(), "FirstPersonExampleMap");
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("WTF... Which lvl are you playing"));
+		}
+		//Destroy();
+		LeaveGame();
+
+		UGameplayStatics::OpenLevel(this, FName(TEXT("FirstPersonExampleMap")));
+	}
 }
 
-void APlayerCharacter::FireArrow()
+void APlayerCharacter::LeaveGame_Implementation()
 {
-	ServerFire();
+	Destroy();
 }
 
+bool APlayerCharacter::LeaveGame_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const {
+
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APlayerCharacter, power);
+	DOREPLIFETIME(APlayerCharacter, isDrawn);
+}
