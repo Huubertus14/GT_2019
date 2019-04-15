@@ -21,4 +21,17 @@ void ANetworkCube::BeginPlay()
 
 }
 
+// Called every frame
+void ANetworkCube::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (Role == ROLE_Authority) {
+		//FRotator newRot = CameraComponent->RelativeRotation;
+		//newRot.Pitch = RemoteViewPitch * 360.0f / 255.0f;
+			
+		//CameraComponent->SetRelativeRotation(newRot);
+	}
+
+}
 
