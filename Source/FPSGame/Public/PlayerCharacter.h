@@ -28,12 +28,12 @@ public:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<class AArrow> arrowToCreate;
 
-	float Life;
+	float life;
 
 	UFUNCTION()
 		bool Spawn();
 
-	AOre* hitTemp;
+	
 	FHitResult* HitResult;
 
 protected:
