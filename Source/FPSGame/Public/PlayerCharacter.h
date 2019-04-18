@@ -37,26 +37,6 @@ class FPSGAME_API APlayerCharacter : public ACharacter
 	UPROPERTY(EditAnywhere)
 	USceneComponent* HoldingComponent;
 
-public:
-
-	// Sets default values for this character's properties
-	APlayerCharacter();
-	
-	TArray<AResource*> Resources;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AResource> toCreate;
-
-	UFUNCTION()
-	bool Spawn();
-
-	float Life;
-
-	AOre* hitTemp;
-	FHitResult* HitResult;
-	APickUpThrow* pickUp;
-	
-
 protected:
 
 	// Called when the game starts or when spawned
@@ -69,7 +49,38 @@ protected:
 	void OnAction();
 	void ToggleItemPickup();
 
+	UPROPERTY(EditAnywhere, Category = "ToSpawn")
+		TSubclassOf<class APickUpThrow> pickUpAxe;
+	UPROPERTY(EditAnywhere, Category = "ToSpawn")
+		TSubclassOf<class APickUpThrow> pickUpPickaxe;
+	UPROPERTY(EditAnywhere, Category = "ToSpawn")
+		TSubclassOf<class APickUpThrow> pickUpBow;
+	UPROPERTY(EditAnywhere, Category = "ToSpawn")
+		TSubclassOf<class APickUpThrow> pickUpSword;
+	UPROPERTY(EditAnywhere, Category = "ToSpawn")
+		TSubclassOf<class APickUpThrow> pickUp2hSword;
 public:	
+
+	// Sets default values for this character's properties
+	APlayerCharacter();
+
+	TArray<AResource*> Resources;
+
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<class AResource> toCreate;
+
+	UFUNCTION()
+		bool Spawn();
+
+	float Life;
+
+	//The raycast possible results
+	AOre* hitTemp;
+	FHitResult* HitResult;
+	APickUpThrow* pickUp;
+
+	//The weaopn the player currently holds
+	APickUpThrow* currentWeapon;
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void LeaveGame();
@@ -101,6 +112,9 @@ public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 		void PerformRightClickCast();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerDropWeapon();
 
 	//Arrow functions
 	void DrawArrow();

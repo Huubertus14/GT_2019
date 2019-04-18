@@ -113,6 +113,7 @@ void APlayerCharacter::BeginPlay()
 	//WeaponGrip->AttachToComponent(MeshCube, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("WeaponGripPoint"));
 
 	MeshCube->SetHiddenInGame(false, true);
+	currentWeapon = NULL;
 }
 
 // Called every frame
@@ -253,7 +254,6 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 
 	//Attempt raycast
 	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
-		UE_LOG(LogTemp, Warning, TEXT("RayCast Done"));
 		//Info of jus cast raycast
 		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
 		FString temp = HitResult->Location.ToString();
@@ -263,8 +263,6 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 		hitTemp = Cast<AOre>(HitResult->Actor);
 		if (hitTemp) {
 			hitTemp->OreHitSpawn(HitResult->Location);
-			UE_LOG(LogTemp, Warning, TEXT("Wrong Item!!!"));
-			//return;
 		}
 	}
 
@@ -288,33 +286,59 @@ void APlayerCharacter::PerformRightClickCast_Implementation()
 	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
 	TraceParams->AddIgnoredActor(this);
 
-
-	UE_LOG(LogTemp, Warning, TEXT("RayCast"));
 	//Attempt raycast
 	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
 
-		UE_LOG(LogTemp, Warning, TEXT("RayCast Done"));
 		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(0, 255, 0), true, 5.f);
 		FString temp = HitResult->Location.ToString();
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
 
 		pickUp = Cast<APickUpThrow>(HitResult->Actor);
 		if (pickUp)
-		{
+		{ 
+			APickUpThrow* temp = currentWeapon;
+			
+			//TrowItem = currentWeapon;
 			if (pickUp->GetID() == 1)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Weapon 1 selected"));
+				
+				//Drop current weapon
+				//currentweapos
+				
 			}
 			if (pickUp->GetID() == 2)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Weapon 2 selected"));
 			}
+			ServerDropWeapon();
 			pickUp->Pickup();
 		}
 	}
 }
 
 bool  APlayerCharacter::PerformRightClickCast_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::ServerDropWeapon_Implementation()
+{
+	FVector pos = GetActorLocation();
+	FVector f = GetActorForwardVector();
+	FRotator camera = CameraComponent->GetComponentRotation();
+
+	pos.X += f.X * 100;
+	pos.Y += f.Y * 100;
+
+	FActorSpawnParameters spawnParams;
+	spawnParams.Owner = this;
+	spawnParams.Instigator = Instigator;
+
+	APickUpThrow* newitem = GetWorld()->SpawnActor<APickUpThrow>(TrowItem, pos, camera, spawnParams);
+}
+
+bool APlayerCharacter::ServerDropWeapon_Validate()
 {
 	return true;
 }

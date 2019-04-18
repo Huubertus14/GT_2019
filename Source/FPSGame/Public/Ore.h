@@ -32,7 +32,6 @@ public:
 	UFUNCTION()
 	void OreHitSpawn(FVector hitPoint);
 
-
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* MeshComp;
 
