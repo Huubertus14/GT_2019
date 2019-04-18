@@ -33,7 +33,7 @@ APlayerCharacter::APlayerCharacter()
 	CameraComponent->SetupAttachment(GetCapsuleComponent());
 	CameraComponent->RelativeLocation = FVector(0, 0, BaseEyeHeight); // Position the camera
 	CameraComponent->bUsePawnControlRotation = true;
-
+  
 	//MeshCharacter
 	MeshPit = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh"));
 	MeshPit->SetupAttachment(CameraComponent);
@@ -43,23 +43,38 @@ APlayerCharacter::APlayerCharacter()
 	MeshBow->SetupAttachment(MeshPit);
 	MeshBow->CastShadow = false;
 	MeshBow->AttachTo(MeshPit, TEXT("WeaponLeft"));
+	MeshBow->SetVisibility(true);
 
 	MeshArrow = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ArrowMesh"));
 	MeshArrow->SetupAttachment(MeshPit);
 	MeshArrow->CastShadow = false;
 	MeshArrow->AttachTo(MeshPit, TEXT("WeaponRight"));
+	MeshArrow->SetVisibility(true);
 
 	MeshAxe = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("AxeMesh"));
 	MeshAxe->SetupAttachment(MeshPit);
 	MeshAxe->CastShadow = false;
 	MeshAxe->AttachTo(MeshPit, TEXT("WeaponRight"));
+	MeshAxe->SetVisibility(false);
 
 	MeshPickaxe = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("PickaxeMesh"));
 	MeshPickaxe->SetupAttachment(MeshPit);
 	MeshPickaxe->CastShadow = false;
 	MeshPickaxe->AttachTo(MeshPit, TEXT("WeaponRight"));
-	
+	MeshPickaxe->SetVisibility(false);
 
+	MeshSword = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SwordMesh"));
+	MeshSword->SetupAttachment(MeshPit);
+	MeshSword->CastShadow = false;
+	MeshSword->AttachTo(MeshPit, TEXT("WeaponRight"));
+	MeshSword->SetVisibility(false);
+
+	Mesh2HSword = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("2HSwordMesh"));
+	Mesh2HSword->SetupAttachment(MeshPit);
+	Mesh2HSword->CastShadow = false;
+	Mesh2HSword->AttachTo(MeshPit, TEXT("WeaponRight"));
+	Mesh2HSword->SetVisibility(false);
+	
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -84,6 +99,13 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::DrawArrow);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::FireArrow);
+
+	// WeaponSlots
+	PlayerInputComponent->BindAction("WeaponSlot1", IE_Pressed, this, &APlayerCharacter::WeaponSlot1);
+	PlayerInputComponent->BindAction("WeaponSlot2", IE_Pressed, this, &APlayerCharacter::WeaponSlot2);
+	PlayerInputComponent->BindAction("WeaponSlot3", IE_Pressed, this, &APlayerCharacter::WeaponSlot3);
+	PlayerInputComponent->BindAction("WeaponSlot4", IE_Pressed, this, &APlayerCharacter::WeaponSlot4);
+	PlayerInputComponent->BindAction("WeaponSlot5", IE_Pressed, this, &APlayerCharacter::WeaponSlot5);
 }
 
 // Called when the game starts or when spawned
@@ -91,6 +113,9 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	Life = 100;
+	isBow = true;
+	is2H = false;
+	
 }
 
 void APlayerCharacter::ServerFire_Implementation()
@@ -253,10 +278,70 @@ bool APlayerCharacter::PerformMineCast_Validate() {
 void APlayerCharacter::DrawArrow()
 {
 	isDrawn = true;
+	
+	
 }
 
 void APlayerCharacter::FireArrow()
 {
 	ServerFire();
 }
+
+void APlayerCharacter::WeaponSlot1()
+{
+	MeshBow->SetVisibility(true);
+	MeshArrow->SetVisibility(true);
+	MeshAxe->SetVisibility(false);
+	MeshPickaxe->SetVisibility(false);
+	MeshSword->SetVisibility(false);
+	Mesh2HSword->SetVisibility(false);
+	isBow = true;
+	is2H = false;
+}
+void APlayerCharacter::WeaponSlot2()
+{
+	MeshBow->SetVisibility(false);
+	MeshArrow->SetVisibility(false);
+	MeshAxe->SetVisibility(true);
+	MeshPickaxe->SetVisibility(false);
+	MeshSword->SetVisibility(false);
+	Mesh2HSword->SetVisibility(false);
+	isBow = false;
+	is2H = false;
+}
+void APlayerCharacter::WeaponSlot3()
+{
+	MeshBow->SetVisibility(false);
+	MeshArrow->SetVisibility(false);
+	MeshAxe->SetVisibility(false);
+	MeshPickaxe->SetVisibility(true);
+	MeshSword->SetVisibility(false);
+	Mesh2HSword->SetVisibility(false);
+	isBow = false;
+	is2H = false;
+}
+void APlayerCharacter::WeaponSlot4()
+{
+	MeshBow->SetVisibility(false);
+	MeshArrow->SetVisibility(false);
+	MeshAxe->SetVisibility(false);
+	MeshPickaxe->SetVisibility(false);
+	MeshSword->SetVisibility(true);
+	Mesh2HSword->SetVisibility(false);
+	isBow = false;
+	is2H = false;
+}
+void APlayerCharacter::WeaponSlot5()
+{
+	MeshBow->SetVisibility(false);
+	MeshArrow->SetVisibility(false);
+	MeshAxe->SetVisibility(false);
+	MeshPickaxe->SetVisibility(false);
+	MeshSword->SetVisibility(false);
+	Mesh2HSword->SetVisibility(true);
+	isBow = false;
+	is2H = true;
+}
+
+
 

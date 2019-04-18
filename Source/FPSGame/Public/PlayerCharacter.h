@@ -40,6 +40,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 	USkeletalMeshComponent* MeshPickaxe;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	UStaticMeshComponent* MeshSword;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	UStaticMeshComponent* Mesh2HSword;
+
 	
 
 	float Life;
@@ -81,9 +87,21 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void PerformMineCast();
 
-
+	//input functions
 	void DrawArrow();
 	void FireArrow();
+	void WeaponSlot1();
+	void WeaponSlot2();
+	void WeaponSlot3();
+	void WeaponSlot4();
+	void WeaponSlot5();
+
+	//
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "isBow")
+	bool isBow;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "is2H")
+	bool is2H;
+
 	//Arrow variables
 	float power;
 	bool isDrawn;
