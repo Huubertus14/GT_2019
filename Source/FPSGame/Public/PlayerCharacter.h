@@ -6,6 +6,7 @@
 #include "Resource.h"
 #include "GameFramework/Character.h"
 #include "Ore.h"
+#include "FPSHUD.h"
 #include "PlayerCharacter.generated.h"
 
 
@@ -28,11 +29,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = "Life")
 	float life;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = "Life")
-	float lifePercentage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Life")
-	float fullLife;
+	AFPSHUD* hud;
 
 	UFUNCTION()
 	bool Spawn();
@@ -70,14 +67,6 @@ public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void PerformMineCast();
-	 
-	void UpdateLife(float lifeChange);
-
-	UFUNCTION(BlueprintPure, Category = "Health")
-	FText GetLifeIntText();
-
-	UFUNCTION(BlueprintPure, Category = "Health")
-	float GetLife();
 
 	void DrawArrow();
 	void FireArrow();

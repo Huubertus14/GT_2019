@@ -102,9 +102,8 @@ void AArrow::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimit
 			}
 
 			//UE_LOG(LogTemp, Warning, TEXT("Player Hit"));
-			//charHit->Life -= 40;
-			charHit->UpdateLife(40.0);
-			if (charHit->Life <= 0) {
+			charHit->life -= 40.0f;
+			if (charHit->life <= 0) {
 
 				if (charHit->IsLocallyControlled())
 				{

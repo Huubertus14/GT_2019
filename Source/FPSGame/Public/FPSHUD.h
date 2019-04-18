@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "CanvasItem.h"
+#include "Engine/Canvas.h"
 #include "FPSHUD.generated.h"
+
 
 class UTexture2D;
 
@@ -16,22 +19,31 @@ class AFPSHUD : public AHUD
 protected:
 
 	/** Crosshair asset pointer */
-	UTexture2D* CrosshairTex;
+	UTexture2D* crosshairTex;
 
-	UPROPERTY(EditAnywhere, Category = "Health")
-	TSubclassOf<class UUserWidget> HUDWidgetClass;
+	/** Coin asset pointer		*/
+	UTexture2D* coinTex;
 
-	UPROPERTY(EditAnywhere, Category = "Health")
-	class UUserWidget* CurrentWidget;
+	/** Stone asset pointer		*/
+	UTexture2D* stoneTex;
+
+	/** Wood asset pointer		*/
+	UTexture2D* woodTex;
+
+	UFont* hudFont;
+
 
 public:
 
+	FCanvasTextItem* TileItem2Text;
+
 	AFPSHUD();
 
-	/** Primary draw call for the HUD */
 	virtual void DrawHUD() override;
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
+	void UpdateLife(float currentHP, float maxHp, float hpPercent);
 };
 

@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine.h"
 #include "Arrow.h"
+#include "FPSHUD.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
@@ -65,9 +66,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	fullLife = 100;
-	life = fullLife;
-	lifePercentage = 1.0f;
+	life = 100.f;
+	hud = Cast<AFPSHUD>(UGameplayStatics::GetPlayerController(this, 0)->GetHUD());
 }
 
 void APlayerCharacter::ServerFire_Implementation()
@@ -153,7 +153,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 		}
 		spawnTime--;
 	}
-
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -235,25 +234,5 @@ void APlayerCharacter::DrawArrow()
 void APlayerCharacter::FireArrow()
 {
 	ServerFire();
-}
-float APlayerCharacter::GetLife()
-{
-	return lifePercentage;
-}
-
-FText APlayerCharacter::GetLifeIntText()
-{
-	int32 HP = FMath::RoundHalfFromZero(lifePercentage * 100);
-	FString HPS = FString::FromInt(HP);
-	FString HealthHUD = HPS + FString(TEXT("%"));
-	FText HPText = FText::FromString(HealthHUD);
-	return HPText;
-}
-
-void APlayerCharacter::UpdateLife(float lifeChange)
-{
-	life += lifeChange;
-	life = FMath::Clamp(life, 0.0f, fullLife);
-	lifePercentage = life/fullLife;
 }
 
