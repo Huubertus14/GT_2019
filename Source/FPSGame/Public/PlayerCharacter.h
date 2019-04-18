@@ -25,7 +25,14 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AResource> toCreate;
 
-	float Life;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = "Life")
+	float life;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = "Life")
+	float lifePercentage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Life")
+	float fullLife;
 
 	UFUNCTION()
 	bool Spawn();
@@ -63,7 +70,14 @@ public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void PerformMineCast();
+	 
+	void UpdateLife(float lifeChange);
 
+	UFUNCTION(BlueprintPure, Category = "Health")
+	FText GetLifeIntText();
+
+	UFUNCTION(BlueprintPure, Category = "Health")
+	float GetLife();
 
 	void DrawArrow();
 	void FireArrow();

@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine.h"
 #include "Arrow.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -64,7 +65,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	Life = 100;
+	fullLife = 100;
+	life = fullLife;
+	lifePercentage = 1.0f;
 }
 
 void APlayerCharacter::ServerFire_Implementation()
@@ -232,5 +235,25 @@ void APlayerCharacter::DrawArrow()
 void APlayerCharacter::FireArrow()
 {
 	ServerFire();
+}
+float APlayerCharacter::GetLife()
+{
+	return lifePercentage;
+}
+
+FText APlayerCharacter::GetLifeIntText()
+{
+	int32 HP = FMath::RoundHalfFromZero(lifePercentage * 100);
+	FString HPS = FString::FromInt(HP);
+	FString HealthHUD = HPS + FString(TEXT("%"));
+	FText HPText = FText::FromString(HealthHUD);
+	return HPText;
+}
+
+void APlayerCharacter::UpdateLife(float lifeChange)
+{
+	life += lifeChange;
+	life = FMath::Clamp(life, 0.0f, fullLife);
+	lifePercentage = life/fullLife;
 }
 
