@@ -3,6 +3,8 @@
 #include "PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/InputComponent.h"
+#include "GameFramework/InputSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine.h"
 #include "DrawDebugHelpers.h"
@@ -13,6 +15,31 @@
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
+	// Create a CameraComponent	
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	CameraComponent->SetupAttachment(GetCapsuleComponent());
+	CameraComponent->RelativeLocation = FVector(0, 0, BaseEyeHeight); // Position the camera
+	CameraComponent->bUsePawnControlRotation = true;
+
+	MeshCube = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshCubeCharacter"));
+	MeshCube->SetOnlyOwnerSee(true);
+	MeshCube->SetupAttachment(CameraComponent);
+	MeshCube->bCastDynamicShadow = false;
+	MeshCube->CastShadow = false;
+	MeshCube->RelativeRotation = FRotator(1.9f, -19.19f, 5.2f);
+	MeshCube->RelativeLocation = FVector(-0.5f, -4.4f, -155.7f);
+
+	// Weapon grip test purpose
+	WeaponGrip = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GripTrick"));
+	WeaponGrip->SetOnlyOwnerSee(true);			// only the owning player will see this mesh
+	WeaponGrip->bCastDynamicShadow = false;
+	WeaponGrip->CastShadow = false;
+	WeaponGrip->SetupAttachment(RootComponent);
+
+	FP_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
+	FP_MuzzleLocation->SetupAttachment(WeaponGrip);
+	FP_MuzzleLocation->SetRelativeLocation(FVector(0.2f, 48.4f, -10.6f));
+	
 	//Creating the HoldingComponent
 	HoldingComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HoldingComponent"));
 	HoldingComponent->RelativeLocation.X = 50.0f;
@@ -40,11 +67,7 @@ APlayerCharacter::APlayerCharacter()
 	}
 
 	//UE_LOG(LogTemp, Warning, TEXT("Total amount of Resources: %i"), Resources.Num());
-	// Create a CameraComponent	
-	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
-	CameraComponent->SetupAttachment(GetCapsuleComponent());
-	CameraComponent->RelativeLocation = FVector(0, 0, BaseEyeHeight); // Position the camera
-	CameraComponent->bUsePawnControlRotation = true;
+	
 
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -71,7 +94,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::DrawArrow);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::FireArrow);
 
-	PlayerInputComponent->BindAction("Pickup", IE_Pressed, this, &APlayerCharacter::OnAction);
+	PlayerInputComponent->BindAction("PickupThrow", IE_Pressed, this, &APlayerCharacter::OnAction);
 }
 
 // Called when the game starts or when spawned
@@ -80,6 +103,60 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Life = 100;
+
+	WeaponGrip->AttachToComponent(MeshCube, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("WeaponGripPoint"));
+
+	MeshCube->SetHiddenInGame(false, true);
+}
+
+// Called every frame
+void APlayerCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	Start = CameraComponent->GetComponentLocation();
+	ForwardVector = CameraComponent->GetForwardVector();
+	End = ((ForwardVector * 200.f) + Start);
+	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1, 0, 1);
+
+	if (!bHoldingItem)
+	{
+		if (GetWorld()->LineTraceSingleByChannel(HitPickup, Start, End, ECC_Visibility, DefaultComponentQueryParams, DefaultResponseParam))
+		{
+			if (HitPickup.GetActor()->GetClass()->IsChildOf(APickUpThrow::StaticClass()))
+			{
+				CurrentItem = Cast<APickUpThrow>(HitPickup.GetActor());
+			}
+		}
+		else
+		{
+			CurrentItem = NULL;
+		}
+
+	}
+
+	CameraComponent->SetFieldOfView(FMath::Lerp(CameraComponent->FieldOfView, 90.0f, 0.1f));
+	if (bHoldingItem)
+	{
+		HoldingComponent->SetRelativeLocation(FVector(50.0f, 0.0f, 0.f));
+	}
+
+	{
+		if (!IsLocallyControlled())
+		{
+			arrowRotation = CameraComponent->RelativeRotation;
+			arrowRotation.Pitch = RemoteViewPitch * 360.0f / 255.0f; // convert to right Uint8
+
+			CameraComponent->SetRelativeRotation(arrowRotation);
+		}
+		if (isDrawn) {
+			power += .5f;
+		}
+		else {
+			power = 0;
+		}
+		spawnTime--;
+	}
 }
 
 void APlayerCharacter::ServerFire_Implementation()
@@ -143,48 +220,6 @@ void APlayerCharacter::DestroyPlayer()
 	}
 }
 
-// Called every frame
-void APlayerCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	
-	Start = CameraComponent->GetComponentLocation();
-	ForwardVector = CameraComponent->GetForwardVector();
-	End = ((ForwardVector * 200.f) + Start);
-	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1, 0, 1);
-	if (!bHoldingItem) 
-	{
-		if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, DefaultComponentQueryParams, DefaultResponseParam)) 
-		{
-			if (Hit.GetActor()->GetClass()->IsChildOf(APickUpThrow::StaticClass()))
-			{
-				CurrentItem = Cast<APickUpThrow>(Hit.GetActor());
-			}
-		}
-		else
-		{
-			CurrentItem = NULL;
-		}
-	
-	}
-	{
-		if (!IsLocallyControlled())
-		{
-			arrowRotation = CameraComponent->RelativeRotation;
-			arrowRotation.Pitch = RemoteViewPitch * 360.0f / 255.0f; // convert to right Uint8
-
-			CameraComponent->SetRelativeRotation(arrowRotation);
-		}
-		if (isDrawn) {
-			power += .5f;
-		}
-		else {
-			power = 0;
-		}
-		spawnTime--;
-	}
-
-}
 
 void APlayerCharacter::MoveForward(float Value)
 {

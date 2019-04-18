@@ -26,17 +26,17 @@ void APickUpThrow::BeginPlay()
 	MyCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
 	PlayerCamera = MyCharacter->FindComponentByClass<UCameraComponent>();
 
-	TArray<USceneComponent*> Components;
+	TArray<USceneComponent*> components;
 
-	MyCharacter->GetComponents(Components);
+	MyCharacter->GetComponents(components);
 
-	if (Components.Num() > 0) 
+	if (components.Num() > 0) 
 	{
-		for (auto& Comp : Components) 
+		for (auto& comp : components) 
 		{
-			if(Comp->GetName() == "HoldingComponent")
+			if(comp->GetName() == "HoldingComponent")
 			{
-				HoldingComp = Cast<USceneComponent>(Comp);
+				HoldingComp = Cast<USceneComponent>(comp);
 			}
 		}
 

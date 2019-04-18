@@ -17,6 +17,13 @@ class FPSGAME_API APlayerCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+	/** Pawn mesh: 1st person view*/
+	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+	class USkeletalMeshComponent* MeshCube;
+	/**Grip Trick*/
+	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+	class USkeletalMeshComponent* WeaponGrip;
+
 	/** Location on gun mesh where projectiles should spawn*/
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USceneComponent* FP_MuzzleLocation;
@@ -39,10 +46,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AResource> toCreate;
 
-	float Life;
-
 	UFUNCTION()
 	bool Spawn();
+
+	float Life;
 
 	AOre* hitTemp;
 	FHitResult* HitResult;
@@ -54,6 +61,10 @@ protected:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerFire();
+
+	/**PickUpThrow functions*/
+	void OnAction();
+	void ToggleItemPickup();
 
 public:	
 
@@ -73,6 +84,10 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	FORCEINLINE class USkeletalMeshComponent* GetMeshCube() const { return MeshCube; }
+
+	FORCEINLINE class UCameraComponent* GetCameraComponent() const { return CameraComponent; }
+
 	UFUNCTION(Server, Reliable, WithValidation)
 	void PerformMineCast();
 
@@ -86,10 +101,6 @@ public:
 	float spawnTime;
 	FRotator arrowRotation;
 
-	/**PickUpThrow functions*/
-	void OnAction();
-	void ToggleItemPickup();
-
 	/**PickUpThrow variables*/
 	APickUpThrow* CurrentItem;
 
@@ -102,7 +113,7 @@ public:
 	FVector ForwardVector;
 	FVector End;
 
-	FHitResult Hit;
+	FHitResult HitPickup;
 
 	FComponentQueryParams DefaultComponentQueryParams;
 	FCollisionResponseParams DefaultResponseParam;
