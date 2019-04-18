@@ -44,7 +44,7 @@ void AOre::OreHitSpawn(FVector hitPoint)
 			FVector spawnLocation = hitPoint;
 			AResourcePickUpTrigger* newPickup = GetWorld()->SpawnActor<AResourcePickUpTrigger>(PickUpItem, spawnLocation, rotator ,spawnParams);
 			UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newPickup->GetRootComponent());
-			meshComp->AddForce(10000.f*meshComp->GetMass()*outwardVector);
+			meshComp->AddForce(25000.f*meshComp->GetMass()*outwardVector);
 		}
 
 		if (Life <= 0)
