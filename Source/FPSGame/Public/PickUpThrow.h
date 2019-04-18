@@ -19,6 +19,9 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	UPROPERTY(EditAnywhere)
+	int weaponID;
 
 public:	
 	// Called every frame
@@ -26,18 +29,11 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* MyMesh;
-
-	UPROPERTY(EditAnywhere)
-	USceneComponent* HoldingComp;
-
-	UFUNCTION()
+	
+	//UFUNCTION()
 	void Pickup();
 
-	bool bHolding;
-	bool bGravity;
- 
-	ACharacter* MyCharacter;
-	UCameraComponent* PlayerCamera;
-	FVector ForwardVector;
+	int GetID();
+	
 
 };

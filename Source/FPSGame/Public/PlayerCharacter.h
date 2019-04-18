@@ -7,6 +7,7 @@
 #include "PickUpThrow.h"
 #include "Resource.h"
 #include "Ore.h"
+#include "PickUpThrow.h"
 #include "PlayerCharacter.generated.h"
 
 
@@ -53,6 +54,8 @@ public:
 
 	AOre* hitTemp;
 	FHitResult* HitResult;
+	APickUpThrow* pickUp;
+	
 
 protected:
 
@@ -80,6 +83,11 @@ public:
 
 	void MoveRight(float Value);
 
+	UPROPERTY(EditAnywhere)
+		UStaticMeshComponent* KnifeMesh;
+
+	UPROPERTY(EditAnywhere)
+		UStaticMeshComponent* AxeMesh;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -90,6 +98,9 @@ public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void PerformMineCast();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+		void PerformRightClickCast();
 
 	//Arrow functions
 	void DrawArrow();

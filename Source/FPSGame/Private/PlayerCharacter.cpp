@@ -29,17 +29,21 @@ APlayerCharacter::APlayerCharacter()
 	MeshCube->RelativeRotation = FRotator(1.9f, -19.19f, 5.2f);
 	MeshCube->RelativeLocation = FVector(-0.5f, -4.4f, -155.7f);
 
+
+	KnifeMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Knife_Mesh"));
+
+	AxeMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Axe_Mesh"));
 	// Weapon grip test purpose
-	WeaponGrip = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GripTrick"));
-	WeaponGrip->SetOnlyOwnerSee(true);			// only the owning player will see this mesh
-	WeaponGrip->bCastDynamicShadow = false;
-	WeaponGrip->CastShadow = false;
-	WeaponGrip->SetupAttachment(RootComponent);
+	//WeaponGrip = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GripTrick"));
+	//WeaponGrip->SetOnlyOwnerSee(true);			// only the owning player will see this mesh
+	//WeaponGrip->bCastDynamicShadow = false;
+	//WeaponGrip->CastShadow = false;
+	//WeaponGrip->SetupAttachment(RootComponent);
 
 	FP_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
 	FP_MuzzleLocation->SetupAttachment(WeaponGrip);
 	FP_MuzzleLocation->SetRelativeLocation(FVector(0.2f, 48.4f, -10.6f));
-	
+
 	//Creating the HoldingComponent
 	HoldingComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HoldingComponent"));
 	HoldingComponent->RelativeLocation.X = 50.0f;
@@ -67,7 +71,7 @@ APlayerCharacter::APlayerCharacter()
 	}
 
 	//UE_LOG(LogTemp, Warning, TEXT("Total amount of Resources: %i"), Resources.Num());
-	
+
 
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -95,6 +99,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::FireArrow);
 
 	PlayerInputComponent->BindAction("PickupThrow", IE_Pressed, this, &APlayerCharacter::OnAction);
+
+	PlayerInputComponent->BindAction("RightClick", IE_Pressed, this, &APlayerCharacter::PerformRightClickCast);
 }
 
 // Called when the game starts or when spawned
@@ -104,7 +110,7 @@ void APlayerCharacter::BeginPlay()
 
 	Life = 100;
 
-	WeaponGrip->AttachToComponent(MeshCube, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("WeaponGripPoint"));
+	//WeaponGrip->AttachToComponent(MeshCube, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("WeaponGripPoint"));
 
 	MeshCube->SetHiddenInGame(false, true);
 }
@@ -113,7 +119,7 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	return;
 	Start = CameraComponent->GetComponentLocation();
 	ForwardVector = CameraComponent->GetForwardVector();
 	End = ((ForwardVector * 200.f) + Start);
@@ -258,9 +264,46 @@ bool APlayerCharacter::Spawn() {
 }
 
 void APlayerCharacter::PerformMineCast_Implementation() {
-	
+
 	//resultRaycast
-	 HitResult = new FHitResult();
+	HitResult = new FHitResult();
+	//Startpoint raycast
+	FVector StartTrace = GetActorLocation();
+	//Direction raycast
+	FVector ForwardVector = CameraComponent->GetForwardVector();
+	//Endpoint raycast
+	FVector EndTrace = StartTrace + (ForwardVector * 1000.f);
+	//List of items to not collide with.
+	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
+	TraceParams->AddIgnoredActor(this);
+
+	//Attempt raycast
+	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
+		UE_LOG(LogTemp, Warning, TEXT("RayCast Done"));
+		//Info of jus cast raycast
+		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
+		FString temp = HitResult->Location.ToString();
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
+
+		//check if it was a ore.
+		hitTemp = Cast<AOre>(HitResult->Actor);
+		if (hitTemp) {
+			hitTemp->OreHitSpawn(HitResult->Location);
+			UE_LOG(LogTemp, Warning, TEXT("Wrong Item!!!"));
+			//return;
+		}
+	}
+
+}
+
+bool APlayerCharacter::PerformMineCast_Validate() {
+	return true;
+}
+
+void APlayerCharacter::PerformRightClickCast_Implementation()
+{
+	//resultRaycast
+	HitResult = new FHitResult();
 	//Startpoint raycast
 	FVector StartTrace = GetActorLocation();
 	//Direction raycast
@@ -274,21 +317,28 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 	//Attempt raycast
 	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
 
-		//Info of jus cast raycast
-		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
+		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(0, 255, 0), true, 5.f);
 		FString temp = HitResult->Location.ToString();
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
 
-		//check if it was a ore.
-		hitTemp = Cast<AOre>(HitResult->Actor);
-		if (hitTemp) {
-				hitTemp->OreHitSpawn(HitResult->Location);
+		pickUp = Cast<APickUpThrow>(HitResult->Actor);
+		if (pickUp)
+		{
+			if (pickUp->GetID() == 1)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Weapon 1 selected"));
+			}
+			if (pickUp->GetID() == 2)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Weapon 2 selected"));
+			}
+			pickUp->Pickup();
 		}
 	}
-
 }
 
-bool APlayerCharacter::PerformMineCast_Validate() {
+bool  APlayerCharacter::PerformRightClickCast_Validate()
+{
 	return true;
 }
 
@@ -302,22 +352,22 @@ void APlayerCharacter::FireArrow()
 	ServerFire();
 }
 
-void APlayerCharacter::OnAction() 
+void APlayerCharacter::OnAction()
 {
-	if (CurrentItem) 
+	if (CurrentItem)
 	{
 		ToggleItemPickup();
 	}
 }
 
-void APlayerCharacter::ToggleItemPickup() 
+void APlayerCharacter::ToggleItemPickup()
 {
 	if (CurrentItem)
 	{
 		bHoldingItem = !bHoldingItem;
 		CurrentItem->Pickup();
 
-		if (!bHoldingItem) 
+		if (!bHoldingItem)
 		{
 			CurrentItem = NULL;
 		}
