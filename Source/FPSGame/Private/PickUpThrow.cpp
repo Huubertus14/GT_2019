@@ -26,6 +26,8 @@ void APickUpThrow::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SetReplicates(true);
+
 	//MyCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
 	//PlayerCamera = MyCharacter->FindComponentByClass<UCameraComponent>();
 

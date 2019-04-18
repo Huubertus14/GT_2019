@@ -119,33 +119,7 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	return;
-	Start = CameraComponent->GetComponentLocation();
-	ForwardVector = CameraComponent->GetForwardVector();
-	End = ((ForwardVector * 200.f) + Start);
-	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1, 0, 1);
 
-	if (!bHoldingItem)
-	{
-		if (GetWorld()->LineTraceSingleByChannel(HitPickup, Start, End, ECC_Visibility, DefaultComponentQueryParams, DefaultResponseParam))
-		{
-			if (HitPickup.GetActor()->GetClass()->IsChildOf(APickUpThrow::StaticClass()))
-			{
-				CurrentItem = Cast<APickUpThrow>(HitPickup.GetActor());
-			}
-		}
-		else
-		{
-			CurrentItem = NULL;
-		}
-
-	}
-
-	CameraComponent->SetFieldOfView(FMath::Lerp(CameraComponent->FieldOfView, 90.0f, 0.1f));
-	if (bHoldingItem)
-	{
-		HoldingComponent->SetRelativeLocation(FVector(50.0f, 0.0f, 0.f));
-	}
 
 	{
 		if (!IsLocallyControlled())
@@ -314,9 +288,12 @@ void APlayerCharacter::PerformRightClickCast_Implementation()
 	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
 	TraceParams->AddIgnoredActor(this);
 
+
+	UE_LOG(LogTemp, Warning, TEXT("RayCast"));
 	//Attempt raycast
 	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
 
+		UE_LOG(LogTemp, Warning, TEXT("RayCast Done"));
 		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(0, 255, 0), true, 5.f);
 		FString temp = HitResult->Location.ToString();
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
