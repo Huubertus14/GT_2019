@@ -6,6 +6,7 @@
 #include "Resource.h"
 #include "GameFramework/Character.h"
 #include "Ore.h"
+#include "FPSHUD.h"
 #include "PlayerCharacter.generated.h"
 
 
