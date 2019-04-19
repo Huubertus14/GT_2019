@@ -79,16 +79,8 @@ void AArrow::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimit
 			}
 
 			//UE_LOG(LogTemp, Warning, TEXT("Player Hit"));
-			charHit->life -= 40;
-			if (charHit->life <= 0) {
-
-				if (charHit->IsLocallyControlled())
-				{
-					//UE_LOG(LogTemp, Warning, TEXT("Player Die"));
-					charHit->DestroyPlayer();
-				}
-
-			}
+			charHit->HitPlayer(40); 
+			
 		}
 
 		if (Role == ROLE_Authority)

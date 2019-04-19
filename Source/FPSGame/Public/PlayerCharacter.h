@@ -26,16 +26,48 @@ public:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<class AResource> toCreate;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	USkeletalMeshComponent* MeshPit;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	UStaticMeshComponent* MeshBow;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	UStaticMeshComponent* MeshArrow;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	USkeletalMeshComponent* MeshAxe;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	USkeletalMeshComponent* MeshPickaxe;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	UStaticMeshComponent* MeshSword;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	UStaticMeshComponent* Mesh2HSword;
+
+	
+
+	float Life;
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<class AArrow> arrowToCreate;
 
-	float life;
+	//Methode called when the player is hit
+	void HitPlayer(float damage);
+
+	//Method called when the player is healed
+	void HealPlayer(float heal);
+
 
 	UFUNCTION()
 		bool Spawn();
 
-	
+	//The result returned when a raycast is cast.
 	FHitResult* HitResult;
+
+private:
+	float life;
 
 protected:
 	// Called when the game starts or when spawned
@@ -67,6 +99,11 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void PerformMineCast();
 
+	void WeaponSlot5();
+	void WeaponSlot1();
+	void WeaponSlot2();
+	void WeaponSlot3();
+	void WeaponSlot4();
 	UFUNCTION(Server, Reliable, WithValidation)
 		void DrawArrow();
 	//Arrow variables
@@ -75,4 +112,8 @@ public:
 	UPROPERTY(Replicated)
 		bool isDrawn;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "isBow")
+	bool isBow;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "is2H")
+	bool is2H;
 };

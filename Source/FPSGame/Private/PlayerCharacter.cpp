@@ -36,7 +36,48 @@ APlayerCharacter::APlayerCharacter()
 	CameraComponent->SetupAttachment(GetCapsuleComponent());
 	CameraComponent->RelativeLocation = FVector(0, 0, BaseEyeHeight); // Position the camera
 	CameraComponent->bUsePawnControlRotation = true;
+  
+	//MeshCharacter
+	MeshPit = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh"));
+	MeshPit->SetupAttachment(CameraComponent);
+	MeshPit->CastShadow = false;
+	//MeshWeapons
+	MeshBow = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BowMesh"));
+	MeshBow->SetupAttachment(MeshPit);
+	MeshBow->CastShadow = false;
+	MeshBow->AttachTo(MeshPit, TEXT("WeaponLeft"));
+	MeshBow->SetVisibility(true);
 
+	MeshArrow = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ArrowMesh"));
+	MeshArrow->SetupAttachment(MeshPit);
+	MeshArrow->CastShadow = false;
+	MeshArrow->AttachTo(MeshPit, TEXT("WeaponRight"));
+	MeshArrow->SetVisibility(true);
+
+	MeshAxe = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("AxeMesh"));
+	MeshAxe->SetupAttachment(MeshPit);
+	MeshAxe->CastShadow = false;
+	MeshAxe->AttachTo(MeshPit, TEXT("WeaponRight"));
+	MeshAxe->SetVisibility(false);
+
+	MeshPickaxe = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("PickaxeMesh"));
+	MeshPickaxe->SetupAttachment(MeshPit);
+	MeshPickaxe->CastShadow = false;
+	MeshPickaxe->AttachTo(MeshPit, TEXT("WeaponRight"));
+	MeshPickaxe->SetVisibility(false);
+
+	MeshSword = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SwordMesh"));
+	MeshSword->SetupAttachment(MeshPit);
+	MeshSword->CastShadow = false;
+	MeshSword->AttachTo(MeshPit, TEXT("WeaponRight"));
+	MeshSword->SetVisibility(false);
+
+	Mesh2HSword = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("2HSwordMesh"));
+	Mesh2HSword->SetupAttachment(MeshPit);
+	Mesh2HSword->CastShadow = false;
+	Mesh2HSword->AttachTo(MeshPit, TEXT("WeaponRight"));
+	Mesh2HSword->SetVisibility(false);
+	
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -64,6 +105,13 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::DrawArrow);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerFire);
+
+	// WeaponSlots
+	PlayerInputComponent->BindAction("WeaponSlot1", IE_Pressed, this, &APlayerCharacter::WeaponSlot1);
+	PlayerInputComponent->BindAction("WeaponSlot2", IE_Pressed, this, &APlayerCharacter::WeaponSlot2);
+	PlayerInputComponent->BindAction("WeaponSlot3", IE_Pressed, this, &APlayerCharacter::WeaponSlot3);
+	PlayerInputComponent->BindAction("WeaponSlot4", IE_Pressed, this, &APlayerCharacter::WeaponSlot4);
+	PlayerInputComponent->BindAction("WeaponSlot5", IE_Pressed, this, &APlayerCharacter::WeaponSlot5);
 }
 
 // Called when the game starts or when spawned
@@ -71,6 +119,8 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	life = 100;
+	isBow = true;
+	is2H = false;
 }
 
 void APlayerCharacter::ServerFire_Implementation()
@@ -99,8 +149,6 @@ bool APlayerCharacter::ServerFire_Validate()
 {
 	return true;
 }
-
-
 
 void APlayerCharacter::DrawArrow_Implementation()
 {
@@ -150,6 +198,36 @@ void APlayerCharacter::MoveRight(float Value)
 	{
 		// add movement in horizontal direction
 		AddMovementInput(GetActorRightVector(), Value);
+
+	}
+}
+
+void APlayerCharacter::HitPlayer(float damage)
+{
+	if (damage <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Can't damage negative!\n Use heal instead!"));
+		return;
+	}
+	life -= damage;
+}
+
+void APlayerCharacter::HealPlayer(float heal)
+{
+	if (heal<= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Can't heal negative!\n Use damage instead!"));
+		return;
+	}
+	life += heal;
+
+	if (life <= 0) {
+
+		if (IsLocallyControlled()) // cannot destroy the host
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("Player Die"));
+			DestroyPlayer();
+		}
 
 	}
 }
@@ -208,7 +286,7 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "YAY VLEES!");
 
 			//Increase life and stamina
-			life += 50;
+			HealPlayer(50);
 
 			//destroy meat object
 			meattemp->EatMeat();
@@ -253,6 +331,62 @@ void APlayerCharacter::LeaveGame_Implementation()
 bool APlayerCharacter::LeaveGame_Validate()
 {
 	return true;
+}
+
+void APlayerCharacter::WeaponSlot1()
+{
+	MeshBow->SetVisibility(true);
+	MeshArrow->SetVisibility(true);
+	MeshAxe->SetVisibility(false);
+	MeshPickaxe->SetVisibility(false);
+	MeshSword->SetVisibility(false);
+	Mesh2HSword->SetVisibility(false);
+	isBow = true;
+	is2H = false;
+}
+void APlayerCharacter::WeaponSlot2()
+{
+	MeshBow->SetVisibility(false);
+	MeshArrow->SetVisibility(false);
+	MeshAxe->SetVisibility(true);
+	MeshPickaxe->SetVisibility(false);
+	MeshSword->SetVisibility(false);
+	Mesh2HSword->SetVisibility(false);
+	isBow = false;
+	is2H = false;
+}
+void APlayerCharacter::WeaponSlot3()
+{
+	MeshBow->SetVisibility(false);
+	MeshArrow->SetVisibility(false);
+	MeshAxe->SetVisibility(false);
+	MeshPickaxe->SetVisibility(true);
+	MeshSword->SetVisibility(false);
+	Mesh2HSword->SetVisibility(false);
+	isBow = false;
+	is2H = false;
+}
+void APlayerCharacter::WeaponSlot4()
+{
+	MeshBow->SetVisibility(false);
+	MeshArrow->SetVisibility(false);
+	MeshAxe->SetVisibility(false);
+	MeshPickaxe->SetVisibility(false);
+	MeshSword->SetVisibility(true);
+	Mesh2HSword->SetVisibility(false);
+	isBow = false;
+	is2H = false;
+}
+void APlayerCharacter::WeaponSlot5()
+{
+	MeshBow->SetVisibility(false);
+	MeshArrow->SetVisibility(false);
+	MeshAxe->SetVisibility(false);
+	MeshPickaxe->SetVisibility(false);
+	MeshSword->SetVisibility(false);
+	Mesh2HSword->SetVisibility(true);
+	isBow = false;
+	is2H = true;
 }
 
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const {
