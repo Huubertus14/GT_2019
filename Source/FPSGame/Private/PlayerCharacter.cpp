@@ -106,6 +106,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::DrawArrow);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerFire);
 
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::RightMouseClick);
+
 	// WeaponSlots
 	PlayerInputComponent->BindAction("WeaponSlot1", IE_Pressed, this, &APlayerCharacter::WeaponSlot1);
 	PlayerInputComponent->BindAction("WeaponSlot2", IE_Pressed, this, &APlayerCharacter::WeaponSlot2);
@@ -121,6 +123,44 @@ void APlayerCharacter::BeginPlay()
 	life = 100;
 	isBow = true;
 	is2H = false;
+	currentWeaponID = 0;
+}
+
+void APlayerCharacter::DropWeapon_Implementation()
+{
+	//Get current weapon ID
+
+	//Loop through weapon array
+	for (int i = 0; i < dropWeapons.Num(); i++)
+	{
+		APickUpItem* item = dropWeapons[i].GetDefaultObject();
+		if (item->GetID() == currentWeaponID)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Dropped a weapon");
+
+			//Drop weapon
+			FVector f = CameraComponent->GetForwardVector();
+			FRotator camera = CameraComponent->GetComponentRotation();
+			FVector pos = CameraComponent->GetComponentLocation();
+			pos += f * 100.f;
+			FActorSpawnParameters spawnParams;
+			spawnParams.Owner = this;
+			spawnParams.Instigator = Instigator;
+
+			//Spawn new weapon in the world
+			APickUpItem* newArrow = GetWorld()->SpawnActor<APickUpItem>(dropWeapons[i], pos, camera, spawnParams);
+			
+			//Set current weapon
+
+			return;
+		}
+	}
+
+}
+
+bool APlayerCharacter::DropWeapon_Validate()
+{
+	return true;
 }
 
 void APlayerCharacter::ServerFire_Implementation()
@@ -144,7 +184,6 @@ void APlayerCharacter::ServerFire_Implementation()
 		isDrawn = false;
 }
 
-
 bool APlayerCharacter::ServerFire_Validate()
 {
 	return true;
@@ -159,8 +198,6 @@ bool APlayerCharacter::DrawArrow_Validate()
 {
 	return true;
 }
-
-
 
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
@@ -298,6 +335,43 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 }
 
 bool APlayerCharacter::PerformMineCast_Validate() {
+	return true;
+}
+
+void APlayerCharacter::RightMouseClick_Implementation()
+{
+	//resultRaycast
+	HitResult = new FHitResult();
+	//Startpoint raycast
+	FVector StartTrace = CameraComponent->GetComponentLocation();
+	//Direction raycast
+	FVector ForwardVector = CameraComponent->GetForwardVector();
+	//Endpoint raycast
+	FVector EndTrace = StartTrace + (ForwardVector * 1000.f);
+	//List of items to not collide with.
+	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
+	TraceParams->AddIgnoredActor(this);
+
+	//Attempt raycast
+	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
+
+		//Info of jus cast raycast
+		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
+		FString temp = HitResult->Location.ToString();
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
+
+		APickUpItem* tempPickUp = Cast<APickUpItem>(HitResult->Actor);
+		if (tempPickUp)
+		{
+			DropWeapon();
+			currentWeaponID = tempPickUp->GetID();
+			tempPickUp->Pickup();
+		}
+	}
+}
+
+bool APlayerCharacter::RightMouseClick_Validate()
+{
 	return true;
 }
 

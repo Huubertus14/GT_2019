@@ -6,6 +6,7 @@
 #include "Resource.h"
 #include "GameFramework/Character.h"
 #include "Ore.h"
+#include "PickUpItem.h"
 #include "FPSHUD.h"
 #include "PlayerCharacter.generated.h"
 
@@ -46,9 +47,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 	UStaticMeshComponent* Mesh2HSword;
-
 	
-
 	float Life;
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<class AArrow> arrowToCreate;
@@ -73,11 +72,23 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	//This is an array which contains all the drop weapons a player can possibly have
+	UPROPERTY(EditAnywhere, Category = "Drop Weapons")
+		TArray<TSubclassOf<class APickUpItem>> dropWeapons;
+
+	int currentWeaponID;
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void DropWeapon();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 		UCameraComponent* CameraComponent;
 
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerFire();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+		void RightMouseClick();
 
 public:
 
@@ -114,6 +125,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "isBow")
 	bool isBow;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "is2H")
 	bool is2H;
 };
