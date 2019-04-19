@@ -210,6 +210,17 @@ void APlayerCharacter::HitPlayer(float damage)
 		return;
 	}
 	life -= damage;
+
+
+	if (life <= 0) {
+
+		if (IsLocallyControlled()) // cannot destroy the host
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("Player Die"));
+			DestroyPlayer();
+		}
+
+	}
 }
 
 void APlayerCharacter::HealPlayer(float heal)
@@ -221,15 +232,6 @@ void APlayerCharacter::HealPlayer(float heal)
 	}
 	life += heal;
 
-	if (life <= 0) {
-
-		if (IsLocallyControlled()) // cannot destroy the host
-		{
-			//UE_LOG(LogTemp, Warning, TEXT("Player Die"));
-			DestroyPlayer();
-		}
-
-	}
 }
 
 //Spawns the 3 resources a player can stack.
