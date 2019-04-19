@@ -4,6 +4,14 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 
+/*
+All weapons will have an ID which the player knows. Depending on this ID the player knows which weapon it is wielding and which weapon it needs to drop.
+The ID's are as following:
+	1 = Sword
+	2 = 2H Sword
+	3 = dagger
+*/
+
 // Sets default values
 APickUpItem::APickUpItem()
 {
