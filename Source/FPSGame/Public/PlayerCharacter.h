@@ -67,27 +67,21 @@ public:
 
 	/** stamina accessor */
 	UFUNCTION(BlueprintPure, Category = "Stamina")
-		float GetInitStam();
+		float GetCurrentStam();
 
 	UFUNCTION(BlueprintPure, Category = "Stamina")
-		float GetCurrentStam();
-	/** updates stamina */
-	UFUNCTION(BlueprintCallable, Category = "Stamina")
-		void UpdateStamina(float currentStamina, float currentMaxStamina);
+		float GetCurrentMaxStam();
 
 	/** health accessor */
 	UFUNCTION(BlueprintPure, Category = "Health")
-		float GetLifeCap();
-
-	UFUNCTION(BlueprintPure, Category = "Health")
 		float GetCurrentLife();
-	/** updates life */
-	UFUNCTION(BlueprintCallable, Category = "Health")
-		void UpdateHealth(float currentLife);
 
-
-
-
+	UFUNCTION(BlueprintPure, Category = "Resources")
+		FText GetResourceZero();
+	UFUNCTION(BlueprintPure, Category = "Resources")
+		FText GetResourceTwo();
+	UFUNCTION(BlueprintPure, Category = "Resources")
+		FText GetResourceThree();
 private:
 	UPROPERTY(EditAnywhere, Category = "Health")
 	float lifeCap;

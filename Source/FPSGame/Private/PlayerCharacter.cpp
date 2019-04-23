@@ -24,12 +24,6 @@ APlayerCharacter::APlayerCharacter()
 		}
 	}
 
-	//Adds a small amount to resource 0
-	if (Resources.Num() > 0) {
-		Resources[0]->AddAmount(10);
-		//UE_LOG(LogTemp, Warning, TEXT("Total amount of cash: %i"), Resources[0]->GetAmount());
-	}
-
 	//UE_LOG(LogTemp, Warning, TEXT("Total amount of Resources: %i"), Resources.Num());
 	// Create a CameraComponent	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -305,23 +299,15 @@ bool APlayerCharacter::Spawn() {
 	return false;
 }
 
-float APlayerCharacter::GetInitStam()
-{
-	return 0.0f;
-}
 
 float APlayerCharacter::GetCurrentStam()
 {
 	return CurrentStamina;
 }
 
-void APlayerCharacter::UpdateStamina(float currentStamina, float currentMaxStamina)
+float APlayerCharacter::GetCurrentMaxStam()
 {
-}
-
-float APlayerCharacter::GetLifeCap()
-{
-	return 0.0f;
+	return CurrentMaxStamina;
 }
 
 float APlayerCharacter::GetCurrentLife()
@@ -329,9 +315,22 @@ float APlayerCharacter::GetCurrentLife()
 	return life;
 }
 
-void APlayerCharacter::UpdateHealth(float currentLife)
+FText APlayerCharacter::GetResourceZero()
 {
+	FString VeryCleanString = FString::SanitizeFloat(Resources[0]->GetAmount());
+	return FText::FromString(VeryCleanString);
 }
+
+FText APlayerCharacter::GetResourceTwo()
+{
+	return FText();
+}
+
+FText APlayerCharacter::GetResourceThree()
+{
+	return FText();
+}
+
 
 void APlayerCharacter::PerformMineCast_Implementation() {
 
