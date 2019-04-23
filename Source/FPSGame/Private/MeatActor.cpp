@@ -28,6 +28,7 @@ void AMeatActor::Tick(float DeltaTime)
 
 void AMeatActor::EatMeat()
 {
+	//Destroys the meat actor
 	Destroy();
 }
 
