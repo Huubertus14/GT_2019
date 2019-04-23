@@ -60,13 +60,49 @@ public:
 
 
 	UFUNCTION()
-		bool Spawn();
+	bool Spawn();
 
 	//The result returned when a raycast is cast.
 	FHitResult* HitResult;
 
+	/** stamina accessor */
+	UFUNCTION(BlueprintPure, Category = "Stamina")
+		float GetInitStam();
+
+	UFUNCTION(BlueprintPure, Category = "Stamina")
+		float GetCurrentStam();
+	/** updates stamina */
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
+		void UpdateStamina(float currentStamina, float currentMaxStamina);
+
+	/** health accessor */
+	UFUNCTION(BlueprintPure, Category = "Health")
+		float GetLifeCap();
+
+	UFUNCTION(BlueprintPure, Category = "Health")
+		float GetCurrentLife();
+	/** updates life */
+	UFUNCTION(BlueprintCallable, Category = "Health")
+		void UpdateHealth(float currentLife);
+
+
+
+
 private:
+	UPROPERTY(EditAnywhere, Category = "Health")
+	float lifeCap;
+	
+	UPROPERTY(EditAnywhere, Category = "Health")
 	float life;
+
+	UPROPERTY(EditAnywhere, Category = "Stamina")
+	float MaxStamina;
+
+	UPROPERTY(EditAnywhere, Category = "Stamina")
+	float CurrentMaxStamina;
+		
+	UPROPERTY(EditAnywhere, Category = "Stamina")
+		float CurrentStamina;
 
 protected:
 	// Called when the game starts or when spawned
@@ -74,7 +110,7 @@ protected:
 
 	//This is an array which contains all the drop weapons a player can possibly have
 	UPROPERTY(EditAnywhere, Category = "Drop Weapons")
-		TArray<TSubclassOf<class APickUpItem>> dropWeapons;
+	TArray<TSubclassOf<class APickUpItem>> dropWeapons;
 
 	int currentWeaponID;
 
@@ -82,18 +118,19 @@ protected:
 	void DropWeapon();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-		UCameraComponent* CameraComponent;
+	UCameraComponent* CameraComponent;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerFire();
+	void ServerFire();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void RightMouseClick();
+	void RightMouseClick();
+
 
 public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void LeaveGame();
+	void LeaveGame();
 
 	void DestroyPlayer();
 
@@ -108,7 +145,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void PerformMineCast();
+	void PerformMineCast();
 
 	void WeaponSlot5();
 	void WeaponSlot1();
@@ -117,6 +154,7 @@ public:
 	void WeaponSlot4();
 	UFUNCTION(Server, Reliable, WithValidation)
 		void DrawArrow();
+
 	//Arrow variables
 	UPROPERTY(Replicated)
 		float power;

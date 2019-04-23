@@ -5,7 +5,7 @@
 #include "Engine/Texture2D.h"
 #include "Engine/Font.h"
 #include "TextureResource.h"
-
+#include "Blueprint/UserWidget.h"
 #include "UObject/ConstructorHelpers.h"
 
 
@@ -79,10 +79,13 @@ void AFPSHUD::DrawHUD()
 
 void AFPSHUD::BeginPlay() 
 {
-	Super::BeginPlay();
-	
-}
+	Super::BeginPlay();	
 
-void AFPSHUD::UpdateLife(float currentHP, float maxHP, float hpPercent) {
+	if (PlayerHUDClass != nullptr) {
+		CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), PlayerHUDClass);
 
+		if (CurrentWidget != nullptr) {
+			CurrentWidget->AddToViewport();
+		}
+	}
 }

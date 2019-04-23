@@ -41,6 +41,7 @@ APlayerCharacter::APlayerCharacter()
 	MeshPit = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh"));
 	MeshPit->SetupAttachment(CameraComponent);
 	MeshPit->CastShadow = false;
+	
 	//MeshWeapons
 	MeshBow = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BowMesh"));
 	MeshBow->SetupAttachment(MeshPit);
@@ -120,7 +121,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	life = 100;
+	lifeCap = 100;
+	life = lifeCap;
+	MaxStamina = 200;
+	CurrentMaxStamina = 100;
+	CurrentStamina = CurrentMaxStamina;
 	isBow = true;
 	is2H = false;
 	currentWeaponID = 0;
@@ -165,6 +170,7 @@ bool APlayerCharacter::DropWeapon_Validate()
 
 void APlayerCharacter::ServerFire_Implementation()
 {
+	if (isDrawn) {
 		FVector f = CameraComponent->GetForwardVector();
 		FRotator camera = CameraComponent->GetComponentRotation();
 		FVector pos = CameraComponent->GetComponentLocation();
@@ -182,6 +188,7 @@ void APlayerCharacter::ServerFire_Implementation()
 			}
 		}
 		isDrawn = false;
+	}
 }
 
 bool APlayerCharacter::ServerFire_Validate()
@@ -191,7 +198,9 @@ bool APlayerCharacter::ServerFire_Validate()
 
 void APlayerCharacter::DrawArrow_Implementation()
 {
-	isDrawn = true;
+	if (CurrentStamina > 20.f) {
+		isDrawn = true;
+	}
 }
 
 bool APlayerCharacter::DrawArrow_Validate()
@@ -205,10 +214,18 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 		if (isDrawn) {
-			power += .05f;
+			power += .75f * DeltaTime;
+			CurrentStamina -= 10.f * DeltaTime;
+			if (CurrentStamina <= 0) {
+				ServerFire();
+			}
 		}
 		else {
 			power = 0.f;
+			CurrentStamina += 0.5f * DeltaTime;
+			if (CurrentStamina > CurrentMaxStamina) {
+				CurrentStamina = CurrentMaxStamina;
+			}
 		}
 
 		if (!IsLocallyControlled()) {
@@ -286,6 +303,34 @@ bool APlayerCharacter::Spawn() {
 		}
 	}
 	return false;
+}
+
+float APlayerCharacter::GetInitStam()
+{
+	return 0.0f;
+}
+
+float APlayerCharacter::GetCurrentStam()
+{
+	return CurrentStamina;
+}
+
+void APlayerCharacter::UpdateStamina(float currentStamina, float currentMaxStamina)
+{
+}
+
+float APlayerCharacter::GetLifeCap()
+{
+	return 0.0f;
+}
+
+float APlayerCharacter::GetCurrentLife()
+{
+	return life;
+}
+
+void APlayerCharacter::UpdateHealth(float currentLife)
+{
 }
 
 void APlayerCharacter::PerformMineCast_Implementation() {

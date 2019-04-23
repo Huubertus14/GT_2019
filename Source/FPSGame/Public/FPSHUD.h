@@ -18,6 +18,9 @@ class AFPSHUD : public AHUD
 
 protected:
 
+
+
+
 	/** Crosshair asset pointer */
 	UTexture2D* crosshairTex;
 
@@ -35,6 +38,12 @@ protected:
 
 public:
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stamina", Meta = (BlueprintProtected = "true"))
+	TSubclassOf<class UUserWidget> PlayerHUDClass;
+
+	UPROPERTY()
+	class UUserWidget* CurrentWidget;
+
 	FCanvasTextItem* TileItem2Text;
 
 	AFPSHUD();
@@ -43,7 +52,5 @@ public:
 
 	virtual void BeginPlay() override;
 
-	UFUNCTION()
-	void UpdateLife(float currentHP, float maxHp, float hpPercent);
 };
 

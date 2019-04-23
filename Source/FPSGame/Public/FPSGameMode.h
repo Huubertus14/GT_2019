@@ -14,6 +14,13 @@ class AFPSGameMode : public AGameModeBase
 public:
 
 	AFPSGameMode();
+protected:
+
+
+
+
+	
+
 };
 
 
