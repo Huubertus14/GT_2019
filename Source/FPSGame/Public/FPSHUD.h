@@ -24,15 +24,6 @@ protected:
 	/** Crosshair asset pointer */
 	UTexture2D* crosshairTex;
 
-	/** Coin asset pointer		*/
-	UTexture2D* coinTex;
-
-	/** Stone asset pointer		*/
-	UTexture2D* stoneTex;
-
-	/** Wood asset pointer		*/
-	UTexture2D* woodTex;
-
 	UFont* hudFont;
 
 

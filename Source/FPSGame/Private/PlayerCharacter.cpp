@@ -317,18 +317,20 @@ float APlayerCharacter::GetCurrentLife()
 
 FText APlayerCharacter::GetResourceZero()
 {
-	FString VeryCleanString = FString::SanitizeFloat(Resources[0]->GetAmount());
+	FString VeryCleanString = FString::FromInt(Resources[0]->GetAmount());
+	return FText::FromString(VeryCleanString);
+}
+
+FText APlayerCharacter::GetResourceOne()
+{
+	FString VeryCleanString = FString::FromInt(Resources[1]->GetAmount());
 	return FText::FromString(VeryCleanString);
 }
 
 FText APlayerCharacter::GetResourceTwo()
 {
-	return FText();
-}
-
-FText APlayerCharacter::GetResourceThree()
-{
-	return FText();
+	FString VeryCleanString = FString::FromInt(Resources[2]->GetAmount());
+	return FText::FromString(VeryCleanString);
 }
 
 

@@ -41,10 +41,17 @@ void AOre::OreHitSpawn(FVector hitPoint)
 			FActorSpawnParameters spawnParams;
 			spawnParams.Owner = this;
 			FRotator rotator = FRotator(0.f, 0.f, 0.f);
-			FVector spawnLocation = hitPoint;
+			FVector spawnLocation = hitPoint + outwardVector*5.f;
+
 			AResourcePickUpTrigger* newPickup = GetWorld()->SpawnActor<AResourcePickUpTrigger>(PickUpItem, spawnLocation, rotator ,spawnParams);
-			UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newPickup->GetRootComponent());
-			meshComp->AddForce(25000.f*meshComp->GetMass()*outwardVector);
+			if (newPickup) 
+			{
+				UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newPickup->GetRootComponent());
+				if (meshComp) 
+				{
+					meshComp->AddForce(35000.f*meshComp->GetMass()*outwardVector);
+				}
+			}
 		}
 
 		if (Life <= 0)

@@ -79,9 +79,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Resources")
 		FText GetResourceZero();
 	UFUNCTION(BlueprintPure, Category = "Resources")
-		FText GetResourceTwo();
+		FText GetResourceOne();
 	UFUNCTION(BlueprintPure, Category = "Resources")
-		FText GetResourceThree();
+		FText GetResourceTwo();
 private:
 	UPROPERTY(EditAnywhere, Category = "Health")
 	float lifeCap;
