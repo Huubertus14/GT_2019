@@ -253,7 +253,10 @@ bool APlayerCharacter::DrawArrow_Validate()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+		
+	if (life < 0) {
+		DestroyPlayer();
+		}
 		if (isDrawn) {
 			power += .7f * DeltaTime;
 			CurrentStamina -= 10.f * DeltaTime;
@@ -312,7 +315,7 @@ void APlayerCharacter::HitPlayer(float damage)
 
 	if (life <= 0) {
 
-			//UE_LOG(LogTemp, Warning, TEXT("Player Die"));
+			UE_LOG(LogTemp, Warning, TEXT("Player Die"));
 			DestroyPlayer();
 	}
 }

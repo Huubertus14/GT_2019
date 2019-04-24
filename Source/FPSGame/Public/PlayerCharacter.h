@@ -141,6 +141,7 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void LeaveGame();
 
+	UFUNCTION()
 	void DestroyPlayer();
 
 	// Called every frame
