@@ -28,7 +28,7 @@ APlayerCharacter::APlayerCharacter()
   
 	//MeshCharacter
 	MeshPit = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh"));
-	MeshPit->SetupAttachment(CameraComponent);
+	MeshPit->SetupAttachment(RootComponent);
 	MeshPit->CastShadow = false;
 	
 	//MeshWeapons
@@ -170,6 +170,7 @@ void APlayerCharacter::BeginPlay()
 	isBow = true;
 	is2H = false;
 	currentWeaponID = 0;
+	equipedWeapon = 1;
 }
 
 void APlayerCharacter::DropWeapon_Implementation()
@@ -239,7 +240,7 @@ bool APlayerCharacter::ServerFire_Validate()
 
 void APlayerCharacter::DrawArrow_Implementation()
 {
-	if (CurrentStamina > 20.f) {
+	if (CurrentStamina > 20.f && isBow) {
 		isDrawn = true;
 	}
 }
@@ -257,7 +258,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	if (life < 0) {
 		DestroyPlayer();
 		}
-		if (isDrawn) {
+		if (isDrawn && isBow) {
 			power += .7f * DeltaTime;
 			CurrentStamina -= 10.f * DeltaTime;
 			if (CurrentStamina <= 0) {
@@ -389,14 +390,14 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
 
 		//Info of jus cast raycast
-		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
+		//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
 		FString temp = HitResult->Location.ToString();
 	//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
 
 		//check if it was a ore.
 		AOre* hitTemp = Cast<AOre>(HitResult->Actor);
 
-		if (hitTemp) {
+		if ((hitTemp && equipedWeapon == 2 )||(hitTemp && equipedWeapon == 3)) {
 			if (FVector::Dist(hitTemp->GetActorLocation(), GetActorLocation()) > 350.f) {
 				hitTemp->OreHitSpawn(HitResult->Location);
 			}
@@ -447,7 +448,7 @@ void APlayerCharacter::RightMouseClick_Implementation()
 	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
 
 		//Info of jus cast raycast
-		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
+		//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
 		FString temp = HitResult->Location.ToString();
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
 
@@ -518,6 +519,7 @@ void APlayerCharacter::WeaponSlot1_Implementation()
 	MeshArrow->SetVisibility(true);
 	isBow = true;
 	is2H = false;
+	equipedWeapon = 1;
 }
 
 void APlayerCharacter::WeaponSlot2_Implementation()
@@ -526,6 +528,7 @@ void APlayerCharacter::WeaponSlot2_Implementation()
 	MeshAxe->SetVisibility(true);
 	isBow = false;
 	is2H = false;
+	equipedWeapon = 2;
 }
 void APlayerCharacter::WeaponSlot3_Implementation()
 {
@@ -533,15 +536,16 @@ void APlayerCharacter::WeaponSlot3_Implementation()
 	MeshPickaxe->SetVisibility(true);
 	isBow = false;
 	is2H = false;
+	equipedWeapon = 3;
 }
 
 void APlayerCharacter::WeaponSlot4_Implementation()
 {
 	WeaponVisibility();
 	MeshSword->SetVisibility(true);
-	Mesh2HSword->SetVisibility(false);
 	isBow = false;
 	is2H = false;
+	equipedWeapon = 4;
 }
 
 void APlayerCharacter::WeaponSlot5_Implementation()
@@ -550,6 +554,7 @@ void APlayerCharacter::WeaponSlot5_Implementation()
 	Mesh2HSword->SetVisibility(true);
 	isBow = false;
 	is2H = true;
+	equipedWeapon = 5;
 }
 
 bool APlayerCharacter::WeaponSlot1_Validate()
@@ -583,7 +588,7 @@ void APlayerCharacter::PerformHitCast_Implementation() {
 	//Direction raycast
 	FVector ForwardVector = CameraComponent->GetForwardVector();
 	//Endpoint raycast
-	FVector EndTrace = StartTrace + (ForwardVector * 3000.f);
+	FVector EndTrace = StartTrace + (ForwardVector * 1000.f);
 	//List of items to not collide with.
 	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
 	TraceParams->AddIgnoredActor(this);
@@ -591,12 +596,19 @@ void APlayerCharacter::PerformHitCast_Implementation() {
 	if (GetWorld()->LineTraceSingleByChannel(*weaponHitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
 		APlayerCharacter* temp = Cast<APlayerCharacter>(weaponHitResult->Actor);
 
-		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(0,255, 0), true, 5.f);
+		//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(0,255, 0), true, 5.f);
 		
 			if (temp) 
 			{
 				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), "100"));
-				temp->HitPlayer(100);
+				if(equipedWeapon == 2)
+					temp->HitPlayer(10);
+				if (equipedWeapon == 3)
+					temp->HitPlayer(5);
+				if (equipedWeapon == 4)
+					temp->HitPlayer(25);
+				if (equipedWeapon == 5)
+					temp->HitPlayer(40);
 			}
 	}
 

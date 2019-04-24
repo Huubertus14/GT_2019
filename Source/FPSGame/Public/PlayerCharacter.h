@@ -186,6 +186,10 @@ public:
 	UPROPERTY(Replicated)
 		bool isDrawn;
 
+	UPROPERTY(Replicated)
+		int equipedWeapon;
+	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "isBow")
 	bool isBow;
 
