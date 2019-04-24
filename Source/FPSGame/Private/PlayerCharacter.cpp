@@ -272,6 +272,9 @@ void APlayerCharacter::HitPlayer(float damage)
 	}
 	life -= damage;
 
+	FString NewString = FString::FromInt(life);
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, NewString);
 
 	if (life <= 0) {
 
@@ -292,6 +295,10 @@ void APlayerCharacter::HealPlayer(float heal)
 		return;
 	}
 	life += heal;
+
+	FString NewString = FString::FromInt(life);
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, NewString);
 
 }
 
@@ -367,7 +374,7 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 		//Info of jus cast raycast
 		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
 		FString temp = HitResult->Location.ToString();
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
+	//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
 
 		//check if it was a ore.
 		AOre* hitTemp = Cast<AOre>(HitResult->Actor);
