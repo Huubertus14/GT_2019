@@ -219,7 +219,9 @@ bool APlayerCharacter::DrawArrow_Validate()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (hudCountDown >= 0) {
 		hudCountDown--;
+	}
 		if (isDrawn) {
 			power += .7f * DeltaTime;
 			CurrentStamina -= 10.f * DeltaTime;
@@ -346,7 +348,7 @@ FText APlayerCharacter::GetResourceZero()
 	}
 	else 
 	{
-		FString VeryCleanString = FString::FromInt(hudCountDown);
+		FString VeryCleanString = FString::FromInt(0);
 		return FText::FromString(VeryCleanString);
 	}
 
@@ -360,7 +362,7 @@ FText APlayerCharacter::GetResourceOne()
 	}
 	else
 	{
-		FString VeryCleanString = FString::FromInt(hudCountDown);
+		FString VeryCleanString = FString::FromInt(0);
 		return FText::FromString(VeryCleanString);
 	}
 }
@@ -373,7 +375,7 @@ FText APlayerCharacter::GetResourceTwo()
 	}
 	else
 	{
-		FString VeryCleanString = FString::FromInt(hudCountDown);
+		FString VeryCleanString = FString::FromInt(0);
 		return FText::FromString(VeryCleanString);
 	}
 }

@@ -21,7 +21,7 @@ class FPSGAME_API APlayerCharacter : public ACharacter
 
 public:
 	UPROPERTY(Replicated)
-	int hudCountDown = 6000;
+	int hudCountDown = 60;
 	// Sets default values for this character's properties
 	APlayerCharacter();
 
