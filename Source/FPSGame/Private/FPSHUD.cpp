@@ -24,7 +24,7 @@ void AFPSHUD::DrawHUD()
 	// find center of the Canvas
 	const FVector2D Center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
 
-	const FVector2D crosshairDrawPosition((Center.X), (Center.Y + 20.0f));
+	const FVector2D crosshairDrawPosition((Center.X), (Center.Y));
 
 	// draw  images
 	FCanvasTileItem TileItem(crosshairDrawPosition, crosshairTex->Resource, FLinearColor::White);

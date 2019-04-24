@@ -21,6 +21,8 @@ public:
 	void ResetAmount();
 	int GetAmount();
 private:
+
+	UPROPERTY(Replicated)
 	int Amount;
 
 public:	

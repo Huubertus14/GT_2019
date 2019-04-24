@@ -22,6 +22,7 @@ public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
 
+	UPROPERTY(Replicated)
 	TArray<AResource*> Resources;
 
 	UPROPERTY(EditAnywhere)
@@ -86,16 +87,16 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Health")
 	float lifeCap;
 	
-	UPROPERTY(EditAnywhere, Category = "Health")
+	UPROPERTY(Replicated, EditAnywhere, Category = "Health")
 	float life;
 
 	UPROPERTY(EditAnywhere, Category = "Stamina")
 	float MaxStamina;
 
-	UPROPERTY(EditAnywhere, Category = "Stamina")
+	UPROPERTY(Replicated ,EditAnywhere, Category = "Stamina")
 	float CurrentMaxStamina;
 		
-	UPROPERTY(EditAnywhere, Category = "Stamina")
+	UPROPERTY(Replicated, EditAnywhere, Category = "Stamina")
 		float CurrentStamina;
 
 

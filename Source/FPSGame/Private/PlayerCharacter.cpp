@@ -295,6 +295,9 @@ void APlayerCharacter::HealPlayer(float heal)
 		return;
 	}
 	life += heal;
+	if (life > lifeCap) {
+		life = lifeCap;
+	}
 
 	FString NewString = FString::FromInt(life);
 
@@ -384,6 +387,7 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 				hitTemp->OreHitSpawn(HitResult->Location);
 			}
 			else {
+
 				Resources[hitTemp->resourceID]->AddAmount(hitTemp->resourceAmount);
 				hitTemp->OreEmpty();
 			}
@@ -541,7 +545,10 @@ void APlayerCharacter::WeaponSlot5()
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const {
 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
+	DOREPLIFETIME(APlayerCharacter, life);
+	DOREPLIFETIME(APlayerCharacter, Resources);
+	DOREPLIFETIME(APlayerCharacter, CurrentMaxStamina);
+	DOREPLIFETIME(APlayerCharacter, CurrentStamina);
 	DOREPLIFETIME(APlayerCharacter, power);
 	DOREPLIFETIME(APlayerCharacter, isDrawn);
 }
