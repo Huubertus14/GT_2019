@@ -18,7 +18,10 @@ class FPSGAME_API APlayerCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+
 public:
+	UPROPERTY(Replicated)
+	int hudCountDown = 6000;
 	// Sets default values for this character's properties
 	APlayerCharacter();
 

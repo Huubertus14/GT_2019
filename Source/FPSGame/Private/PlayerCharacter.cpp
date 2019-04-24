@@ -191,7 +191,7 @@ void APlayerCharacter::ServerFire_Implementation()
 			AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(arrowToCreate, pos, camera, spawnParams);
 			UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newArrow->GetRootComponent());
 			if (meshComp) {
-				meshComp->AddForce(f*150000.f*meshComp->GetMass()*power);
+				meshComp->AddForce(f*100000.f*meshComp->GetMass()*power);
 			}
 		}
 		isDrawn = false;
@@ -219,7 +219,7 @@ bool APlayerCharacter::DrawArrow_Validate()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+		hudCountDown--;
 		if (isDrawn) {
 			power += .7f * DeltaTime;
 			CurrentStamina -= 10.f * DeltaTime;
@@ -340,20 +340,42 @@ float APlayerCharacter::GetCurrentLife()
 
 FText APlayerCharacter::GetResourceZero()
 {
+	if (hudCountDown <= 0) {
 		FString VeryCleanString = FString::FromInt(Resources[0]->GetAmount());
 		return FText::FromString(VeryCleanString);
+	}
+	else 
+	{
+		FString VeryCleanString = FString::FromInt(hudCountDown);
+		return FText::FromString(VeryCleanString);
+	}
+
 }
 
 FText APlayerCharacter::GetResourceOne()
 {
+	if (hudCountDown <= 0) {
 		FString VeryCleanString = FString::FromInt(Resources[1]->GetAmount());
 		return FText::FromString(VeryCleanString);
+	}
+	else
+	{
+		FString VeryCleanString = FString::FromInt(hudCountDown);
+		return FText::FromString(VeryCleanString);
+	}
 }
 
 FText APlayerCharacter::GetResourceTwo()
 {
+	if (hudCountDown <= 0) {
 		FString VeryCleanString = FString::FromInt(Resources[2]->GetAmount());
 		return FText::FromString(VeryCleanString);
+	}
+	else
+	{
+		FString VeryCleanString = FString::FromInt(hudCountDown);
+		return FText::FromString(VeryCleanString);
+	}
 }
 
 
@@ -497,6 +519,7 @@ void APlayerCharacter::WeaponSlot1()
 	isBow = true;
 	is2H = false;
 }
+
 void APlayerCharacter::WeaponSlot2()
 {
 	MeshBow->SetVisibility(false);
@@ -519,6 +542,7 @@ void APlayerCharacter::WeaponSlot3()
 	isBow = false;
 	is2H = false;
 }
+
 void APlayerCharacter::WeaponSlot4()
 {
 	MeshBow->SetVisibility(false);
@@ -530,6 +554,7 @@ void APlayerCharacter::WeaponSlot4()
 	isBow = false;
 	is2H = false;
 }
+
 void APlayerCharacter::WeaponSlot5()
 {
 	MeshBow->SetVisibility(false);
@@ -547,6 +572,8 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(APlayerCharacter, life);
 	DOREPLIFETIME(APlayerCharacter, Resources);
+	
+	DOREPLIFETIME(APlayerCharacter, hudCountDown);
 	DOREPLIFETIME(APlayerCharacter, CurrentMaxStamina);
 	DOREPLIFETIME(APlayerCharacter, CurrentStamina);
 	DOREPLIFETIME(APlayerCharacter, power);

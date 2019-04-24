@@ -11,6 +11,12 @@ AResource::AResource()
 
 }
 
+// Called when the game starts or when spawned
+void AResource::BeginPlay()
+{
+	Super::BeginPlay();
+	Amount = 0;
+}
 
 void AResource::AddAmount(int Number) {
 	Amount += Number;
@@ -29,5 +35,12 @@ void AResource::ResetAmount() {
 int AResource::GetAmount() {
 	return Amount;
 	//Needs to be server validated.
+}
+
+void AResource::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const {
+
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AResource, Amount);
+
 }
 

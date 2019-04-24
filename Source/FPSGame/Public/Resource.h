@@ -21,10 +21,14 @@ public:
 	void ResetAmount();
 	int GetAmount();
 
+	UPROPERTY(Replicated)
 	int Amount;
 
 private:
 
+
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
 
 public:	
 
