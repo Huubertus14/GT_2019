@@ -31,11 +31,3 @@ int AResource::GetAmount() {
 	//Needs to be server validated.
 }
 
-void AResource::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const {
-
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(AResource, Amount);
-
-}
-

@@ -219,7 +219,7 @@ bool APlayerCharacter::DrawArrow_Validate()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+
 		if (isDrawn) {
 			power += .7f * DeltaTime;
 			CurrentStamina -= 10.f * DeltaTime;
@@ -340,20 +340,20 @@ float APlayerCharacter::GetCurrentLife()
 
 FText APlayerCharacter::GetResourceZero()
 {
-	FString VeryCleanString = FString::FromInt(Resources[0]->GetAmount());
-	return FText::FromString(VeryCleanString);
+		FString VeryCleanString = FString::FromInt(Resources[0]->GetAmount());
+		return FText::FromString(VeryCleanString);
 }
 
 FText APlayerCharacter::GetResourceOne()
 {
-	FString VeryCleanString = FString::FromInt(Resources[1]->GetAmount());
-	return FText::FromString(VeryCleanString);
+		FString VeryCleanString = FString::FromInt(Resources[1]->GetAmount());
+		return FText::FromString(VeryCleanString);
 }
 
 FText APlayerCharacter::GetResourceTwo()
 {
-	FString VeryCleanString = FString::FromInt(Resources[2]->GetAmount());
-	return FText::FromString(VeryCleanString);
+		FString VeryCleanString = FString::FromInt(Resources[2]->GetAmount());
+		return FText::FromString(VeryCleanString);
 }
 
 

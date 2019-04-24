@@ -20,10 +20,11 @@ public:
 
 	void ResetAmount();
 	int GetAmount();
+
+	int Amount;
+
 private:
 
-	UPROPERTY(Replicated)
-	int Amount = 0;
 
 public:	
 
