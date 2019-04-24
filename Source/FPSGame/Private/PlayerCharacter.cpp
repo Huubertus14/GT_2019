@@ -27,12 +27,6 @@ APlayerCharacter::APlayerCharacter()
 		}
 	}
 
-	//Adds a small amount to resource 0
-	if (Resources.Num() > 0) {
-		Resources[0]->AddAmount(10);
-		//UE_LOG(LogTemp, Warning, TEXT("Total amount of cash: %i"), Resources[0]->GetAmount());
-	}
-
 	//UE_LOG(LogTemp, Warning, TEXT("Total amount of Resources: %i"), Resources.Num());
 	// Create a CameraComponent	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -44,6 +38,7 @@ APlayerCharacter::APlayerCharacter()
 	MeshPit = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh"));
 	MeshPit->SetupAttachment(CameraComponent);
 	MeshPit->CastShadow = false;
+	
 	//MeshWeapons
 	MeshBow = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BowMesh"));
 	MeshBow->SetupAttachment(MeshPit);
@@ -158,11 +153,28 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("WeaponSlot5", IE_Pressed, this, &APlayerCharacter::WeaponSlot5);
 }
 
+void APlayerCharacter::EnergizePlayer(float amount)
+{
+	CurrentMaxStamina += (amount / 4);
+	if (CurrentMaxStamina > MaxStamina) {
+		CurrentMaxStamina = MaxStamina;
+	}
+	CurrentStamina += amount;
+	if (CurrentStamina > CurrentMaxStamina) {
+		CurrentStamina = CurrentMaxStamina;
+	}
+
+}
+
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	life = 100;
+	lifeCap = 100;
+	life = 50;
+	MaxStamina = 200;
+	CurrentMaxStamina = 100;
+	CurrentStamina = CurrentMaxStamina;
 	isBow = true;
 	is2H = false;
 	currentWeaponID = 0;
@@ -207,10 +219,11 @@ bool APlayerCharacter::DropWeapon_Validate()
 
 void APlayerCharacter::ServerFire_Implementation()
 {
+	if (isDrawn) {
 		FVector f = CameraComponent->GetForwardVector();
 		FRotator camera = CameraComponent->GetComponentRotation();
 		FVector pos = CameraComponent->GetComponentLocation();
-		pos += f * 100.f;
+		pos += f * 150.f;
 		FActorSpawnParameters spawnParams;
 		spawnParams.Owner = this;
 		spawnParams.Instigator = Instigator;
@@ -224,6 +237,7 @@ void APlayerCharacter::ServerFire_Implementation()
 			}
 		}
 		isDrawn = false;
+	}
 }
 
 bool APlayerCharacter::ServerFire_Validate()
@@ -233,7 +247,9 @@ bool APlayerCharacter::ServerFire_Validate()
 
 void APlayerCharacter::DrawArrow_Implementation()
 {
-	isDrawn = true;
+	if (CurrentStamina > 20.f) {
+		isDrawn = true;
+	}
 }
 
 bool APlayerCharacter::DrawArrow_Validate()
@@ -245,12 +261,22 @@ bool APlayerCharacter::DrawArrow_Validate()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+	if (hudCountDown >= 0) {
+		hudCountDown--;
+	}
 		if (isDrawn) {
-			power += .05f;
+			power += .7f * DeltaTime;
+			CurrentStamina -= 10.f * DeltaTime;
+			if (CurrentStamina <= 0) {
+				ServerFire();
+			}
 		}
 		else {
 			power = 0.f;
+			CurrentStamina += 2.5f * DeltaTime;
+			if (CurrentStamina > CurrentMaxStamina) {
+				CurrentStamina = CurrentMaxStamina;
+			}
 		}
 
 		if (!IsLocallyControlled()) {
@@ -290,6 +316,9 @@ void APlayerCharacter::HitPlayer(float damage)
 	}
 	life -= damage;
 
+	FString NewString = FString::FromInt(life);
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, NewString);
 
 	if (life <= 0) {
 
@@ -310,6 +339,13 @@ void APlayerCharacter::HealPlayer(float heal)
 		return;
 	}
 	life += heal;
+	if (life > lifeCap) {
+		life = lifeCap;
+	}
+
+	FString NewString = FString::FromInt(life);
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, NewString);
 
 }
 
@@ -329,6 +365,63 @@ bool APlayerCharacter::Spawn() {
 	}
 	return false;
 }
+
+
+float APlayerCharacter::GetCurrentStam()
+{
+	return CurrentStamina;
+}
+
+float APlayerCharacter::GetCurrentMaxStam()
+{
+	return CurrentMaxStamina;
+}
+
+float APlayerCharacter::GetCurrentLife()
+{
+	return life;
+}
+
+FText APlayerCharacter::GetResourceZero()
+{
+	if (hudCountDown <= 0) {
+		FString VeryCleanString = FString::FromInt(Resources[0]->GetAmount());
+		return FText::FromString(VeryCleanString);
+	}
+	else 
+	{
+		FString VeryCleanString = FString::FromInt(0);
+		return FText::FromString(VeryCleanString);
+	}
+
+}
+
+FText APlayerCharacter::GetResourceOne()
+{
+	if (hudCountDown <= 0) {
+		FString VeryCleanString = FString::FromInt(Resources[1]->GetAmount());
+		return FText::FromString(VeryCleanString);
+	}
+	else
+	{
+		FString VeryCleanString = FString::FromInt(0);
+		return FText::FromString(VeryCleanString);
+	}
+}
+
+FText APlayerCharacter::GetResourceTwo()
+{
+	if (hudCountDown <= 0) {
+		FString VeryCleanString = FString::FromInt(Resources[2]->GetAmount());
+		return FText::FromString(VeryCleanString);
+	}
+	else
+	{
+		FString VeryCleanString = FString::FromInt(0);
+		return FText::FromString(VeryCleanString);
+	}
+}
+
 
 void APlayerCharacter::PerformMineCast_Implementation() {
 
@@ -350,13 +443,20 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 		//Info of jus cast raycast
 		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
 		FString temp = HitResult->Location.ToString();
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
+	//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
 
 		//check if it was a ore.
 		AOre* hitTemp = Cast<AOre>(HitResult->Actor);
 
 		if (hitTemp) {
-			hitTemp->OreHitSpawn(HitResult->Location);
+			if (FVector::Dist(hitTemp->GetActorLocation(), GetActorLocation()) > 350.f) {
+				hitTemp->OreHitSpawn(HitResult->Location);
+			}
+			else {
+
+				Resources[hitTemp->resourceID]->AddAmount(hitTemp->resourceAmount);
+				hitTemp->OreEmpty();
+			}
 		}
 
 		AMeatActor* meattemp = Cast<AMeatActor>(HitResult->Actor);
@@ -366,8 +466,9 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 			//Debug tool
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "YAY VLEES!");
 
-			//Increase life and stamina
+			//Increase life and staminarr
 			HealPlayer(50);
+			EnergizePlayer(20);
 
 			//destroy meat object
 			meattemp->EatMeat();
@@ -462,7 +563,8 @@ void APlayerCharacter::WeaponSlot1_Implementation()
 	isBow = true;
 	is2H = false;
 }
-void APlayerCharacter::WeaponSlot2_Implementation()
+
+void APlayerCharacter::WeaponSlot2()
 {
 	MeshBow->SetVisibility(false);
 	MeshArrow->SetVisibility(false);
@@ -484,7 +586,8 @@ void APlayerCharacter::WeaponSlot3_Implementation()
 	isBow = false;
 	is2H = false;
 }
-void APlayerCharacter::WeaponSlot4_Implementation()
+
+void APlayerCharacter::WeaponSlot4()
 {
 	MeshBow->SetVisibility(false);
 	MeshArrow->SetVisibility(false);
@@ -495,7 +598,8 @@ void APlayerCharacter::WeaponSlot4_Implementation()
 	isBow = false;
 	is2H = false;
 }
-void APlayerCharacter::WeaponSlot5_Implementation()
+
+void APlayerCharacter::WeaponSlot5()
 {
 	MeshBow->SetVisibility(false);
 	MeshArrow->SetVisibility(false);
@@ -610,7 +714,12 @@ void APlayerCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherAct
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const {
 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
+	DOREPLIFETIME(APlayerCharacter, life);
+	DOREPLIFETIME(APlayerCharacter, Resources);
+	
+	DOREPLIFETIME(APlayerCharacter, hudCountDown);
+	DOREPLIFETIME(APlayerCharacter, CurrentMaxStamina);
+	DOREPLIFETIME(APlayerCharacter, CurrentStamina);
 	DOREPLIFETIME(APlayerCharacter, power);
 	DOREPLIFETIME(APlayerCharacter, isDrawn);
 }

@@ -17,7 +17,6 @@ class FPSGAME_API AResourcePickUpTrigger : public ATriggerSphere
 
 public:
 
-	// constructor sets default values for this actor's properties
 	AResourcePickUpTrigger();
 	
 	void BeginPlay();
@@ -25,9 +24,13 @@ public:
 	UFUNCTION()
 	void OnOverlapBegin(AActor * OverlappedActor, AActor * OtherActor);
 
-
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* MeshComp;
 
+	UPROPERTY(EditAnywhere, Category = "Resource")
+	int resourceID;
+
+	UPROPERTY(EditAnywhere, Category = "Resource")
+	int resourceAmount;
 	
 };

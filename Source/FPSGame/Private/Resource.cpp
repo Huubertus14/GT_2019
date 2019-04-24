@@ -1,14 +1,22 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Resource.h"
+#include "Engine.h"
+#include "UnrealNetwork.h"
 
 // Sets default values
 AResource::AResource()
 {
 	SetReplicates(true);
-	ResetAmount();
+
 }
 
+// Called when the game starts or when spawned
+void AResource::BeginPlay()
+{
+	Super::BeginPlay();
+	Amount = 0;
+}
 
 void AResource::AddAmount(int Number) {
 	Amount += Number;
@@ -28,3 +36,11 @@ int AResource::GetAmount() {
 	return Amount;
 	//Needs to be server validated.
 }
+
+void AResource::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const {
+
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AResource, Amount);
+
+}
+

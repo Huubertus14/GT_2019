@@ -21,10 +21,14 @@ class FPSGAME_API APlayerCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+
 public:
+	UPROPERTY(Replicated)
+	int hudCountDown = 60;
 	// Sets default values for this character's properties
 	APlayerCharacter();
 
+	UPROPERTY(Replicated)
 	TArray<AResource*> Resources;
 
 	UPROPERTY(EditAnywhere)
@@ -75,30 +79,54 @@ public:
 
 
 	UFUNCTION()
-		bool Spawn();
+	bool Spawn();
 
 	//The result returned when a raycast is cast.
 	FHitResult* HitResult;
 
-	UFUNCTION()
-		void OnTestOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+	/** stamina accessor */
+	UFUNCTION(BlueprintPure, Category = "Stamina")
+		float GetCurrentStam();
 
-	UFUNCTION()
-		void OnTestOverlapEnd(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	UFUNCTION(BlueprintPure, Category = "Stamina")
+		float GetCurrentMaxStam();
 
-	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+	/** health accessor */
+	UFUNCTION(BlueprintPure, Category = "Health")
+		float GetCurrentLife();
 
+	UFUNCTION(BlueprintPure, Category = "Resources")
+		FText GetResourceZero();
+	UFUNCTION(BlueprintPure, Category = "Resources")
+		FText GetResourceOne();
+	UFUNCTION(BlueprintPure, Category = "Resources")
+		FText GetResourceTwo();
 private:
+	UPROPERTY(EditAnywhere, Category = "Health")
+	float lifeCap;
+	
+	UPROPERTY(Replicated, EditAnywhere, Category = "Health")
 	float life;
 
+	UPROPERTY(EditAnywhere, Category = "Stamina")
+	float MaxStamina;
+
+	UPROPERTY(Replicated ,EditAnywhere, Category = "Stamina")
+	float CurrentMaxStamina;
+		
+	UPROPERTY(Replicated, EditAnywhere, Category = "Stamina")
+		float CurrentStamina;
+
+
+	UFUNCTION()
+		void EnergizePlayer(float amount);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	//This is an array which contains all the drop weapons a player can possibly have
 	UPROPERTY(EditAnywhere, Category = "Drop Weapons")
-		TArray<TSubclassOf<class APickUpItem>> dropWeapons;
+	TArray<TSubclassOf<class APickUpItem>> dropWeapons;
 
 	int currentWeaponID;
 
@@ -106,18 +134,19 @@ protected:
 	void DropWeapon();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-		UCameraComponent* CameraComponent;
+	UCameraComponent* CameraComponent;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerFire();
+	void ServerFire();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void RightMouseClick();
+	void RightMouseClick();
+
 
 public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void LeaveGame();
+	void LeaveGame();
 
 	void DestroyPlayer();
 
@@ -132,7 +161,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void PerformMineCast();
+	void PerformMineCast();
 
 	UFUNCTION(Server, Reliable, WithValidation)
 		void PerformHitCast();
@@ -156,6 +185,7 @@ public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 		void DrawArrow();
+
 	//Arrow variables
 	UPROPERTY(Replicated)
 		float power;
