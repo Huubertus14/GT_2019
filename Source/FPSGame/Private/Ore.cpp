@@ -61,3 +61,17 @@ void AOre::OreHitSpawn(FVector hitPoint)
 	}
 }
 
+void AOre::OreEmpty()
+{
+	if (Role == ROLE_Authority) {
+		Life--;
+		if(Life <= 0)
+		{
+			Destroy();
+		}
+	}
+
+}
+
+
+

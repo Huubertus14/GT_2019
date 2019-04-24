@@ -22,7 +22,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	int Life;
 
 public:	
 
@@ -32,12 +31,23 @@ public:
 	UFUNCTION()
 	void OreHitSpawn(FVector hitPoint);
 
+	UFUNCTION()
+		void OreEmpty();
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* MeshComp;
 
 	UPROPERTY(EditAnywhere, Category = "ToSpawn")
 	TSubclassOf<class AResourcePickUpTrigger> PickUpItem;
+
+	UPROPERTY(EditAnywhere, Category = "Resource")
+		int resourceID;
+
+	UPROPERTY(EditAnywhere, Category = "Resource")
+		int resourceAmount;
+
+	UPROPERTY()
+		int Life;
 
 
 };

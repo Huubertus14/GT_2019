@@ -98,6 +98,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Stamina")
 		float CurrentStamina;
 
+
+	UFUNCTION()
+		void EnergizePlayer(float amount);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

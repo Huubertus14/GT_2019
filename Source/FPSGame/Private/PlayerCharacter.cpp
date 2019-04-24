@@ -111,12 +111,25 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("WeaponSlot5", IE_Pressed, this, &APlayerCharacter::WeaponSlot5);
 }
 
+void APlayerCharacter::EnergizePlayer(float amount)
+{
+	CurrentMaxStamina += (amount / 4);
+	if (CurrentMaxStamina > MaxStamina) {
+		CurrentMaxStamina = MaxStamina;
+	}
+	CurrentStamina += amount;
+	if (CurrentStamina > CurrentMaxStamina) {
+		CurrentStamina = CurrentMaxStamina;
+	}
+
+}
+
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	lifeCap = 100;
-	life = lifeCap;
+	life = 50;
 	MaxStamina = 200;
 	CurrentMaxStamina = 100;
 	CurrentStamina = CurrentMaxStamina;
@@ -168,7 +181,7 @@ void APlayerCharacter::ServerFire_Implementation()
 		FVector f = CameraComponent->GetForwardVector();
 		FRotator camera = CameraComponent->GetComponentRotation();
 		FVector pos = CameraComponent->GetComponentLocation();
-		pos += f * 100.f;
+		pos += f * 150.f;
 		FActorSpawnParameters spawnParams;
 		spawnParams.Owner = this;
 		spawnParams.Instigator = Instigator;
@@ -178,7 +191,7 @@ void APlayerCharacter::ServerFire_Implementation()
 			AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(arrowToCreate, pos, camera, spawnParams);
 			UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newArrow->GetRootComponent());
 			if (meshComp) {
-				meshComp->AddForce(f*100000.f*meshComp->GetMass()*power);
+				meshComp->AddForce(f*150000.f*meshComp->GetMass()*power);
 			}
 		}
 		isDrawn = false;
@@ -208,7 +221,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 		if (isDrawn) {
-			power += .75f * DeltaTime;
+			power += .7f * DeltaTime;
 			CurrentStamina -= 10.f * DeltaTime;
 			if (CurrentStamina <= 0) {
 				ServerFire();
@@ -216,7 +229,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 		}
 		else {
 			power = 0.f;
-			CurrentStamina += 0.5f * DeltaTime;
+			CurrentStamina += 2.5f * DeltaTime;
 			if (CurrentStamina > CurrentMaxStamina) {
 				CurrentStamina = CurrentMaxStamina;
 			}
@@ -360,7 +373,13 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 		AOre* hitTemp = Cast<AOre>(HitResult->Actor);
 
 		if (hitTemp) {
-			hitTemp->OreHitSpawn(HitResult->Location);
+			if (FVector::Dist(hitTemp->GetActorLocation(), GetActorLocation()) > 350.f) {
+				hitTemp->OreHitSpawn(HitResult->Location);
+			}
+			else {
+				Resources[hitTemp->resourceID]->AddAmount(hitTemp->resourceAmount);
+				hitTemp->OreEmpty();
+			}
 		}
 
 		AMeatActor* meattemp = Cast<AMeatActor>(HitResult->Actor);
@@ -370,8 +389,9 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 			//Debug tool
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "YAY VLEES!");
 
-			//Increase life and stamina
+			//Increase life and staminarr
 			HealPlayer(50);
+			EnergizePlayer(20);
 
 			//destroy meat object
 			meattemp->EatMeat();
