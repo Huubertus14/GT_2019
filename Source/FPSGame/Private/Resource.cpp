@@ -7,7 +7,6 @@
 // Sets default values
 AResource::AResource()
 {
-	Amount = 0;
 	SetReplicates(true);
 
 }

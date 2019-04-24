@@ -23,7 +23,7 @@ public:
 private:
 
 	UPROPERTY(Replicated)
-	int Amount;
+	int Amount = 0;
 
 public:	
 
