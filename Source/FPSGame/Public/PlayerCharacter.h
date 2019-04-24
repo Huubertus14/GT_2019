@@ -159,7 +159,7 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void PerformHitCast();
 
-	
+	void WeaponVisibility();
 	
 	UFUNCTION(Server, Reliable, WithValidation)
 	void WeaponSlot1();

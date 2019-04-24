@@ -68,13 +68,13 @@ APlayerCharacter::APlayerCharacter()
 	MeshShield->SetupAttachment(MeshPit);
 	MeshShield->CastShadow = false;
 	MeshShield->AttachTo(MeshPit, TEXT("WeaponLeft"));
-	MeshShield->SetVisibility(true);
+	MeshShield->SetVisibility(false);
 
 	MeshDagger = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DaggerMesh"));
 	MeshDagger->SetupAttachment(MeshPit);
 	MeshDagger->CastShadow = false;
 	MeshDagger->AttachTo(MeshPit, TEXT("WeaponRight"));
-	MeshDagger->SetVisibility(true);
+	MeshDagger->SetVisibility(false);
 
 
 	//Collision mesh
@@ -494,47 +494,44 @@ bool APlayerCharacter::LeaveGame_Validate()
 	return true;
 }
 
-void APlayerCharacter::WeaponSlot1_Implementation()
+void APlayerCharacter::WeaponVisibility()
 {
-	MeshBow->SetVisibility(true);
-	MeshArrow->SetVisibility(true);
+	MeshBow->SetVisibility(false);
+	MeshArrow->SetVisibility(false);
 	MeshAxe->SetVisibility(false);
 	MeshPickaxe->SetVisibility(false);
 	MeshSword->SetVisibility(false);
 	Mesh2HSword->SetVisibility(false);
+	MeshShield->SetVisibility(false);
+	MeshDagger->SetVisibility(false);
+}
+void APlayerCharacter::WeaponSlot1_Implementation()
+{
+	WeaponVisibility();
+	MeshBow->SetVisibility(true);
+	MeshArrow->SetVisibility(true);
 	isBow = true;
 	is2H = false;
 }
 
 void APlayerCharacter::WeaponSlot2_Implementation()
 {
-	MeshBow->SetVisibility(false);
-	MeshArrow->SetVisibility(false);
+	WeaponVisibility();
 	MeshAxe->SetVisibility(true);
-	MeshPickaxe->SetVisibility(false);
-	MeshSword->SetVisibility(false);
-	Mesh2HSword->SetVisibility(false);
 	isBow = false;
 	is2H = false;
 }
 void APlayerCharacter::WeaponSlot3_Implementation()
 {
-	MeshBow->SetVisibility(false);
-	MeshArrow->SetVisibility(false);
-	MeshAxe->SetVisibility(false);
+	WeaponVisibility();
 	MeshPickaxe->SetVisibility(true);
-	MeshSword->SetVisibility(false);
-	Mesh2HSword->SetVisibility(false);
 	isBow = false;
 	is2H = false;
 }
 
 void APlayerCharacter::WeaponSlot4_Implementation()
 {
-	MeshBow->SetVisibility(false);
-	MeshArrow->SetVisibility(false);
-	MeshAxe->SetVisibility(false);
-	MeshPickaxe->SetVisibility(false);
+	WeaponVisibility();
 	MeshSword->SetVisibility(true);
 	Mesh2HSword->SetVisibility(false);
 	isBow = false;
@@ -543,11 +540,7 @@ void APlayerCharacter::WeaponSlot4_Implementation()
 
 void APlayerCharacter::WeaponSlot5_Implementation()
 {
-	MeshBow->SetVisibility(false);
-	MeshArrow->SetVisibility(false);
-	MeshAxe->SetVisibility(false);
-	MeshPickaxe->SetVisibility(false);
-	MeshSword->SetVisibility(false);
+	WeaponVisibility();
 	Mesh2HSword->SetVisibility(true);
 	isBow = false;
 	is2H = true;
