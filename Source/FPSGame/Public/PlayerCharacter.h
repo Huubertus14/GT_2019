@@ -5,10 +5,13 @@
 #include "CoreMinimal.h"
 #include "Resource.h"
 #include "GameFramework/Character.h"
+#include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 #include "Ore.h"
 #include "PickUpItem.h"
 #include "FPSHUD.h"
 #include "PlayerCharacter.generated.h"
+
 
 
 class UCameraComponent;
@@ -26,6 +29,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<class AResource> toCreate;
+
+	UPROPERTY(VisibleAnywhere)
+	class USphereComponent* HitBoxComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 	USkeletalMeshComponent* MeshPit;
@@ -47,6 +53,15 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 	UStaticMeshComponent* Mesh2HSword;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	UStaticMeshComponent* MeshShield;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+		UStaticMeshComponent* MeshDagger;
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    //UBoxComponent* HitBoxDetection;
 	
 	float Life;
 	UPROPERTY(EditAnywhere)
@@ -64,6 +79,15 @@ public:
 
 	//The result returned when a raycast is cast.
 	FHitResult* HitResult;
+
+	UFUNCTION()
+		void OnTestOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+
+	UFUNCTION()
+		void OnTestOverlapEnd(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 
 private:
 	float life;
@@ -110,11 +134,26 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void PerformMineCast();
 
-	void WeaponSlot5();
+	UFUNCTION(Server, Reliable, WithValidation)
+		void PerformHitCast();
+
+	
+	
+	UFUNCTION(Server, Reliable, WithValidation)
 	void WeaponSlot1();
+
+	UFUNCTION(Server, Reliable, WithValidation)
 	void WeaponSlot2();
+
+	UFUNCTION(Server, Reliable, WithValidation)
 	void WeaponSlot3();
+
+	UFUNCTION(Server, Reliable, WithValidation)
 	void WeaponSlot4();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void WeaponSlot5();
+
 	UFUNCTION(Server, Reliable, WithValidation)
 		void DrawArrow();
 	//Arrow variables

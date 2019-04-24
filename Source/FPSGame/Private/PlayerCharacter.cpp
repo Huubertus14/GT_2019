@@ -3,10 +3,13 @@
 #include "PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Engine.h"
 #include "MeatActor.h"
 #include "Arrow.h"
 #include "UnrealNetwork.h"
+
 
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green,text)
 // Sets default values
@@ -78,13 +81,51 @@ APlayerCharacter::APlayerCharacter()
 	Mesh2HSword->AttachTo(MeshPit, TEXT("WeaponRight"));
 	Mesh2HSword->SetVisibility(false);
 	
+	MeshShield = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShieldMesh"));
+	MeshShield->SetupAttachment(MeshPit);
+	MeshShield->CastShadow = false;
+	MeshShield->AttachTo(MeshPit, TEXT("WeaponLeft"));
+	MeshShield->SetVisibility(true);
+
+	MeshDagger = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DaggerMesh"));
+	MeshDagger->SetupAttachment(MeshPit);
+	MeshDagger->CastShadow = false;
+	MeshDagger->AttachTo(MeshPit, TEXT("WeaponRight"));
+	MeshDagger->SetVisibility(true);
+
+
+	//Collision mesh
+	HitBoxComponent = CreateDefaultSubobject<USphereComponent>(TEXT("HitComp"));
+	HitBoxComponent->SetupAttachment(MeshPit);
+	//HitBoxComponent->CastShadow = false;
+	HitBoxComponent->AttachTo(MeshPit, TEXT("WeaponRight"));
+	HitBoxComponent->SetSphereRadius(7.f);
+	//HitBoxComponent->SetSimulatePhysics(true);
+	//HitBoxComponent->SetNotifyRigidBodyCollision(true);
+	HitBoxComponent->BodyInstance.SetCollisionProfileName("BlockAllDynamic"); //BlockAllDynamic//OverlapAll
+	HitBoxComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
+
+
+	/*HitBoxDetection = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
+	HitBoxDetection->SetupAttachment(MeshPit);
+	HitBoxDetection->AttachTo(MeshPit, TEXT("WeaponRight"));
+	HitBoxDetection->bDynamicObstacle = true;
+	HitBoxDetection->BodyInstance.SetCollisionProfileName("MyCollisionProfile");
+	HitBoxDetection->SetNotifyRigidBodyCollision(true);
+	
+	FScriptDelegate DelegateBegin;
+	DelegateBegin.BindUFunction(this, "OnTestOverlapBegin");
+	HitBoxDetection->OnComponentBeginOverlap.Add(DelegateBegin);
+	FScriptDelegate DelegateEnd;
+	DelegateEnd.BindUFunction(this, "OnTestOverlapEnd");
+	HitBoxDetection->OnComponentEndOverlap.Add(DelegateEnd);*/
+
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	//SetReplicateMovement(true);
 	SetReplicates(true);
 	bReplicates = true;
-
 
 }
 
@@ -102,6 +143,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::PerformMineCast);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::PerformHitCast);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::DrawArrow);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerFire);
@@ -173,7 +215,7 @@ void APlayerCharacter::ServerFire_Implementation()
 		spawnParams.Owner = this;
 		spawnParams.Instigator = Instigator;
 
-		if (power > 1)
+		if (power > 1&& isBow)
 		{
 			AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(arrowToCreate, pos, camera, spawnParams);
 			UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newArrow->GetRootComponent());
@@ -409,7 +451,7 @@ bool APlayerCharacter::LeaveGame_Validate()
 	return true;
 }
 
-void APlayerCharacter::WeaponSlot1()
+void APlayerCharacter::WeaponSlot1_Implementation()
 {
 	MeshBow->SetVisibility(true);
 	MeshArrow->SetVisibility(true);
@@ -420,7 +462,7 @@ void APlayerCharacter::WeaponSlot1()
 	isBow = true;
 	is2H = false;
 }
-void APlayerCharacter::WeaponSlot2()
+void APlayerCharacter::WeaponSlot2_Implementation()
 {
 	MeshBow->SetVisibility(false);
 	MeshArrow->SetVisibility(false);
@@ -431,7 +473,7 @@ void APlayerCharacter::WeaponSlot2()
 	isBow = false;
 	is2H = false;
 }
-void APlayerCharacter::WeaponSlot3()
+void APlayerCharacter::WeaponSlot3_Implementation()
 {
 	MeshBow->SetVisibility(false);
 	MeshArrow->SetVisibility(false);
@@ -442,7 +484,7 @@ void APlayerCharacter::WeaponSlot3()
 	isBow = false;
 	is2H = false;
 }
-void APlayerCharacter::WeaponSlot4()
+void APlayerCharacter::WeaponSlot4_Implementation()
 {
 	MeshBow->SetVisibility(false);
 	MeshArrow->SetVisibility(false);
@@ -453,7 +495,7 @@ void APlayerCharacter::WeaponSlot4()
 	isBow = false;
 	is2H = false;
 }
-void APlayerCharacter::WeaponSlot5()
+void APlayerCharacter::WeaponSlot5_Implementation()
 {
 	MeshBow->SetVisibility(false);
 	MeshArrow->SetVisibility(false);
@@ -464,6 +506,106 @@ void APlayerCharacter::WeaponSlot5()
 	isBow = false;
 	is2H = true;
 }
+
+bool APlayerCharacter::WeaponSlot1_Validate()
+{
+	return true;
+}
+bool APlayerCharacter::WeaponSlot2_Validate()
+{
+	return true;
+}
+bool APlayerCharacter::WeaponSlot3_Validate()
+{
+	return true;
+}
+bool APlayerCharacter::WeaponSlot4_Validate()
+{
+	return true;
+}
+bool APlayerCharacter::WeaponSlot5_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::PerformHitCast_Implementation() {
+	
+	
+	//resultRaycast
+	FHitResult* weaponHitResult = new FHitResult();
+	//Startpoint raycast
+	FVector StartTrace = CameraComponent->GetComponentLocation();
+	//Direction raycast
+	FVector ForwardVector = CameraComponent->GetForwardVector();
+	//Endpoint raycast
+	FVector EndTrace = StartTrace + (ForwardVector * 1000.f);
+	//List of items to not collide with.
+	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
+	TraceParams->AddIgnoredActor(this);
+	//Attempt raycast
+	if (GetWorld()->LineTraceSingleByChannel(*weaponHitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
+		APlayerCharacter* temp = Cast<APlayerCharacter>(weaponHitResult->Actor);
+		//Info of jus cast raycast
+		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(0,255, 0), true, 5.f);
+		
+		//if (weaponHitResult->Actor) 
+		//{
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("You Hit: %s"), *weaponHitResult->Actor->GetName()));
+			if (temp) 
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), "100"));
+				temp->HitPlayer(100);
+			}
+				
+
+			/*if (weaponHitResult->Actor->GetName() == "BP_PlayerCharacter_C_0")
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), "0"));
+			}
+			if (weaponHitResult->Actor->GetName() == "BP_PlayerCharacter_C_1")
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), "1"));
+				HitPlayer(20);
+			}
+			if (weaponHitResult->Actor->GetName() == "BP_PlayerCharacter_C_2")
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), "2"));
+			}*/
+
+			//if (FoundActor != NULL)
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), "playerHit"));
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), "playerHit"));
+		//}
+		
+			
+
+	}
+
+}
+bool APlayerCharacter::PerformHitCast_Validate() {
+	return true;
+}
+
+void APlayerCharacter::OnTestOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++ ") + SweepResult.Location.ToString());
+}
+void APlayerCharacter::OnTestOverlapEnd(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("End--------------- ") + OtherActor->GetName());
+}
+void APlayerCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComponent != NULL))
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), *OtherActor->GetName()));
+		}
+		}
+	}
+	
+	
 
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const {
 
