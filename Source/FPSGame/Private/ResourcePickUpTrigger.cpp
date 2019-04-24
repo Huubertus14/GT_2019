@@ -42,7 +42,7 @@ void AResourcePickUpTrigger::OnOverlapBegin(class AActor* OverlappedActor, class
 		APlayerCharacter* tempPlayer = Cast<APlayerCharacter>(OtherActor);
 		if (tempPlayer) {
 			if (Role = ROLE_Authority) {
-				tempPlayer->Resources[resourceID]->AddAmount(resourceAmount);
+				tempPlayer->Resources[resourceID] += resourceAmount;
 				Destroy();
 			}
 		}

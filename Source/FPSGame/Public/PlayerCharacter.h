@@ -29,10 +29,7 @@ public:
 	APlayerCharacter();
 
 	UPROPERTY(Replicated)
-	TArray<AResource*> Resources;
-
-	UPROPERTY(EditAnywhere)
-		TSubclassOf<class AResource> toCreate;
+	TArray<int32> Resources;
 
 	UPROPERTY(VisibleAnywhere)
 	class USphereComponent* HitBoxComponent;
@@ -76,10 +73,6 @@ public:
 
 	//Method called when the player is healed
 	void HealPlayer(float heal);
-
-
-	UFUNCTION()
-	bool Spawn();
 
 	//The result returned when a raycast is cast.
 	FHitResult* HitResult;

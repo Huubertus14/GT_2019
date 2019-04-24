@@ -15,18 +15,6 @@
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
-	//Finds the resource bp.
-	static ConstructorHelpers::FClassFinder<AResource> PlayerPawnClassFinder(TEXT("/Game/Blueprints/BP_Resource"));
-	toCreate = PlayerPawnClassFinder.Class;
-
-	for (int i = 0; i < 3; i++)
-	{
-		//creates 3 resources for this player.
-		if (Spawn()) {
-			//UE_LOG(LogTemp, Warning, TEXT("Made a Resource"));
-		}
-	}
-
 	//UE_LOG(LogTemp, Warning, TEXT("Total amount of Resources: %i"), Resources.Num());
 	// Create a CameraComponent	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -98,7 +86,7 @@ APlayerCharacter::APlayerCharacter()
 	//HitBoxComponent->SetSimulatePhysics(true);
 	//HitBoxComponent->SetNotifyRigidBodyCollision(true);
 	HitBoxComponent->BodyInstance.SetCollisionProfileName("BlockAllDynamic"); //BlockAllDynamic//OverlapAll
-	HitBoxComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
+
 
 
 	/*HitBoxDetection = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
@@ -170,6 +158,7 @@ void APlayerCharacter::EnergizePlayer(float amount)
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	Resources.Init(3, 0);
 	lifeCap = 100;
 	life = 50;
 	MaxStamina = 200;
@@ -261,9 +250,7 @@ bool APlayerCharacter::DrawArrow_Validate()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (hudCountDown >= 0) {
-		hudCountDown--;
-	}
+
 		if (isDrawn) {
 			power += .7f * DeltaTime;
 			CurrentStamina -= 10.f * DeltaTime;
@@ -322,12 +309,8 @@ void APlayerCharacter::HitPlayer(float damage)
 
 	if (life <= 0) {
 
-		if (IsLocallyControlled()) // cannot destroy the host
-		{
 			//UE_LOG(LogTemp, Warning, TEXT("Player Die"));
 			DestroyPlayer();
-		}
-
 	}
 }
 
@@ -349,24 +332,6 @@ void APlayerCharacter::HealPlayer(float heal)
 
 }
 
-//Spawns the 3 resources a player can stack.
-bool APlayerCharacter::Spawn() {
-	if (toCreate) {
-		UWorld* world = GetWorld();
-		if (world) {
-			FActorSpawnParameters spawnParams;
-			spawnParams.Owner = this;
-
-			FRotator rotator = FRotator(0, 0, 0);
-			FVector spawnLocation = FVector(0, 0, 0);
-			Resources.Emplace(world->SpawnActor<AResource>(toCreate, spawnLocation, rotator, spawnParams));
-			return true;
-		}
-	}
-	return false;
-}
-
-
 float APlayerCharacter::GetCurrentStam()
 {
 	return CurrentStamina;
@@ -383,43 +348,20 @@ float APlayerCharacter::GetCurrentLife()
 }
 
 FText APlayerCharacter::GetResourceZero()
-{
-	if (hudCountDown <= 0) {
-		FString VeryCleanString = FString::FromInt(Resources[0]->GetAmount());
+{		FString VeryCleanString = FString::FromInt(0);
 		return FText::FromString(VeryCleanString);
-	}
-	else 
-	{
-		FString VeryCleanString = FString::FromInt(0);
-		return FText::FromString(VeryCleanString);
-	}
-
 }
 
 FText APlayerCharacter::GetResourceOne()
 {
-	if (hudCountDown <= 0) {
-		FString VeryCleanString = FString::FromInt(Resources[1]->GetAmount());
-		return FText::FromString(VeryCleanString);
-	}
-	else
-	{
 		FString VeryCleanString = FString::FromInt(0);
 		return FText::FromString(VeryCleanString);
-	}
 }
 
 FText APlayerCharacter::GetResourceTwo()
 {
-	if (hudCountDown <= 0) {
-		FString VeryCleanString = FString::FromInt(Resources[2]->GetAmount());
-		return FText::FromString(VeryCleanString);
-	}
-	else
-	{
 		FString VeryCleanString = FString::FromInt(0);
 		return FText::FromString(VeryCleanString);
-	}
 }
 
 
@@ -454,7 +396,7 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 			}
 			else {
 
-				Resources[hitTemp->resourceID]->AddAmount(hitTemp->resourceAmount);
+				Resources[hitTemp->resourceID]+= hitTemp->resourceAmount;
 				hitTemp->OreEmpty();
 			}
 		}
@@ -564,7 +506,7 @@ void APlayerCharacter::WeaponSlot1_Implementation()
 	is2H = false;
 }
 
-void APlayerCharacter::WeaponSlot2()
+void APlayerCharacter::WeaponSlot2_Implementation()
 {
 	MeshBow->SetVisibility(false);
 	MeshArrow->SetVisibility(false);
@@ -587,7 +529,7 @@ void APlayerCharacter::WeaponSlot3_Implementation()
 	is2H = false;
 }
 
-void APlayerCharacter::WeaponSlot4()
+void APlayerCharacter::WeaponSlot4_Implementation()
 {
 	MeshBow->SetVisibility(false);
 	MeshArrow->SetVisibility(false);
@@ -599,7 +541,7 @@ void APlayerCharacter::WeaponSlot4()
 	is2H = false;
 }
 
-void APlayerCharacter::WeaponSlot5()
+void APlayerCharacter::WeaponSlot5_Implementation()
 {
 	MeshBow->SetVisibility(false);
 	MeshArrow->SetVisibility(false);
@@ -642,72 +584,29 @@ void APlayerCharacter::PerformHitCast_Implementation() {
 	//Direction raycast
 	FVector ForwardVector = CameraComponent->GetForwardVector();
 	//Endpoint raycast
-	FVector EndTrace = StartTrace + (ForwardVector * 1000.f);
+	FVector EndTrace = StartTrace + (ForwardVector * 3000.f);
 	//List of items to not collide with.
 	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
 	TraceParams->AddIgnoredActor(this);
 	//Attempt raycast
 	if (GetWorld()->LineTraceSingleByChannel(*weaponHitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
 		APlayerCharacter* temp = Cast<APlayerCharacter>(weaponHitResult->Actor);
-		//Info of jus cast raycast
+
 		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(0,255, 0), true, 5.f);
 		
-		//if (weaponHitResult->Actor) 
-		//{
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("You Hit: %s"), *weaponHitResult->Actor->GetName()));
 			if (temp) 
 			{
 				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), "100"));
 				temp->HitPlayer(100);
 			}
-				
-
-			/*if (weaponHitResult->Actor->GetName() == "BP_PlayerCharacter_C_0")
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), "0"));
-			}
-			if (weaponHitResult->Actor->GetName() == "BP_PlayerCharacter_C_1")
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), "1"));
-				HitPlayer(20);
-			}
-			if (weaponHitResult->Actor->GetName() == "BP_PlayerCharacter_C_2")
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), "2"));
-			}*/
-
-			//if (FoundActor != NULL)
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), "playerHit"));
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), "playerHit"));
-		//}
-		
-			
-
 	}
 
 }
+
 bool APlayerCharacter::PerformHitCast_Validate() {
 	return true;
 }
 
-void APlayerCharacter::OnTestOverlapBegin(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
-{
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++ ") + SweepResult.Location.ToString());
-}
-void APlayerCharacter::OnTestOverlapEnd(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("End--------------- ") + OtherActor->GetName());
-}
-void APlayerCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
-{
-	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComponent != NULL))
-	{
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), *OtherActor->GetName()));
-		}
-		}
-	}
 	
 	
 
