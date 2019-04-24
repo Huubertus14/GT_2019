@@ -15,6 +15,10 @@
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
+	for (int i = 0; i < 3; i++)
+	{
+		Resources.Add(0);
+	}
 	//UE_LOG(LogTemp, Warning, TEXT("Total amount of Resources: %i"), Resources.Num());
 	// Create a CameraComponent	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -158,7 +162,6 @@ void APlayerCharacter::EnergizePlayer(float amount)
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	Resources.Init(3, 0);
 	lifeCap = 100;
 	life = 50;
 	MaxStamina = 200;
@@ -348,19 +351,19 @@ float APlayerCharacter::GetCurrentLife()
 }
 
 FText APlayerCharacter::GetResourceZero()
-{		FString VeryCleanString = FString::FromInt(0);
+{		FString VeryCleanString = FString::FromInt(Resources[0]);
 		return FText::FromString(VeryCleanString);
 }
 
 FText APlayerCharacter::GetResourceOne()
 {
-		FString VeryCleanString = FString::FromInt(0);
+		FString VeryCleanString = FString::FromInt(Resources[1]);
 		return FText::FromString(VeryCleanString);
 }
 
 FText APlayerCharacter::GetResourceTwo()
 {
-		FString VeryCleanString = FString::FromInt(0);
+		FString VeryCleanString = FString::FromInt(Resources[2]);
 		return FText::FromString(VeryCleanString);
 }
 
