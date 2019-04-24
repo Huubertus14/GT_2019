@@ -15,6 +15,10 @@
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
+	for (int i = 0; i < 3; i++)
+	{
+		Resources.Add(0);
+	}
 	//UE_LOG(LogTemp, Warning, TEXT("Total amount of Resources: %i"), Resources.Num());
 	// Create a CameraComponent	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -158,7 +162,6 @@ void APlayerCharacter::EnergizePlayer(float amount)
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	Resources.Init(3, 0);
 	lifeCap = 100;
 	life = 50;
 	MaxStamina = 200;
@@ -250,7 +253,10 @@ bool APlayerCharacter::DrawArrow_Validate()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+		
+	if (life < 0) {
+		DestroyPlayer();
+		}
 		if (isDrawn) {
 			power += .7f * DeltaTime;
 			CurrentStamina -= 10.f * DeltaTime;
@@ -309,7 +315,7 @@ void APlayerCharacter::HitPlayer(float damage)
 
 	if (life <= 0) {
 
-			//UE_LOG(LogTemp, Warning, TEXT("Player Die"));
+			UE_LOG(LogTemp, Warning, TEXT("Player Die"));
 			DestroyPlayer();
 	}
 }
@@ -348,19 +354,19 @@ float APlayerCharacter::GetCurrentLife()
 }
 
 FText APlayerCharacter::GetResourceZero()
-{		FString VeryCleanString = FString::FromInt(0);
+{		FString VeryCleanString = FString::FromInt(Resources[0]);
 		return FText::FromString(VeryCleanString);
 }
 
 FText APlayerCharacter::GetResourceOne()
 {
-		FString VeryCleanString = FString::FromInt(0);
+		FString VeryCleanString = FString::FromInt(Resources[1]);
 		return FText::FromString(VeryCleanString);
 }
 
 FText APlayerCharacter::GetResourceTwo()
 {
-		FString VeryCleanString = FString::FromInt(0);
+		FString VeryCleanString = FString::FromInt(Resources[2]);
 		return FText::FromString(VeryCleanString);
 }
 
