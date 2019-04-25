@@ -3,27 +3,22 @@
 #include "PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Engine.h"
 #include "MeatActor.h"
 #include "Arrow.h"
 #include "UnrealNetwork.h"
 
+
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green,text)
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
-	//Finds the resource bp.
-	static ConstructorHelpers::FClassFinder<AResource> PlayerPawnClassFinder(TEXT("/Game/Blueprints/BP_Resource"));
-	toCreate = PlayerPawnClassFinder.Class;
-
 	for (int i = 0; i < 3; i++)
 	{
-		//creates 3 resources for this player.
-		if (Spawn()) {
-			//UE_LOG(LogTemp, Warning, TEXT("Made a Resource"));
-		}
+		Resources.Add(0);
 	}
-
 	//UE_LOG(LogTemp, Warning, TEXT("Total amount of Resources: %i"), Resources.Num());
 	// Create a CameraComponent	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -33,7 +28,7 @@ APlayerCharacter::APlayerCharacter()
   
 	//MeshCharacter
 	MeshPit = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh"));
-	MeshPit->SetupAttachment(CameraComponent);
+	MeshPit->SetupAttachment(RootComponent);
 	MeshPit->CastShadow = false;
 	
 	//MeshWeapons
@@ -73,13 +68,51 @@ APlayerCharacter::APlayerCharacter()
 	Mesh2HSword->AttachTo(MeshPit, TEXT("WeaponRight"));
 	Mesh2HSword->SetVisibility(false);
 	
+	MeshShield = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShieldMesh"));
+	MeshShield->SetupAttachment(MeshPit);
+	MeshShield->CastShadow = false;
+	MeshShield->AttachTo(MeshPit, TEXT("WeaponLeft"));
+	MeshShield->SetVisibility(false);
+
+	MeshDagger = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DaggerMesh"));
+	MeshDagger->SetupAttachment(MeshPit);
+	MeshDagger->CastShadow = false;
+	MeshDagger->AttachTo(MeshPit, TEXT("WeaponRight"));
+	MeshDagger->SetVisibility(false);
+
+
+	//Collision mesh
+	HitBoxComponent = CreateDefaultSubobject<USphereComponent>(TEXT("HitComp"));
+	HitBoxComponent->SetupAttachment(MeshPit);
+	//HitBoxComponent->CastShadow = false;
+	HitBoxComponent->AttachTo(MeshPit, TEXT("WeaponRight"));
+	HitBoxComponent->SetSphereRadius(7.f);
+	//HitBoxComponent->SetSimulatePhysics(true);
+	//HitBoxComponent->SetNotifyRigidBodyCollision(true);
+	HitBoxComponent->BodyInstance.SetCollisionProfileName("BlockAllDynamic"); //BlockAllDynamic//OverlapAll
+
+
+
+	/*HitBoxDetection = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
+	HitBoxDetection->SetupAttachment(MeshPit);
+	HitBoxDetection->AttachTo(MeshPit, TEXT("WeaponRight"));
+	HitBoxDetection->bDynamicObstacle = true;
+	HitBoxDetection->BodyInstance.SetCollisionProfileName("MyCollisionProfile");
+	HitBoxDetection->SetNotifyRigidBodyCollision(true);
+	
+	FScriptDelegate DelegateBegin;
+	DelegateBegin.BindUFunction(this, "OnTestOverlapBegin");
+	HitBoxDetection->OnComponentBeginOverlap.Add(DelegateBegin);
+	FScriptDelegate DelegateEnd;
+	DelegateEnd.BindUFunction(this, "OnTestOverlapEnd");
+	HitBoxDetection->OnComponentEndOverlap.Add(DelegateEnd);*/
+
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	//SetReplicateMovement(true);
 	SetReplicates(true);
 	bReplicates = true;
-
 
 }
 
@@ -97,6 +130,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::PerformMineCast);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::PerformHitCast);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::DrawArrow);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerFire);
@@ -136,6 +170,7 @@ void APlayerCharacter::BeginPlay()
 	isBow = true;
 	is2H = false;
 	currentWeaponID = 0;
+	equipedWeapon = 1;
 }
 
 void APlayerCharacter::DropWeapon_Implementation()
@@ -186,7 +221,7 @@ void APlayerCharacter::ServerFire_Implementation()
 		spawnParams.Owner = this;
 		spawnParams.Instigator = Instigator;
 
-		if (power > 1)
+		if (power > 1&& isBow)
 		{
 			AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(arrowToCreate, pos, camera, spawnParams);
 			UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newArrow->GetRootComponent());
@@ -205,7 +240,7 @@ bool APlayerCharacter::ServerFire_Validate()
 
 void APlayerCharacter::DrawArrow_Implementation()
 {
-	if (CurrentStamina > 20.f) {
+	if (CurrentStamina > 20.f && isBow) {
 		isDrawn = true;
 	}
 }
@@ -219,10 +254,11 @@ bool APlayerCharacter::DrawArrow_Validate()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (hudCountDown >= 0) {
-		hudCountDown--;
-	}
-		if (isDrawn) {
+		
+	if (life < 0) {
+		DestroyPlayer();
+		}
+		if (isDrawn && isBow) {
 			power += .7f * DeltaTime;
 			CurrentStamina -= 10.f * DeltaTime;
 			if (CurrentStamina <= 0) {
@@ -280,12 +316,8 @@ void APlayerCharacter::HitPlayer(float damage)
 
 	if (life <= 0) {
 
-		if (IsLocallyControlled()) // cannot destroy the host
-		{
-			//UE_LOG(LogTemp, Warning, TEXT("Player Die"));
+			UE_LOG(LogTemp, Warning, TEXT("Player Die"));
 			DestroyPlayer();
-		}
-
 	}
 }
 
@@ -307,24 +339,6 @@ void APlayerCharacter::HealPlayer(float heal)
 
 }
 
-//Spawns the 3 resources a player can stack.
-bool APlayerCharacter::Spawn() {
-	if (toCreate) {
-		UWorld* world = GetWorld();
-		if (world) {
-			FActorSpawnParameters spawnParams;
-			spawnParams.Owner = this;
-
-			FRotator rotator = FRotator(0, 0, 0);
-			FVector spawnLocation = FVector(0, 0, 0);
-			Resources.Emplace(world->SpawnActor<AResource>(toCreate, spawnLocation, rotator, spawnParams));
-			return true;
-		}
-	}
-	return false;
-}
-
-
 float APlayerCharacter::GetCurrentStam()
 {
 	return CurrentStamina;
@@ -341,43 +355,20 @@ float APlayerCharacter::GetCurrentLife()
 }
 
 FText APlayerCharacter::GetResourceZero()
-{
-	if (hudCountDown <= 0) {
-		FString VeryCleanString = FString::FromInt(Resources[0]->GetAmount());
+{		FString VeryCleanString = FString::FromInt(Resources[0]);
 		return FText::FromString(VeryCleanString);
-	}
-	else 
-	{
-		FString VeryCleanString = FString::FromInt(0);
-		return FText::FromString(VeryCleanString);
-	}
-
 }
 
 FText APlayerCharacter::GetResourceOne()
 {
-	if (hudCountDown <= 0) {
-		FString VeryCleanString = FString::FromInt(Resources[1]->GetAmount());
+		FString VeryCleanString = FString::FromInt(Resources[1]);
 		return FText::FromString(VeryCleanString);
-	}
-	else
-	{
-		FString VeryCleanString = FString::FromInt(0);
-		return FText::FromString(VeryCleanString);
-	}
 }
 
 FText APlayerCharacter::GetResourceTwo()
 {
-	if (hudCountDown <= 0) {
-		FString VeryCleanString = FString::FromInt(Resources[2]->GetAmount());
+		FString VeryCleanString = FString::FromInt(Resources[2]);
 		return FText::FromString(VeryCleanString);
-	}
-	else
-	{
-		FString VeryCleanString = FString::FromInt(0);
-		return FText::FromString(VeryCleanString);
-	}
 }
 
 
@@ -399,20 +390,20 @@ void APlayerCharacter::PerformMineCast_Implementation() {
 	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
 
 		//Info of jus cast raycast
-		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
+		//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
 		FString temp = HitResult->Location.ToString();
 	//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
 
 		//check if it was a ore.
 		AOre* hitTemp = Cast<AOre>(HitResult->Actor);
 
-		if (hitTemp) {
+		if ((hitTemp && equipedWeapon == 2 )||(hitTemp && equipedWeapon == 3)) {
 			if (FVector::Dist(hitTemp->GetActorLocation(), GetActorLocation()) > 350.f) {
 				hitTemp->OreHitSpawn(HitResult->Location);
 			}
 			else {
 
-				Resources[hitTemp->resourceID]->AddAmount(hitTemp->resourceAmount);
+				Resources[hitTemp->resourceID]+= hitTemp->resourceAmount;
 				hitTemp->OreEmpty();
 			}
 		}
@@ -457,7 +448,7 @@ void APlayerCharacter::RightMouseClick_Implementation()
 	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
 
 		//Info of jus cast raycast
-		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
+		//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
 		FString temp = HitResult->Location.ToString();
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
 
@@ -510,64 +501,125 @@ bool APlayerCharacter::LeaveGame_Validate()
 	return true;
 }
 
-void APlayerCharacter::WeaponSlot1()
+void APlayerCharacter::WeaponVisibility()
 {
+	MeshBow->SetVisibility(false);
+	MeshArrow->SetVisibility(false);
+	MeshAxe->SetVisibility(false);
+	MeshPickaxe->SetVisibility(false);
+	MeshSword->SetVisibility(false);
+	Mesh2HSword->SetVisibility(false);
+	MeshShield->SetVisibility(false);
+	MeshDagger->SetVisibility(false);
+}
+void APlayerCharacter::WeaponSlot1_Implementation()
+{
+	WeaponVisibility();
 	MeshBow->SetVisibility(true);
 	MeshArrow->SetVisibility(true);
-	MeshAxe->SetVisibility(false);
-	MeshPickaxe->SetVisibility(false);
-	MeshSword->SetVisibility(false);
-	Mesh2HSword->SetVisibility(false);
 	isBow = true;
 	is2H = false;
+	equipedWeapon = 1;
 }
 
-void APlayerCharacter::WeaponSlot2()
+void APlayerCharacter::WeaponSlot2_Implementation()
 {
-	MeshBow->SetVisibility(false);
-	MeshArrow->SetVisibility(false);
+	WeaponVisibility();
 	MeshAxe->SetVisibility(true);
-	MeshPickaxe->SetVisibility(false);
-	MeshSword->SetVisibility(false);
-	Mesh2HSword->SetVisibility(false);
 	isBow = false;
 	is2H = false;
+	equipedWeapon = 2;
 }
-void APlayerCharacter::WeaponSlot3()
+void APlayerCharacter::WeaponSlot3_Implementation()
 {
-	MeshBow->SetVisibility(false);
-	MeshArrow->SetVisibility(false);
-	MeshAxe->SetVisibility(false);
+	WeaponVisibility();
 	MeshPickaxe->SetVisibility(true);
-	MeshSword->SetVisibility(false);
-	Mesh2HSword->SetVisibility(false);
 	isBow = false;
 	is2H = false;
+	equipedWeapon = 3;
 }
 
-void APlayerCharacter::WeaponSlot4()
+void APlayerCharacter::WeaponSlot4_Implementation()
 {
-	MeshBow->SetVisibility(false);
-	MeshArrow->SetVisibility(false);
-	MeshAxe->SetVisibility(false);
-	MeshPickaxe->SetVisibility(false);
+	WeaponVisibility();
 	MeshSword->SetVisibility(true);
-	Mesh2HSword->SetVisibility(false);
 	isBow = false;
 	is2H = false;
+	equipedWeapon = 4;
 }
 
-void APlayerCharacter::WeaponSlot5()
+void APlayerCharacter::WeaponSlot5_Implementation()
 {
-	MeshBow->SetVisibility(false);
-	MeshArrow->SetVisibility(false);
-	MeshAxe->SetVisibility(false);
-	MeshPickaxe->SetVisibility(false);
-	MeshSword->SetVisibility(false);
+	WeaponVisibility();
 	Mesh2HSword->SetVisibility(true);
 	isBow = false;
 	is2H = true;
+	equipedWeapon = 5;
 }
+
+bool APlayerCharacter::WeaponSlot1_Validate()
+{
+	return true;
+}
+bool APlayerCharacter::WeaponSlot2_Validate()
+{
+	return true;
+}
+bool APlayerCharacter::WeaponSlot3_Validate()
+{
+	return true;
+}
+bool APlayerCharacter::WeaponSlot4_Validate()
+{
+	return true;
+}
+bool APlayerCharacter::WeaponSlot5_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::PerformHitCast_Implementation() {
+	
+	
+	//resultRaycast
+	FHitResult* weaponHitResult = new FHitResult();
+	//Startpoint raycast
+	FVector StartTrace = CameraComponent->GetComponentLocation();
+	//Direction raycast
+	FVector ForwardVector = CameraComponent->GetForwardVector();
+	//Endpoint raycast
+	FVector EndTrace = StartTrace + (ForwardVector * 1000.f);
+	//List of items to not collide with.
+	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
+	TraceParams->AddIgnoredActor(this);
+	//Attempt raycast
+	if (GetWorld()->LineTraceSingleByChannel(*weaponHitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
+		APlayerCharacter* temp = Cast<APlayerCharacter>(weaponHitResult->Actor);
+
+		//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(0,255, 0), true, 5.f);
+		
+			if (temp) 
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), "100"));
+				if(equipedWeapon == 2)
+					temp->HitPlayer(10);
+				if (equipedWeapon == 3)
+					temp->HitPlayer(5);
+				if (equipedWeapon == 4)
+					temp->HitPlayer(25);
+				if (equipedWeapon == 5)
+					temp->HitPlayer(40);
+			}
+	}
+
+}
+
+bool APlayerCharacter::PerformHitCast_Validate() {
+	return true;
+}
+
+	
+	
 
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const {
 

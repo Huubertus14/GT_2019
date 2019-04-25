@@ -79,7 +79,7 @@ void AArrow::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimit
 			}
 
 			//UE_LOG(LogTemp, Warning, TEXT("Player Hit"));
-			charHit->HitPlayer(40); 
+			charHit->HitPlayer(20); 
 			
 		}
 
