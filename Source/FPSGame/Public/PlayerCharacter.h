@@ -21,47 +21,42 @@ class FPSGAME_API APlayerCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-
 public:
-	UPROPERTY(Replicated)
-	int hudCountDown = 60;
-	// Sets default values for this character's properties
 	APlayerCharacter();
 
 	UPROPERTY(Replicated)
-	TArray<int32> Resources;
+		TArray<int32> m_r_resources;
 
 	UPROPERTY(VisibleAnywhere)
-	class USphereComponent* HitBoxComponent;
+		class USphereComponent* HitBoxComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
-	USkeletalMeshComponent* MeshPit;
+		USkeletalMeshComponent* MeshPit;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
-	UStaticMeshComponent* MeshBow;
+		UStaticMeshComponent* MeshBow;
+		
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+		UStaticMeshComponent* MeshArrow;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
-	UStaticMeshComponent* MeshArrow;
+		USkeletalMeshComponent* MeshAxe;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
-	USkeletalMeshComponent* MeshAxe;
+		USkeletalMeshComponent* MeshPickaxe;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
-	USkeletalMeshComponent* MeshPickaxe;
+		UStaticMeshComponent* MeshSword;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
-	UStaticMeshComponent* MeshSword;
+		UStaticMeshComponent* Mesh2HSword;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
-	UStaticMeshComponent* Mesh2HSword;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
-	UStaticMeshComponent* MeshShield;
+		UStaticMeshComponent* MeshShield;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		UStaticMeshComponent* MeshDagger;
-	
-	float Life;
+
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<class AArrow> arrowToCreate;
 
@@ -87,31 +82,33 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Health")
 		float GetCurrentLife();
 
+	/** resources accessor */
 	UFUNCTION(BlueprintPure, Category = "Resources")
 		FText GetResourceZero();
 	UFUNCTION(BlueprintPure, Category = "Resources")
 		FText GetResourceOne();
 	UFUNCTION(BlueprintPure, Category = "Resources")
 		FText GetResourceTwo();
-private:
-	UPROPERTY(EditAnywhere, Category = "Health")
-	float lifeCap;
-	
-	UPROPERTY(Replicated, EditAnywhere, Category = "Health")
-	float life;
 
-	UPROPERTY(EditAnywhere, Category = "Stamina")
+private:
+	UPROPERTY(VisibleAnywhere, Category = "Health")
+		float m_lifeCap;
+	
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Health")
+		float m_r_life;
+
+	UPROPERTY(VisibleAnywhere, Category = "Stamina")
 		float m_maxStamina;
 
-	UPROPERTY(Replicated ,EditAnywhere, Category = "Stamina")
-		float m_currentMaxStamina;
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Stamina")
+		float m_r_currentMaxStamina;
 		
-	UPROPERTY(Replicated, EditAnywhere, Category = "Stamina")
-		float m_currentStamina;
-
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Stamina")
+		float m_r_currentStamina;
 
 	UFUNCTION()
 		void EnergizePlayer(float amount);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -123,25 +120,25 @@ protected:
 	int currentWeaponID;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void DropWeapon();
+		void ServerDropWeapon();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	UCameraComponent* CameraComponent;
+	UCameraComponent* cameraComponent;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerFire();
+		void ServerFire();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void RightMouseClick();
+		void ServerRightMouseClick();
 
 
 public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void LeaveGame();
-
+		void ServerLeaveGame();
+		
 	UFUNCTION()
-	void DestroyPlayer();
+		void DestroyPlayer();
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -156,46 +153,48 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void PerformMineCast();
+		void ServerPerformMineCast();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void PerformHitCast();
+		void ServerPerformHitCast();
 
+	//sets all weapons invisible
 	void WeaponVisibility();
 	
+	/** weaponSwitching */
 	UFUNCTION(Server, Reliable, WithValidation)
-	void WeaponSlot1();
+		void WeaponSlot1();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void WeaponSlot2();
+		void WeaponSlot2();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void WeaponSlot3();
+		void WeaponSlot3();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void WeaponSlot4();
+		void WeaponSlot4();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void WeaponSlot5();
+		void WeaponSlot5();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void DrawArrow();
+		void ServerDrawArrow();
 
 	//Arrow variables
 	UPROPERTY(Replicated)
-		float power;
+		float m_r_power;
 	UPROPERTY(Replicated)
-		bool isDrawn;
+		bool m_r_isDrawn;
 
+	//the weapon the player is wielding with its id 
 	UPROPERTY(Replicated)
 		int equipedWeapon;
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		bool bowEquiped;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "isBow")
-	bool isBow;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "is2H")
-	bool is2H;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		bool twoHanderEquiped;
 
 	bool UpdateBowTension(float DeltaTime);
 
