@@ -198,5 +198,6 @@ public:
 	bool is2H;
 
 	bool UpdateBowTension(float DeltaTime);
+
 	void RegainEnergy(float DeltaTime);
 };

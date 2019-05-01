@@ -26,7 +26,7 @@ void AFPSHUD::DrawHUD()
 
 	const FVector2D crosshairDrawPosition((Center.X), (Center.Y));
 
-	// draw  images
+	// draw static images
 	FCanvasTileItem TileItem(crosshairDrawPosition, crosshairTex->Resource, FLinearColor::White);
 
 	TileItem.BlendMode  = SE_BLEND_Translucent;
@@ -38,7 +38,7 @@ void AFPSHUD::DrawHUD()
 void AFPSHUD::BeginPlay() 
 {
 	Super::BeginPlay();	
-
+	//assign the correct hud
 	if (PlayerHUDClass != nullptr) {
 		CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), PlayerHUDClass);
 

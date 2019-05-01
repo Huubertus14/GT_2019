@@ -6,12 +6,12 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine.h"
 
-// Sets default values
 AArrow::AArrow()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+
 	PrimaryActorTick.bCanEverTick = true;
-	//mesh
+	
+	//mesh settings
 	meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("mesh"));
 	RootComponent = meshComponent;
 	meshComponent->SetSimulatePhysics(true);
@@ -25,35 +25,22 @@ AArrow::AArrow()
 	SetReplicateMovement(true);
 }
 
-// Called when the game starts or when spawned
-void AArrow::BeginPlay()
-{
-	Super::BeginPlay();
-
-}
-
-void AArrow::ServerMovement_Implementation(FVector _pos, FRotator _rot)
-{
-	SetActorLocationAndRotation(_pos, _rot);
-}
-
-bool AArrow::ServerMovement_Validate(FVector _pos, FRotator _rot)
-{
-	return true;
-}
-
 // Called every frame
 void AArrow::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	//Update the rotation of the arrow towards its direction
 	if (GetVelocity() != FVector(0.f,0.f,0.f)) {
 		FVector dir = GetVelocity();
 		FRotator rot = FRotationMatrix::MakeFromX(dir).Rotator();
 		SetActorRotation(rot);
 
 	}
-	m_lifeSpan--;
-	if (m_lifeSpan < 0) {
+
+	//Destroy after its time on earth is done.
+	m_lifeSpan-= DeltaTime;
+	if (m_lifeSpan <= 0) {
 		Destroy();
 	}
 
@@ -61,38 +48,20 @@ void AArrow::Tick(float DeltaTime)
 
 void AArrow::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& hit)
 {
+	//if the arrow hits a player deal some damage
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
 	{
-		meshComponent->SetSimulatePhysics(false);
-
 		APlayerCharacter* charHit = Cast<APlayerCharacter>(OtherActor);
 
-		if (charHit) {
-
-			if (charHit->Role = ROLE_Authority)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Play who hit is server"));
-			}
-
-			//UE_LOG(LogTemp, Warning, TEXT("Player Hit"));
-			charHit->HitPlayer(20); 
-			
-		}
-
-		if (Role == ROLE_Authority)
+		if (charHit) 
 		{
-			//server things
-			Destroy();
+			charHit->HitPlayer(arrowDamage); 
 		}
-
 	}
-	else
-	{
-		if (Role == ROLE_Authority)
-		{
-			//server things
-			Destroy();
-		}
 
+	//After hitting anything the arrow gets destroyed
+	if (Role == ROLE_Authority)
+	{
+		Destroy();
 	}
 }
