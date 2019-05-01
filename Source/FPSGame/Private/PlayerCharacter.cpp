@@ -12,14 +12,14 @@
 
 
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green,text)
-// Sets default values
+
 APlayerCharacter::APlayerCharacter()
 {
 	for (int i = 0; i < 3; i++)
 	{
 		Resources.Add(0);
 	}
-	//UE_LOG(LogTemp, Warning, TEXT("Total amount of Resources: %i"), Resources.Num());
+
 	// Create a CameraComponent	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	CameraComponent->SetupAttachment(GetCapsuleComponent());
@@ -84,30 +84,11 @@ APlayerCharacter::APlayerCharacter()
 	//Collision mesh
 	HitBoxComponent = CreateDefaultSubobject<USphereComponent>(TEXT("HitComp"));
 	HitBoxComponent->SetupAttachment(MeshPit);
-	//HitBoxComponent->CastShadow = false;
 	HitBoxComponent->AttachTo(MeshPit, TEXT("WeaponRight"));
 	HitBoxComponent->SetSphereRadius(7.f);
-	//HitBoxComponent->SetSimulatePhysics(true);
-	//HitBoxComponent->SetNotifyRigidBodyCollision(true);
-	HitBoxComponent->BodyInstance.SetCollisionProfileName("BlockAllDynamic"); //BlockAllDynamic//OverlapAll
+	HitBoxComponent->BodyInstance.SetCollisionProfileName("BlockAllDynamic"); 
 
 
-
-	/*HitBoxDetection = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
-	HitBoxDetection->SetupAttachment(MeshPit);
-	HitBoxDetection->AttachTo(MeshPit, TEXT("WeaponRight"));
-	HitBoxDetection->bDynamicObstacle = true;
-	HitBoxDetection->BodyInstance.SetCollisionProfileName("MyCollisionProfile");
-	HitBoxDetection->SetNotifyRigidBodyCollision(true);
-	
-	FScriptDelegate DelegateBegin;
-	DelegateBegin.BindUFunction(this, "OnTestOverlapBegin");
-	HitBoxDetection->OnComponentBeginOverlap.Add(DelegateBegin);
-	FScriptDelegate DelegateEnd;
-	DelegateEnd.BindUFunction(this, "OnTestOverlapEnd");
-	HitBoxDetection->OnComponentEndOverlap.Add(DelegateEnd);*/
-
-	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	//SetReplicateMovement(true);
@@ -145,18 +126,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("WeaponSlot5", IE_Pressed, this, &APlayerCharacter::WeaponSlot5);
 }
 
-void APlayerCharacter::EnergizePlayer(float amount)
-{
-	CurrentMaxStamina += (amount / 4);
-	if (CurrentMaxStamina > MaxStamina) {
-		CurrentMaxStamina = MaxStamina;
-	}
-	CurrentStamina += amount;
-	if (CurrentStamina > CurrentMaxStamina) {
-		CurrentStamina = CurrentMaxStamina;
-	}
 
-}
 
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
@@ -164,13 +134,38 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	lifeCap = 100;
 	life = 50;
-	MaxStamina = 200;
-	CurrentMaxStamina = 100;
-	CurrentStamina = CurrentMaxStamina;
+	m_maxStamina = 200;
+	m_currentMaxStamina = 100;
+	m_currentStamina = m_currentMaxStamina;
 	isBow = true;
 	is2H = false;
 	currentWeaponID = 0;
 	equipedWeapon = 1;
+}
+
+// Called every frame
+void APlayerCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (isBow) 
+	{
+		if (isDrawn) 
+		{
+			if (UpdateBowTension(DeltaTime)) 
+			{
+				ServerFire();
+			}
+		}
+		else 
+		{
+			RegainEnergy(DeltaTime);
+		}
+	}
+
+	UpdateLifeStatus();
+
+	SharePlayerPitch();
 }
 
 void APlayerCharacter::DropWeapon_Implementation()
@@ -210,6 +205,29 @@ bool APlayerCharacter::DropWeapon_Validate()
 	return true;
 }
 
+bool APlayerCharacter::UpdateBowTension(float DeltaTime)
+{
+	power += .7f * DeltaTime;
+	m_currentStamina -= 10.f * DeltaTime;
+
+	if (m_currentStamina <= 0) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+void APlayerCharacter::RegainEnergy(float DeltaTime)
+{
+	power = 0.f;
+	m_currentStamina += 2.5f * DeltaTime;
+	if (m_currentStamina > m_currentMaxStamina)
+	{
+		m_currentStamina = m_currentMaxStamina;
+	}
+}
+
 void APlayerCharacter::ServerFire_Implementation()
 {
 	if (isDrawn) {
@@ -240,7 +258,7 @@ bool APlayerCharacter::ServerFire_Validate()
 
 void APlayerCharacter::DrawArrow_Implementation()
 {
-	if (CurrentStamina > 20.f && isBow) {
+	if (m_currentStamina > 20.f && isBow) {
 		isDrawn = true;
 	}
 }
@@ -248,38 +266,6 @@ void APlayerCharacter::DrawArrow_Implementation()
 bool APlayerCharacter::DrawArrow_Validate()
 {
 	return true;
-}
-
-// Called every frame
-void APlayerCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-		
-	if (life < 0) {
-		DestroyPlayer();
-		}
-		if (isDrawn && isBow) {
-			power += .7f * DeltaTime;
-			CurrentStamina -= 10.f * DeltaTime;
-			if (CurrentStamina <= 0) {
-				ServerFire();
-			}
-		}
-		else {
-			power = 0.f;
-			CurrentStamina += 2.5f * DeltaTime;
-			if (CurrentStamina > CurrentMaxStamina) {
-				CurrentStamina = CurrentMaxStamina;
-			}
-		}
-
-		if (!IsLocallyControlled()) {
-			FRotator newRot = CameraComponent->RelativeRotation;
-			newRot.Pitch = RemoteViewPitch * 360.0f / 255.0f;
-
-			CameraComponent->SetRelativeRotation(newRot);
-		}
-
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -298,6 +284,24 @@ void APlayerCharacter::MoveRight(float Value)
 		// add movement in horizontal direction
 		AddMovementInput(GetActorRightVector(), Value);
 
+	}
+}
+
+void APlayerCharacter::SharePlayerPitch()
+{
+	if (!IsLocallyControlled())
+	{
+		FRotator newRot = CameraComponent->RelativeRotation;
+		newRot.Pitch = RemoteViewPitch * 360.0f / 255.0f;
+
+		CameraComponent->SetRelativeRotation(newRot);
+	}
+}
+
+void APlayerCharacter::UpdateLifeStatus()
+{
+	if (life < 0) {
+		DestroyPlayer();
 	}
 }
 
@@ -339,14 +343,27 @@ void APlayerCharacter::HealPlayer(float heal)
 
 }
 
+void APlayerCharacter::EnergizePlayer(float amount)
+{
+	m_currentMaxStamina += (amount / 4);
+	if (m_currentMaxStamina > m_maxStamina) {
+		m_currentMaxStamina = m_maxStamina;
+	}
+	m_currentStamina += amount;
+	if (m_currentStamina > m_currentMaxStamina) {
+		m_currentStamina = m_currentMaxStamina;
+	}
+
+}
+
 float APlayerCharacter::GetCurrentStam()
 {
-	return CurrentStamina;
+	return m_currentStamina;
 }
 
 float APlayerCharacter::GetCurrentMaxStam()
 {
-	return CurrentMaxStamina;
+	return m_currentMaxStamina;
 }
 
 float APlayerCharacter::GetCurrentLife()
@@ -628,8 +645,8 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & 
 	DOREPLIFETIME(APlayerCharacter, Resources);
 	
 	DOREPLIFETIME(APlayerCharacter, hudCountDown);
-	DOREPLIFETIME(APlayerCharacter, CurrentMaxStamina);
-	DOREPLIFETIME(APlayerCharacter, CurrentStamina);
+	DOREPLIFETIME(APlayerCharacter, m_currentMaxStamina);
+	DOREPLIFETIME(APlayerCharacter, m_currentStamina);
 	DOREPLIFETIME(APlayerCharacter, power);
 	DOREPLIFETIME(APlayerCharacter, isDrawn);
 }

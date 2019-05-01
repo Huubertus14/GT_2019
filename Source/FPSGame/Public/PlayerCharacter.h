@@ -60,9 +60,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		UStaticMeshComponent* MeshDagger;
-
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-    //UBoxComponent* HitBoxDetection;
 	
 	float Life;
 	UPROPERTY(EditAnywhere)
@@ -73,6 +70,8 @@ public:
 
 	//Method called when the player is healed
 	void HealPlayer(float heal);
+
+	void SharePlayerPitch();
 
 	//The result returned when a raycast is cast.
 	FHitResult* HitResult;
@@ -102,13 +101,13 @@ private:
 	float life;
 
 	UPROPERTY(EditAnywhere, Category = "Stamina")
-	float MaxStamina;
+		float m_maxStamina;
 
 	UPROPERTY(Replicated ,EditAnywhere, Category = "Stamina")
-	float CurrentMaxStamina;
+		float m_currentMaxStamina;
 		
 	UPROPERTY(Replicated, EditAnywhere, Category = "Stamina")
-		float CurrentStamina;
+		float m_currentStamina;
 
 
 	UFUNCTION()
@@ -150,6 +149,8 @@ public:
 	void MoveForward(float Value);
 
 	void MoveRight(float Value);
+
+	void UpdateLifeStatus();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -195,4 +196,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "is2H")
 	bool is2H;
+
+	bool UpdateBowTension(float DeltaTime);
+	void RegainEnergy(float DeltaTime);
 };

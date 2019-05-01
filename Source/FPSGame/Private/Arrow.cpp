@@ -12,18 +12,14 @@ AArrow::AArrow()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	//mesh
-	mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("mesh"));
-	RootComponent = mesh;
-	mesh->SetSimulatePhysics(true);
-	mesh->SetNotifyRigidBodyCollision(true);
-	mesh->BodyInstance.SetCollisionProfileName("BlockAllDynamic");
-	mesh->OnComponentHit.AddDynamic(this, &AArrow::OnCompHit);
+	meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("mesh"));
+	RootComponent = meshComponent;
+	meshComponent->SetSimulatePhysics(true);
+	meshComponent->SetNotifyRigidBodyCollision(true);
+	meshComponent->BodyInstance.SetCollisionProfileName("BlockAllDynamic");
+	meshComponent->OnComponentHit.AddDynamic(this, &AArrow::OnCompHit);
 
-	location = GetActorLocation();
-	forward = 0;
-	speed = 60;
-	gravity = .1;
-	lifeSpan = 300;
+	m_lifeSpan = 300;
 
 	SetReplicates(true);
 	SetReplicateMovement(true);
@@ -56,8 +52,8 @@ void AArrow::Tick(float DeltaTime)
 		SetActorRotation(rot);
 
 	}
-	lifeSpan--;
-	if (lifeSpan < 0) {
+	m_lifeSpan--;
+	if (m_lifeSpan < 0) {
 		Destroy();
 	}
 
@@ -67,7 +63,7 @@ void AArrow::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimit
 {
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
 	{
-		mesh->SetSimulatePhysics(false);
+		meshComponent->SetSimulatePhysics(false);
 
 		APlayerCharacter* charHit = Cast<APlayerCharacter>(OtherActor);
 

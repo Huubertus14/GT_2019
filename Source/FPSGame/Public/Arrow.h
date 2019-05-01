@@ -20,29 +20,28 @@ class FPSGAME_API AArrow : public AActor
 public:
 	// Sets default values for this actor's properties
 	AArrow();
-	float forward;
-	float speed;
-	float gravity;
-	FVector location;
-	int lifeSpan;
+
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerMovement(FVector _pos, FRotator _rot);
+		void ServerMovement(FVector _pos, FRotator _rot);
 
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere)
-		UStaticMeshComponent* mesh;
+	UPROPERTY(EditAnywhere, Category = "Projectile Mesh")
+		UStaticMeshComponent* meshComponent;
 
 	FORCEINLINE class UStaticMeshComponent* GetArrowMesh() const { return arrowMesh; }
 
 	UFUNCTION()
 		void OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& hit);
+
+private:
+	float m_lifeSpan;
 
 };
