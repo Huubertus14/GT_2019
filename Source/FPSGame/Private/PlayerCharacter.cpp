@@ -17,7 +17,7 @@ APlayerCharacter::APlayerCharacter()
 {
 	for (int i = 0; i < 3; ++i)
 	{
-		m_r_resources.Add(0);
+		r_resources.Add(0);
 	}
 
 	// Create a CameraComponent	
@@ -174,8 +174,9 @@ void APlayerCharacter::ServerDropWeapon_Implementation()
 	//Loop through weapon array
 	for (int i = 0; i < dropWeapons.Num(); ++i)
 	{
-		APickUpItem* item = dropWeapons[i].GetDefaultObject();
-		if (item->GetID() == currentWeaponID)
+		APickUpItem* actualWeapon = dropWeapons[i].GetDefaultObject();
+
+		if (actualWeapon->GetID() == currentWeaponID)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Dropped a weapon");
 
@@ -189,7 +190,7 @@ void APlayerCharacter::ServerDropWeapon_Implementation()
 			spawnParams.Instigator = Instigator;
 
 			//Spawn new weapon in the world
-			APickUpItem* newArrow = GetWorld()->SpawnActor<APickUpItem>(dropWeapons[i], pos, camera, spawnParams);
+			APickUpItem* dropedWeapon = GetWorld()->SpawnActor<APickUpItem>(dropWeapons[i], pos, camera, spawnParams);
 			
 			//Set current weapon
 
@@ -333,19 +334,19 @@ float APlayerCharacter::GetCurrentLife()
 
 FText APlayerCharacter::GetResourceZero()
 {		
-		FString veryCleanString = FString::FromInt(m_r_resources[0]);
+		FString veryCleanString = FString::FromInt(r_resources[0]);
 		return FText::FromString(veryCleanString);
 }
 
 FText APlayerCharacter::GetResourceOne()
 {
-		FString veryCleanString = FString::FromInt(m_r_resources[1]);
+		FString veryCleanString = FString::FromInt(r_resources[1]);
 		return FText::FromString(veryCleanString);
 }
 
 FText APlayerCharacter::GetResourceTwo()
 {
-		FString veryCleanString = FString::FromInt(m_r_resources[2]);
+		FString veryCleanString = FString::FromInt(r_resources[2]);
 		return FText::FromString(veryCleanString);
 }
 
@@ -644,7 +645,7 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & 
 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(APlayerCharacter, m_r_life);
-	DOREPLIFETIME(APlayerCharacter, m_r_resources);
+	DOREPLIFETIME(APlayerCharacter, r_resources);
 
 	DOREPLIFETIME(APlayerCharacter, m_r_currentMaxStamina);
 	DOREPLIFETIME(APlayerCharacter, m_r_currentStamina);

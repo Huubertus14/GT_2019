@@ -31,7 +31,7 @@ public:
 
 	/** The replicated recources */
 	UPROPERTY(Replicated)
-		TArray<int32> m_r_resources;
+		TArray<int32> r_resources;
 
 	/** The hitbox of the player*/
 	UPROPERTY(VisibleAnywhere)
@@ -40,33 +40,41 @@ public:
 	/** The model of the player*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		USkeletalMeshComponent* MeshPit;
+
 	/** Mesh of the bow which it will hold
 	 *bow is defined in the BP of the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		UStaticMeshComponent* MeshBow;
+
 	/** The mesh of the arrow which is seen in the hands of the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		UStaticMeshComponent* MeshArrow;
+
 	/** Mesh of the Axe which it will hold
 	 *Axe is defined in the BP of the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		USkeletalMeshComponent* MeshAxe;
+
 	/** Mesh of the Pickaxe which it will hold
 	 *PickAxe is defined in the BP of the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		USkeletalMeshComponent* MeshPickaxe;
+
 	/** Mesh of the sword which it will hold
 	 *sword is defined in the BP of the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		UStaticMeshComponent* MeshSword;
+
 	/** Mesh of the 2hSword which it will hold
 	 *2hSword is defined in the BP of the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		UStaticMeshComponent* Mesh2HSword;
+
 	/** Mesh of the shield which it will hold
 	 *shield is defined in the BP of the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		UStaticMeshComponent* MeshShield;
+
 	/** Mesh of the dagger which it will hold
 	 *dagger is defined in the BP of the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
