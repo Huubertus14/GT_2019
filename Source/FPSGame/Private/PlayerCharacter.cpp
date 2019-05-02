@@ -15,7 +15,7 @@
 
 APlayerCharacter::APlayerCharacter()
 {
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 3; ++i)
 	{
 		m_r_resources.Add(0);
 	}
@@ -172,7 +172,7 @@ void APlayerCharacter::ServerDropWeapon_Implementation()
 	//Get current weapon ID
 
 	//Loop through weapon array
-	for (int i = 0; i < dropWeapons.Num(); i++)
+	for (int i = 0; i < dropWeapons.Num(); ++i)
 	{
 		APickUpItem* item = dropWeapons[i].GetDefaultObject();
 		if (item->GetID() == currentWeaponID)
