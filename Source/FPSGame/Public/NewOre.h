@@ -17,27 +17,19 @@ public:
 	// Sets default values for this pawn's properties
 	ANewOre();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 private:
-	int Life;
+	int m_life;
 
 public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	FVector OreDirection(FVector hitPoint);
-	void OreHitSpawn(FVector hitPoint);
+	FVector OreDirection(FVector t_hitPoint);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSpawn(FVector hitPoint);
+	void ServerSpawn(FVector t_hitPoint);
 
 	UPROPERTY(EditAnywhere, Category = "ToSpawn")
 		TSubclassOf<class AResourcePickUpTrigger> PickUpItem;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-		UStaticMeshComponent* MeshComp;
+		UStaticMeshComponent* meshComp;
 
 };

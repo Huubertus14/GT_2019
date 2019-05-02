@@ -26,15 +26,18 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-
+	/**The amount of resources this ore can spawn */
+	UPROPERTY()
+		int m_life;
 public:
 
 	/**De direction the ore needs to spawn */
-	FVector OreDirection(FVector hitPoint);
+	UFUNCTION()
+	FVector OreDirection(FVector t_hitPoint);
 
 	/** The point where the player hits the object*/
 	UFUNCTION()
-		void OreHitSpawn(FVector hitPoint);
+		void OreHitSpawn(FVector t_hitPoint);
 
 	/** A check if the ore is empty 
 	 * If so the ore will destroy itself in this method
@@ -43,24 +46,19 @@ public:
 		void OreEmpty();
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-		UStaticMeshComponent* MeshComp;
+		UStaticMeshComponent* meshComp;
 
 	/**The actor which is spawned when the ore is hit
 	 *Is set in the BP of this object */
 	UPROPERTY(EditAnywhere, Category = "ToSpawn")
-		TSubclassOf<class AResourcePickUpTrigger> PickUpItem;
+		TSubclassOf<class AResourcePickUpTrigger> pickUpItem;
 
 	/**The ID of this resource */
 	UPROPERTY(EditAnywhere, Category = "Resource")
 		int resourceID;
 
-	/** */
+	/**The amount the of the resource is given out*/
 	UPROPERTY(EditAnywhere, Category = "Resource")
 		int resourceAmount;
-
-	/**The amount of resources this ore can spawn */
-	UPROPERTY()
-		int Life;
-
 
 };

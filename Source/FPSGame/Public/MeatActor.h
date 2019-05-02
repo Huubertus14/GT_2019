@@ -28,7 +28,7 @@ protected:
 	/**The mesh component of this BP
 	 *Is set in the BP */
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* MeshComp;
+	UStaticMeshComponent* meshComp;
 
 public:
 	/** Is Called when the meat is eaten

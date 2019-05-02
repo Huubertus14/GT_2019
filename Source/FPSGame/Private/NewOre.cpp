@@ -5,63 +5,43 @@
 // Sets default values
 ANewOre::ANewOre()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-	Life = 100;
-	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
-	RootComponent = MeshComp;
-	MeshComp->SetWorldScale3D(FVector(0.2f, 0.2f, 0.2f));
+	
+	m_life = 100;
+	meshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
+	RootComponent = meshComp;
+	meshComp->SetWorldScale3D(FVector(0.2f, 0.2f, 0.2f));
 
 }
 
-// Called when the game starts or when spawned
-void ANewOre::BeginPlay()
+FVector ANewOre::OreDirection(FVector t_hitPoint)
 {
-	Super::BeginPlay();
+	FVector centerPoint = GetActorLocation();
+	FVector outDirection = t_hitPoint - centerPoint;
+	return outDirection;
 }
 
-// Called every frame
-void ANewOre::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
-FVector ANewOre::OreDirection(FVector hitPoint)
-{
-	FVector CenterPoint = GetActorLocation();
-	FVector OutDirection = hitPoint - CenterPoint;
-	return OutDirection;
-}
-
-void ANewOre::OreHitSpawn(FVector hitPoint)
-{
-	ServerSpawn(hitPoint);
-}
-
-void ANewOre::ServerSpawn_Implementation(FVector hitPoint)
+void ANewOre::ServerSpawn_Implementation(FVector t_hitPoint)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Ore spawn uitgevoerd"));
-	FVector outwardVector = OreDirection(hitPoint);
+	FVector outwardVector = OreDirection(t_hitPoint);
 	outwardVector.Normalize(1.f);
-	Life--;
+	m_life--;
 	if (PickUpItem) {
 		UE_LOG(LogTemp, Warning, TEXT("Spawn Item!"));
 		UWorld* world = GetWorld();
 		FActorSpawnParameters spawnParams;
 		spawnParams.Owner = this;
 		FRotator rotator = FRotator(0.f, 0.f, 0.f);
-		FVector spawnLocation = outwardVector + hitPoint;
+		FVector spawnLocation = outwardVector + t_hitPoint;
 		world->SpawnActor<AResourcePickUpTrigger>(PickUpItem, spawnLocation, rotator, spawnParams);
 
 	}
-	if (Life <= 0) {
+	if (m_life <= 0) {
 		Destroy();
-		//Needs server validation.
 	}
 }
 
-bool ANewOre::ServerSpawn_Validate(FVector hitPoint)
+bool ANewOre::ServerSpawn_Validate(FVector t_hitPoint)
 {
 	return true;
 }
