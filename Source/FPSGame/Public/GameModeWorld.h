@@ -6,8 +6,9 @@
 #include "GameFramework/GameModeBase.h"
 #include "GameModeWorld.generated.h"
 
-/**
- * 
+//! the gamemode of the current game
+/*!
+ * The gamemode the current game is running on
  */
 UCLASS()
 class FPSGAME_API AGameModeWorld : public AGameModeBase

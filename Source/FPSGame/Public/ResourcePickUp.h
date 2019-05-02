@@ -8,6 +8,7 @@
 
 class USphereComponent;
 
+//! Obsolete?
 UCLASS()
 class FPSGAME_API AResourcePickUp : public AActor
 {

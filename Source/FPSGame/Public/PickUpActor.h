@@ -7,6 +7,7 @@
 #include "ResourcePickUpTrigger.h"
 #include "PickUpActor.generated.h"
 
+//! Obsolete
 UCLASS()
 class FPSGAME_API APickUpActor : public AActor
 {

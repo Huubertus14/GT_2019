@@ -11,6 +11,11 @@
 
 class UTexture2D;
 
+//! The HUD of the player
+/*!
+ *This class hold all the values and function of the player HUD
+ *This class will also draw it on the screen of the player
+ **/
 UCLASS()
 class AFPSHUD : public AHUD
 {
@@ -18,12 +23,10 @@ class AFPSHUD : public AHUD
 
 protected:
 
-
-
-
 	/** Crosshair asset pointer */
 	UTexture2D* crosshairTex;
 
+	/**The font of the HUD text */
 	UFont* hudFont;
 
 
@@ -39,6 +42,7 @@ public:
 
 	AFPSHUD();
 
+	/**This method will draw the HUD on the players screen */
 	virtual void DrawHUD() override;
 
 	virtual void BeginPlay() override;

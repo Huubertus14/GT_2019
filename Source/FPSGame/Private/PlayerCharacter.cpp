@@ -601,7 +601,7 @@ bool APlayerCharacter::WeaponSlot5_Validate()
 void APlayerCharacter::ServerPerformHitCast_Implementation() {
 	
 	
-	//resultRaycast
+	/**resultRaycast*/
 	FHitResult* weaponHitResult = new FHitResult();
 	//Startpoint raycast
 	FVector StartTrace = cameraComponent->GetComponentLocation();

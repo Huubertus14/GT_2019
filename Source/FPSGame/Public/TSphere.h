@@ -6,9 +6,7 @@
 #include "Engine/TriggerSphere.h"
 #include "TSphere.generated.h"
 
-/**
- * 
- */
+//! Obsolete
 UCLASS()
 class FPSGAME_API ATSphere : public ATriggerSphere
 {

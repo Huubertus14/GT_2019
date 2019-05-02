@@ -7,6 +7,7 @@
 #include "ResourcePickUpTrigger.h"
 #include "NewOre.generated.h"
 
+//! Obsolete?
 UCLASS()
 class FPSGAME_API ANewOre : public APawn
 {

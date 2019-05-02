@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "FPSGameMode.generated.h"
 
+//! Obsolete Game mode
 UCLASS()
 class AFPSGameMode : public AGameModeBase
 {
