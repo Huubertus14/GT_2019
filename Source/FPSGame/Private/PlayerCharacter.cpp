@@ -97,6 +97,21 @@ APlayerCharacter::APlayerCharacter()
 
 }
 
+// Called when the game starts or when spawned
+void APlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	m_lifeCap = 100;
+	m_r_life = 50;
+	m_maxStamina = 200;
+	m_r_currentMaxStamina = 100;
+	m_r_currentStamina = m_r_currentMaxStamina;
+	bowEquiped = true;
+	twoHanderEquiped = false;
+	currentWeaponID = 0;
+	equipedWeapon = 1;
+}
+
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// set up gameplay key bindings
@@ -126,22 +141,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("WeaponSlot5", IE_Pressed, this, &APlayerCharacter::WeaponSlot5);
 }
 
-
-
-// Called when the game starts or when spawned
-void APlayerCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-	m_lifeCap = 100;
-	m_r_life = 50;
-	m_maxStamina = 200;
-	m_r_currentMaxStamina = 100;
-	m_r_currentStamina = m_r_currentMaxStamina;
-	bowEquiped = true;
-	twoHanderEquiped = false;
-	currentWeaponID = 0;
-	equipedWeapon = 1;
-}
 
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
@@ -226,46 +225,6 @@ void APlayerCharacter::RegainEnergy(float DeltaTime)
 	{
 		m_r_currentStamina = m_r_currentMaxStamina;
 	}
-}
-
-void APlayerCharacter::ServerFire_Implementation()
-{
-	if (m_r_isDrawn) {
-		FVector f = cameraComponent->GetForwardVector();
-		FRotator camera = cameraComponent->GetComponentRotation();
-		FVector pos = cameraComponent->GetComponentLocation();
-		pos += f * 150.f;
-		FActorSpawnParameters spawnParams;
-		spawnParams.Owner = this;
-		spawnParams.Instigator = Instigator;
-
-		if (m_r_power > 1 && bowEquiped)
-		{
-			AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(arrowToCreate, pos, camera, spawnParams);
-			UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newArrow->GetRootComponent());
-			if (meshComp) {
-				meshComp->AddForce(f*100000.f*meshComp->GetMass()*m_r_power);
-			}
-		}
-		m_r_isDrawn = false;
-	}
-}
-
-bool APlayerCharacter::ServerFire_Validate()
-{
-	return true;
-}
-
-void APlayerCharacter::ServerDrawArrow_Implementation()
-{
-	if (m_r_currentStamina > 20.f && bowEquiped) {
-		m_r_isDrawn = true;
-	}
-}
-
-bool APlayerCharacter::ServerDrawArrow_Validate()
-{
-	return true;
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -389,65 +348,6 @@ FText APlayerCharacter::GetResourceTwo()
 		return FText::FromString(veryCleanString);
 }
 
-
-void APlayerCharacter::ServerPerformMineCast_Implementation() {
-
-	//resultRaycast
-	HitResult = new FHitResult();
-	//Startpoint raycast
-	FVector StartTrace = cameraComponent->GetComponentLocation();
-	//Direction raycast
-	FVector ForwardVector = cameraComponent->GetForwardVector();
-	//Endpoint raycast
-	FVector EndTrace = StartTrace + (ForwardVector * 1000.f);
-	//List of items to not collide with.
-	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
-	TraceParams->AddIgnoredActor(this);
-
-	//Attempt raycast
-	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
-
-		//Info of jus cast raycast
-		//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
-		FString temp = HitResult->Location.ToString();
-	//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
-
-		//check if it was a ore.
-		AOre* hitTemp = Cast<AOre>(HitResult->Actor);
-
-		if ((hitTemp && equipedWeapon == 2 )||(hitTemp && equipedWeapon == 3)) {
-			if (FVector::Dist(hitTemp->GetActorLocation(), GetActorLocation()) > 350.f) {
-				hitTemp->OreHitSpawn(HitResult->Location);
-			}
-			else {
-
-				m_r_resources[hitTemp->resourceID]+= hitTemp->resourceAmount;
-				hitTemp->OreEmpty();
-			}
-		}
-
-		AMeatActor* meattemp = Cast<AMeatActor>(HitResult->Actor);
-
-		if (meattemp)//Check if the raycasted thing is meat
-		{
-			//Debug tool
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "YAY VLEES!");
-
-			//Increase life and staminarr
-			HealPlayer(50);
-			EnergizePlayer(20);
-
-			//destroy meat object
-			meattemp->EatMeat();
-		}
-	}
-
-}
-
-bool APlayerCharacter::ServerPerformMineCast_Validate() {
-	return true;
-}
-
 void APlayerCharacter::ServerRightMouseClick_Implementation()
 {
 	//resultRaycast
@@ -541,6 +441,11 @@ void APlayerCharacter::WeaponSlot1_Implementation()
 	equipedWeapon = 1;
 }
 
+bool APlayerCharacter::WeaponSlot1_Validate()
+{
+	return true;
+}
+
 void APlayerCharacter::WeaponSlot2_Implementation()
 {
 	WeaponVisibility();
@@ -548,6 +453,11 @@ void APlayerCharacter::WeaponSlot2_Implementation()
 	bowEquiped = false;
 	twoHanderEquiped = false;
 	equipedWeapon = 2;
+}
+
+bool APlayerCharacter::WeaponSlot2_Validate()
+{
+	return true;
 }
 
 void APlayerCharacter::WeaponSlot3_Implementation()
@@ -559,6 +469,11 @@ void APlayerCharacter::WeaponSlot3_Implementation()
 	equipedWeapon = 3;
 }
 
+bool APlayerCharacter::WeaponSlot3_Validate()
+{
+	return true;
+}
+
 void APlayerCharacter::WeaponSlot4_Implementation()
 {
 	WeaponVisibility();
@@ -566,6 +481,11 @@ void APlayerCharacter::WeaponSlot4_Implementation()
 	bowEquiped = false;
 	twoHanderEquiped = false;
 	equipedWeapon = 4;
+}
+
+bool APlayerCharacter::WeaponSlot4_Validate()
+{
+	return true;
 }
 
 void APlayerCharacter::WeaponSlot5_Implementation()
@@ -577,23 +497,106 @@ void APlayerCharacter::WeaponSlot5_Implementation()
 	equipedWeapon = 5;
 }
 
-bool APlayerCharacter::WeaponSlot1_Validate()
-{
-	return true;
-}
-bool APlayerCharacter::WeaponSlot2_Validate()
-{
-	return true;
-}
-bool APlayerCharacter::WeaponSlot3_Validate()
-{
-	return true;
-}
-bool APlayerCharacter::WeaponSlot4_Validate()
-{
-	return true;
-}
 bool APlayerCharacter::WeaponSlot5_Validate()
+{
+	return true;
+}
+
+
+void APlayerCharacter::ServerPerformMineCast_Implementation() {
+
+	//resultRaycast
+	HitResult = new FHitResult();
+	//Startpoint raycast
+	FVector StartTrace = cameraComponent->GetComponentLocation();
+	//Direction raycast
+	FVector ForwardVector = cameraComponent->GetForwardVector();
+	//Endpoint raycast
+	FVector EndTrace = StartTrace + (ForwardVector * 1000.f);
+	//List of items to not collide with.
+	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
+	TraceParams->AddIgnoredActor(this);
+
+	//Attempt raycast
+	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
+
+		//Info of jus cast raycast
+		//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
+		FString temp = HitResult->Location.ToString();
+		//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
+
+			//check if it was a ore.
+		AOre* hitTemp = Cast<AOre>(HitResult->Actor);
+
+		if ((hitTemp && equipedWeapon == 2) || (hitTemp && equipedWeapon == 3)) {
+			if (FVector::Dist(hitTemp->GetActorLocation(), GetActorLocation()) > 350.f) {
+				hitTemp->OreHitSpawn(HitResult->Location);
+			}
+			else {
+
+				m_r_resources[hitTemp->resourceID] += hitTemp->resourceAmount;
+				hitTemp->OreEmpty();
+			}
+		}
+
+		AMeatActor* meattemp = Cast<AMeatActor>(HitResult->Actor);
+
+		if (meattemp)//Check if the raycasted thing is meat
+		{
+			//Debug tool
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "YAY VLEES!");
+
+			//Increase life and staminarr
+			HealPlayer(50);
+			EnergizePlayer(20);
+
+			//destroy meat object
+			meattemp->EatMeat();
+		}
+	}
+
+}
+
+bool APlayerCharacter::ServerPerformMineCast_Validate() {
+	return true;
+}
+
+void APlayerCharacter::ServerFire_Implementation()
+{
+	if (m_r_isDrawn) {
+		FVector f = cameraComponent->GetForwardVector();
+		FRotator camera = cameraComponent->GetComponentRotation();
+		FVector pos = cameraComponent->GetComponentLocation();
+		pos += f * 150.f;
+		FActorSpawnParameters spawnParams;
+		spawnParams.Owner = this;
+		spawnParams.Instigator = Instigator;
+
+		if (m_r_power > 1 && bowEquiped)
+		{
+			AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(arrowToCreate, pos, camera, spawnParams);
+			UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newArrow->GetRootComponent());
+			if (meshComp) {
+				meshComp->AddForce(f*100000.f*meshComp->GetMass()*m_r_power);
+			}
+		}
+		m_r_isDrawn = false;
+	}
+}
+
+bool APlayerCharacter::ServerFire_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::ServerDrawArrow_Implementation()
+{
+	if (m_r_currentStamina > 20.f && bowEquiped) {
+		m_r_isDrawn = true;
+	}
+}
+
+bool APlayerCharacter::ServerDrawArrow_Validate()
 {
 	return true;
 }

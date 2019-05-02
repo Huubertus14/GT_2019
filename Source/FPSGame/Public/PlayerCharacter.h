@@ -129,10 +129,7 @@ private:
 	UPROPERTY(Replicated, VisibleAnywhere, Category = "Stamina")
 		float m_r_currentStamina;
 
-	/** This method gives a player stamina and max stamina*/
-	UFUNCTION()
-		void EnergizePlayer(float amount);
-
+	
 protected:
 	/**Called when the game starts or when spawned*/
 	virtual void BeginPlay() override;
@@ -163,15 +160,8 @@ protected:
 
 public:
 
-	/**Server function called when the player leaves the game 
-	 * Needs to be server function so that it will be synced over all devices
-	 */
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerLeaveGame();
-
-	/**Temporarly not used*/
-	UFUNCTION()
-		void DestroyPlayer();
+	/** Called to bind functionality to input*/
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	/** Called every frame*/
 	virtual void Tick(float DeltaTime) override;
@@ -182,10 +172,34 @@ public:
 	/**Handles the movement sidewaysof the player*/
 	void MoveRight(float Value);
 
-	void UpdateLifeStatus();
+	/**Server function called when the player leaves the game
+	* Needs to be server function so that it will be synced over all devices
+	*/
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerLeaveGame();
 
-	/** Called to bind functionality to input*/
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	/**Temporarly not used*/
+	UFUNCTION()
+		void DestroyPlayer();
+
+	/**Makes sure the player dies when hp reaches zero */
+	UFUNCTION()
+		void UpdateLifeStatus();
+
+	/** This method gives a player stamina and max stamina*/
+	UFUNCTION()
+		void EnergizePlayer(float amount);
+
+	/**Used to gain power on the bow and drain the stamina
+	* !!!! MAGIC NUMBER!!!!
+	*/
+	bool UpdateBowTension(float DeltaTime);
+
+	/**is Called on the tick,
+	 * Used to slowly gain energy
+	 * !!!! MAGIC NUMBER!!!!
+	 */
+	void RegainEnergy(float DeltaTime);
 
 	/**perform a raycast on the server, Used to mine things or ppick things up*/
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -195,7 +209,7 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerPerformHitCast();
 
-	/*sets all weapons invisible*/
+	/*Sets all weapons invisible*/
 	void WeaponVisibility();
 	
 	/** weaponSwitching */
@@ -204,7 +218,7 @@ public:
 	/** weaponSwitching */
 	UFUNCTION(Server, Reliable, WithValidation)
 		void WeaponSlot2();
-
+	/** weaponSwitching */
 	UFUNCTION(Server, Reliable, WithValidation)
 		void WeaponSlot3();
 	/** weaponSwitching */
@@ -213,21 +227,23 @@ public:
 	/** weaponSwitching */
 	UFUNCTION(Server, Reliable, WithValidation)
 		void WeaponSlot5();
-	/** weaponSwitching */
+	
+	/**Charges a arrow when the bow is equiped and enough power is avaible */
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerDrawArrow();
 
 	/**Replicated arrow power
-	 * This increases them draw is true, also drains stamina
+	 * This increases power when draw is true, also drains stamina
 	 * The power is given to the arrow when it launches
 	 */
 	UPROPERTY(Replicated)
 		float m_r_power;
-	/**Replicated draw valuer*/
+
+	/**Replicated draw value*/
 	UPROPERTY(Replicated)
 		bool m_r_isDrawn;
 
-	/**the weapon the player is wielding with its id */
+	/**The weapon the player is wielding with its id */
 	UPROPERTY(Replicated)
 		int equipedWeapon;
 
@@ -243,15 +259,4 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		bool twoHanderEquiped;
 
-	/**Used to gain power on the bow and drain the stamina
-	 * !!!! MAGIC NUMBER!!!!
-	 */
-	bool UpdateBowTension(float DeltaTime);
-
-	/**is Called on the tick,
-	 * Used to slowly gain energy
-	 * 
-	 * !!!! MAGIC NUMBER!!!!
-	 */
-	void RegainEnergy(float DeltaTime);
 };

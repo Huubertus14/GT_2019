@@ -26,26 +26,19 @@ protected:
 	/** Crosshair asset pointer */
 	UTexture2D* crosshairTex;
 
-	/**The font of the HUD text */
-	UFont* hudFont;
-
-
 public:
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stamina", Meta = (BlueprintProtected = "true"))
-	TSubclassOf<class UUserWidget> PlayerHUDClass;
-
-	UPROPERTY()
-	class UUserWidget* CurrentWidget;
-
-	FCanvasTextItem* TileItem2Text;
 
 	AFPSHUD();
 
-	/**This method will draw the HUD on the players screen */
+	/**This method will draw the static parts of the HUD on the players screen */
 	virtual void DrawHUD() override;
 
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Huds", Meta = (BlueprintProtected = "true"))
+		TSubclassOf<class UUserWidget> playerHUDClass;
+
+	UPROPERTY()
+		class UUserWidget* currentWidget;
 };
 
