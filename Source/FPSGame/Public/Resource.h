@@ -6,10 +6,11 @@
 #include "GameFramework/Actor.h"
 #include "Resource.generated.h"
 
-//!Holds all info a resource needs
+//! Holds the resource for the player
 /*!
- *A basic data class to hold all info a resource needs
- */
+<deprecated>
+This class is a single resource for the player and is stored in the world hidden for reusable reasons.
+*/
 UCLASS()
 class FPSGAME_API AResource : public AActor
 {
@@ -17,7 +18,6 @@ class FPSGAME_API AResource : public AActor
 	
 public:	
 
-	/** Sets default values for this actor's properties*/
 	AResource();
 
 	//! Add amound to the resource
@@ -32,14 +32,15 @@ public:
 	//!Returns the current value of that resource 
 	int GetAmount();
 
-	//!The replicated amount of this resource for the server 
-	UPROPERTY(Replicated)
-	int Amount;
 
 private:
-
-
 	//! Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	//! The replicated amount of this resource for the server 
+	UPROPERTY(Replicated)
+		int m_r_amount;
+
+
 	
 };
