@@ -21,10 +21,10 @@ public:
 	AResource();
 
 	//! Add amound to the resource
-	void AddAmount(int Number);
+	void AddAmount(int t_number);
 
 	//! Used to remove an amount to a resource 
-	void RemoveAmount(int Number);
+	void RemoveAmount(int t_number);
 
 	//! Used to set a value of that resource to 0
 	void ResetAmount();

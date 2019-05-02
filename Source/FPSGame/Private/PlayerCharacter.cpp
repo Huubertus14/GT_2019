@@ -248,6 +248,7 @@ void APlayerCharacter::MoveRight(float Value)
 
 void APlayerCharacter::SharePlayerPitch()
 {
+	
 	if (!IsLocallyControlled())
 	{
 		FRotator newRot = cameraComponent->RelativeRotation;
@@ -351,7 +352,7 @@ FText APlayerCharacter::GetResourceTwo()
 void APlayerCharacter::ServerRightMouseClick_Implementation()
 {
 	//resultRaycast
-	HitResult = new FHitResult();
+	m_hitResult = new FHitResult();
 	//Startpoint raycast
 	FVector StartTrace = cameraComponent->GetComponentLocation();
 	//Direction raycast
@@ -363,14 +364,14 @@ void APlayerCharacter::ServerRightMouseClick_Implementation()
 	TraceParams->AddIgnoredActor(this);
 
 	//Attempt raycast
-	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
+	if (GetWorld()->LineTraceSingleByChannel(*m_hitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
 
 		//Info of jus cast raycast
 		//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
-		FString temp = HitResult->Location.ToString();
+		FString temp = m_hitResult->Location.ToString();
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
 
-		APickUpItem* tempPickUp = Cast<APickUpItem>(HitResult->Actor);
+		APickUpItem* tempPickUp = Cast<APickUpItem>(m_hitResult->Actor);
 		if (tempPickUp)
 		{
 			ServerDropWeapon();
@@ -506,46 +507,43 @@ bool APlayerCharacter::WeaponSlot5_Validate()
 void APlayerCharacter::ServerPerformMineCast_Implementation() {
 
 	//resultRaycast
-	HitResult = new FHitResult();
+	m_hitResult = new FHitResult();
 	//Startpoint raycast
-	FVector StartTrace = cameraComponent->GetComponentLocation();
+	FVector startTrace = cameraComponent->GetComponentLocation();
 	//Direction raycast
-	FVector ForwardVector = cameraComponent->GetForwardVector();
+	FVector forwardVector = cameraComponent->GetForwardVector();
 	//Endpoint raycast
-	FVector EndTrace = StartTrace + (ForwardVector * 1000.f);
+	FVector endTrace = startTrace + (forwardVector * 1000.f);
 	//List of items to not collide with.
-	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
-	TraceParams->AddIgnoredActor(this);
+	FCollisionQueryParams* traceParams = new FCollisionQueryParams;
+	traceParams->AddIgnoredActor(this);
 
 	//Attempt raycast
-	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
+	if (GetWorld()->LineTraceSingleByChannel(*m_hitResult, startTrace, endTrace, ECC_Visibility, *traceParams)) {
 
-		//Info of jus cast raycast
-		//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
-		FString temp = HitResult->Location.ToString();
-		//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
+		//check if it was a ore.
+		AOre* hitTemp = Cast<AOre>(m_hitResult->Actor);
 
-			//check if it was a ore.
-		AOre* hitTemp = Cast<AOre>(HitResult->Actor);
-
-		if ((hitTemp && equipedWeapon == 2) || (hitTemp && equipedWeapon == 3)) {
-			if (FVector::Dist(hitTemp->GetActorLocation(), GetActorLocation()) > 350.f) {
-				hitTemp->OreHitSpawn(HitResult->Location);
+		//if it was a ore check how close you are. if to close just add to player else spawn a item.
+		if ((hitTemp && equipedWeapon == 2) || (hitTemp && equipedWeapon == 3)) 
+		{
+			if (FVector::Dist(hitTemp->GetActorLocation(), GetActorLocation()) > 350.f) 
+			{
+				hitTemp->OreHitSpawn(m_hitResult->Location);
 			}
-			else {
+			else 
+			{
 
 				m_r_resources[hitTemp->GetResourceID()] += hitTemp->GetResourceID();
 				hitTemp->OreEmpty();
 			}
 		}
 
-		AMeatActor* meattemp = Cast<AMeatActor>(HitResult->Actor);
+		//check if it was a meat item.
+		AMeatActor* meattemp = Cast<AMeatActor>(m_hitResult->Actor);
 
-		if (meattemp)//Check if the raycasted thing is meat
+		if (meattemp)
 		{
-			//Debug tool
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "YAY VLEES!");
-
 			//Increase life and stamina
 			HealPlayer(50);
 			EnergizePlayer(20);
@@ -563,26 +561,28 @@ bool APlayerCharacter::ServerPerformMineCast_Validate() {
 
 void APlayerCharacter::ServerFire_Implementation()
 {
-	if (m_r_isDrawn) {
-		FVector f = cameraComponent->GetForwardVector();
-		FRotator camera = cameraComponent->GetComponentRotation();
-		FVector pos = cameraComponent->GetComponentLocation();
-		pos += f * 150.f;
+	if (m_r_isDrawn)
+	{
+		FVector forwardVector = cameraComponent->GetForwardVector();
+		FRotator cameraRot = cameraComponent->GetComponentRotation();
+		FVector position = cameraComponent->GetComponentLocation();
+		position += forwardVector * 150.f;
 		FActorSpawnParameters spawnParams;
 		spawnParams.Owner = this;
 		spawnParams.Instigator = Instigator;
 
 		if (m_r_power > 1 && bowEquiped)
 		{
-			AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(arrowToCreate, pos, camera, spawnParams);
+			AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(arrowToCreate, position, cameraRot, spawnParams);
 			UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newArrow->GetRootComponent());
 			if (meshComp) {
-				meshComp->AddForce(f*100000.f*meshComp->GetMass()*m_r_power);
+				meshComp->AddForce(forwardVector*100000.f*meshComp->GetMass()*m_r_power);
 			}
 		}
 		m_r_isDrawn = false;
 	}
 }
+
 
 bool APlayerCharacter::ServerFire_Validate()
 {

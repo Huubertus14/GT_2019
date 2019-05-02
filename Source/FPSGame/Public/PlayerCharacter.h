@@ -86,9 +86,6 @@ public:
 	/**Crucial method to fix the pitch rotation of the player*/
 	void SharePlayerPitch();
 
-	/**The result returned when a raycast is cast.*/
-	FHitResult* HitResult;
-
 	/** stamina accessor */
 	UFUNCTION(BlueprintPure, Category = "Stamina")
 		float GetCurrentStam();
@@ -109,6 +106,21 @@ public:
 		FText GetResourceTwo();
 
 private:
+
+	/**Replicated arrow power
+	 * This increases power when draw is true, also drains stamina
+	 * The power is given to the arrow when it launches
+	*/
+	UPROPERTY(Replicated)
+		float m_r_power;
+
+	/**Replicated draw value*/
+	UPROPERTY(Replicated)
+		bool m_r_isDrawn;
+
+	/**The result returned when a raycast is cast.*/
+	FHitResult* m_hitResult;
+	
 	/** This value indicates the max life of a player*/
 	UPROPERTY(VisibleAnywhere, Category = "Health")
 		float m_lifeCap;
@@ -148,10 +160,6 @@ protected:
 	/**Unreal atribute of the camera component*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* cameraComponent;
-
-	/**Serever function which will launch an arrow in the world*/
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerFire();
 
 	/**Server function which will perform the acton of a rightmouse click*/
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -201,13 +209,23 @@ public:
 	 */
 	void RegainEnergy(float DeltaTime);
 
-	/**perform a raycast on the server, Used to mine things or ppick things up*/
+	/**perform a raycast on the server, Used to mine things or pick things up
+	* !!!! MAGIC NUMBER!!!!
+	*/
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerPerformMineCast();
 
-	/**Called to handle melee combat on the server*/
+	/**Called to handle melee combat on the server
+	* !!!! MAGIC NUMBER!!!!
+	*/
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerPerformHitCast();
+
+	/**Serever function which will launch an arrow in the world
+	* !!!! MAGIC NUMBER!!!!
+	*/
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerFire();
 
 	/*Sets all weapons invisible*/
 	void WeaponVisibility();
@@ -231,17 +249,6 @@ public:
 	/**Charges a arrow when the bow is equiped and enough power is avaible */
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerDrawArrow();
-
-	/**Replicated arrow power
-	 * This increases power when draw is true, also drains stamina
-	 * The power is given to the arrow when it launches
-	 */
-	UPROPERTY(Replicated)
-		float m_r_power;
-
-	/**Replicated draw value*/
-	UPROPERTY(Replicated)
-		bool m_r_isDrawn;
 
 	/**The weapon the player is wielding with its id */
 	UPROPERTY(Replicated)

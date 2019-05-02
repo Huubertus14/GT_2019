@@ -46,7 +46,7 @@ public:
 	UFUNCTION()
 		int GetResourceAmount();
 
-	/**De direction the ore needs to spawn */
+	/**De direction the ore needs to spawn in*/
 	UFUNCTION()
 		FVector OreDirection(FVector t_hitPoint);
 
