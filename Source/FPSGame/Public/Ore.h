@@ -29,11 +29,26 @@ private:
 	/**The amount of resources this ore can spawn */
 	UPROPERTY()
 		int m_life;
+
+	/**The ID of this resource */
+	UPROPERTY(EditAnywhere, Category = "Resource")
+		int m_resourceID;
+
+	/**The amount the of the resource is given out*/
+	UPROPERTY(EditAnywhere, Category = "Resource")
+		int m_resourceAmount;
+
 public:
+	/** resourcesID accessor */
+	UFUNCTION()
+		int GetResourceID();
+	/** resourcesAmount accessor */
+	UFUNCTION()
+		int GetResourceAmount();
 
 	/**De direction the ore needs to spawn */
 	UFUNCTION()
-	FVector OreDirection(FVector t_hitPoint);
+		FVector OreDirection(FVector t_hitPoint);
 
 	/** The point where the player hits the object*/
 	UFUNCTION()
@@ -52,13 +67,4 @@ public:
 	 *Is set in the BP of this object */
 	UPROPERTY(EditAnywhere, Category = "ToSpawn")
 		TSubclassOf<class AResourcePickUpTrigger> pickUpItem;
-
-	/**The ID of this resource */
-	UPROPERTY(EditAnywhere, Category = "Resource")
-		int resourceID;
-
-	/**The amount the of the resource is given out*/
-	UPROPERTY(EditAnywhere, Category = "Resource")
-		int resourceAmount;
-
 };

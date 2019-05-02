@@ -23,7 +23,8 @@ void AOre::BeginPlay()
 	
 }
 
-FVector AOre::OreDirection(FVector t_hitPoint) 
+
+FVector AOre::OreDirection(FVector t_hitPoint)
 {
 	FVector centerPoint = GetActorLocation();
 	FVector outDirection = t_hitPoint - centerPoint;
@@ -71,6 +72,17 @@ void AOre::OreEmpty()
 		}
 	}
 
+}
+
+
+int AOre::GetResourceID()
+{
+	return m_resourceID;
+}
+
+int AOre::GetResourceAmount()
+{
+	return m_resourceAmount;
 }
 
 

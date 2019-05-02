@@ -534,7 +534,7 @@ void APlayerCharacter::ServerPerformMineCast_Implementation() {
 			}
 			else {
 
-				m_r_resources[hitTemp->resourceID] += hitTemp->resourceAmount;
+				m_r_resources[hitTemp->GetResourceID()] += hitTemp->GetResourceID();
 				hitTemp->OreEmpty();
 			}
 		}
@@ -546,7 +546,7 @@ void APlayerCharacter::ServerPerformMineCast_Implementation() {
 			//Debug tool
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "YAY VLEES!");
 
-			//Increase life and staminarr
+			//Increase life and stamina
 			HealPlayer(50);
 			EnergizePlayer(20);
 
