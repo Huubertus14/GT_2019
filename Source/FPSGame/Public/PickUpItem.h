@@ -20,27 +20,27 @@ public:
 	/** Sets default values for this actor's properties*/
 	APickUpItem();
 
-protected:
-	/** Called when the game starts or when spawned*/
-	virtual void BeginPlay() override;
-
-	/**The ID of a weapon
-	 *Is set in the BP and will depend which item the player gets in their invertory */
-	UPROPERTY(EditAnywhere)
-		int weaponID;
-
-public:	
-
-	/**The mesh component of this object
+	/**The mesh component of the PickupItem
 	 *Is set in the BP */
-	UPROPERTY(EditAnywhere)
-		UStaticMeshComponent* MyMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+		UStaticMeshComponent* MeshPickupItem;
 
 	/**Called when you pick up the item
 	Will destroy the actor*/
 	void Pickup();
 
 	/**Returns the weapon ID*/
-	int GetID();
+	int GetWeaponID();
 
+
+protected:
+	/** Called when the game starts or when spawned*/
+	virtual void BeginPlay() override;
+
+	/**The ID of a weapon
+	 *Is set in the BP and will depend which item 
+	 *the player gets in their invertory */
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+		int weaponID;
+	
 };
