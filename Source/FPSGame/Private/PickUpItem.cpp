@@ -35,7 +35,7 @@ void APickUpItem::Pickup()
 	Destroy();
 }
 
-int APickUpItem::GetID()
+int APickUpItem::GetWeaponID()
 {
 	return weaponID;
 }

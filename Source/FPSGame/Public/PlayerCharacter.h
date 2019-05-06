@@ -260,7 +260,7 @@ public:
 	/**Server function which will execute the pickup
 	*Or throw action*/
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerServerPickupThrow();
+		void ServerPickupThrow();
 
 	/**The weapon the player is wielding with its id */
 	UPROPERTY(Replicated)

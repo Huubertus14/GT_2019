@@ -131,7 +131,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::ServerDrawArrow);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerFire);
 
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerRightMouseClick);
+	PlayerInputComponent->BindAction("ServerPickupThrow", IE_Released, this, &APlayerCharacter::ServerPickupThrow);
 
 	// WeaponSlots
 	PlayerInputComponent->BindAction("WeaponSlot1", IE_Pressed, this, &APlayerCharacter::WeaponSlot1);
@@ -359,7 +359,7 @@ void APlayerCharacter::ServerDropWeapon_Implementation()
 	{
 		APickUpItem* actualWeapon = dropWeapons[i].GetDefaultObject();
 
-		if (actualWeapon->GetID() == currentWeaponID)
+		if (actualWeapon->GetWeaponID() == currentWeaponID)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Dropped a weapon");
 

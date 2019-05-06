@@ -11,7 +11,7 @@
 
 AFPSHUD::AFPSHUD()
 {
-	// Set the crosshair texture
+	//! Set the crosshair texture
 	static ConstructorHelpers::FObjectFinder<UTexture2D> crosshairTexObj(TEXT("/Game/UI/FirstPersonCrosshair"));
 	crosshairTex = crosshairTexObj.Object;
 }
@@ -21,23 +21,23 @@ void AFPSHUD::DrawHUD()
 {
 	Super::DrawHUD();
 
-	// find center of the Canvas
+	//! Find center of the Canvas
 	const FVector2D center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
 
-	// draw static images
+	//! Draw static images
 	FCanvasTileItem tileItem(center, crosshairTex->Resource, FLinearColor::White);
 	
-	// make them just their image with no background
+	//! Make them just their image with no background
 	tileItem.BlendMode  = SE_BLEND_Translucent;
 	
-	// Tiles for the draw system 
+	//! Tiles for the draw system 
 	Canvas->DrawItem(tileItem);
 }
 
 void AFPSHUD::BeginPlay() 
 {
 	Super::BeginPlay();	
-	//assign the correct hud in the future there could be more huds such as inventory
+	//! Assign the correct hud in the future there could be more huds such as inventory
 	if (playerHUDClass != nullptr) {
 		
 		//assign non static part of the hud
