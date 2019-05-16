@@ -7,10 +7,10 @@ AOre::AOre()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	Life =  FMath::RandRange(13, 25);
-	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
-	RootComponent = MeshComp;
-	MeshComp->SetWorldScale3D(FVector(0.2f, 0.2f, 0.2f));
+	m_life =  FMath::RandRange(13, 25);
+	meshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
+	RootComponent = meshComp;
+	meshComp->SetWorldScale3D(FVector(0.2f, 0.2f, 0.2f));
 
 	
 }
@@ -23,27 +23,28 @@ void AOre::BeginPlay()
 	
 }
 
-FVector AOre::OreDirection(FVector hitPoint) 
+
+FVector AOre::OreDirection(FVector t_hitPoint)
 {
-	FVector CenterPoint = GetActorLocation();
-	FVector OutDirection = hitPoint - CenterPoint;
-	return OutDirection;
+	FVector centerPoint = GetActorLocation();
+	FVector outDirection = t_hitPoint - centerPoint;
+	return outDirection;
 }
 
-void AOre::OreHitSpawn(FVector hitPoint) 
+void AOre::OreHitSpawn(FVector t_hitPoint) 
 {
 	if (Role == ROLE_Authority) {
-		FVector outwardVector = OreDirection(hitPoint);
+		FVector outwardVector = OreDirection(t_hitPoint);
 		outwardVector.Normalize(1.f);
-		Life--;
-		if (PickUpItem) {
+		m_life--;
+		if (pickUpItem) {
 
 			FActorSpawnParameters spawnParams;
 			spawnParams.Owner = this;
 			FRotator rotator = FRotator(0.f, 0.f, 0.f);
-			FVector spawnLocation = hitPoint + outwardVector*5.f;
+			FVector spawnLocation = t_hitPoint + outwardVector*5.f;
 
-			AResourcePickUpTrigger* newPickup = GetWorld()->SpawnActor<AResourcePickUpTrigger>(PickUpItem, spawnLocation, rotator ,spawnParams);
+			AResourcePickUpTrigger* newPickup = GetWorld()->SpawnActor<AResourcePickUpTrigger>(pickUpItem, spawnLocation, rotator ,spawnParams);
 			if (newPickup) 
 			{
 				UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newPickup->GetRootComponent());
@@ -54,7 +55,7 @@ void AOre::OreHitSpawn(FVector hitPoint)
 			}
 		}
 
-		if (Life <= 0)
+		if (m_life <= 0)
 		{
 			Destroy();
 		}
@@ -64,13 +65,24 @@ void AOre::OreHitSpawn(FVector hitPoint)
 void AOre::OreEmpty()
 {
 	if (Role == ROLE_Authority) {
-		Life--;
-		if(Life <= 0)
+		m_life--;
+		if(m_life <= 0)
 		{
 			Destroy();
 		}
 	}
 
+}
+
+
+int AOre::GetResourceID()
+{
+	return m_resourceID;
+}
+
+int AOre::GetResourceAmount()
+{
+	return m_resourceAmount;
 }
 
 

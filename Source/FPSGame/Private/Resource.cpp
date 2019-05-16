@@ -4,43 +4,40 @@
 #include "Engine.h"
 #include "UnrealNetwork.h"
 
-// Sets default values
 AResource::AResource()
 {
 	SetReplicates(true);
 
 }
 
-// Called when the game starts or when spawned
+
 void AResource::BeginPlay()
 {
 	Super::BeginPlay();
-	Amount = 0;
+	m_r_amount = 0;
 }
 
 void AResource::AddAmount(int Number) {
-	Amount += Number;
-	//Needs to be server validated.
+	m_r_amount += Number;
+
 }
 void AResource::RemoveAmount(int Number) {
-	Amount -= Number;
-	//Needs to be server validated.
+	m_r_amount -= Number;
+
 }
 
 void AResource::ResetAmount() {
-	Amount = 0;
-	//Needs to be server validated.
+	m_r_amount = 0;
 }
 
 int AResource::GetAmount() {
-	return Amount;
-	//Needs to be server validated.
+	return m_r_amount;
 }
 
 void AResource::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const {
 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AResource, Amount);
+	DOREPLIFETIME(AResource, m_r_amount);
 
 }
 

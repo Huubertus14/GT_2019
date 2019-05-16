@@ -12,19 +12,19 @@
 
 
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green,text)
-// Sets default values
+
 APlayerCharacter::APlayerCharacter()
 {
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 3; ++i)
 	{
-		Resources.Add(0);
+		m_r_resources.Add(0);
 	}
-	//UE_LOG(LogTemp, Warning, TEXT("Total amount of Resources: %i"), Resources.Num());
+
 	// Create a CameraComponent	
-	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
-	CameraComponent->SetupAttachment(GetCapsuleComponent());
-	CameraComponent->RelativeLocation = FVector(0, 0, BaseEyeHeight); // Position the camera
-	CameraComponent->bUsePawnControlRotation = true;
+	cameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	cameraComponent->SetupAttachment(GetCapsuleComponent());
+	cameraComponent->RelativeLocation = FVector(0, 0, BaseEyeHeight); // Position the camera
+	cameraComponent->bUsePawnControlRotation = true;
   
 	//MeshCharacter
 	MeshPit = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh"));
@@ -84,36 +84,32 @@ APlayerCharacter::APlayerCharacter()
 	//Collision mesh
 	HitBoxComponent = CreateDefaultSubobject<USphereComponent>(TEXT("HitComp"));
 	HitBoxComponent->SetupAttachment(MeshPit);
-	//HitBoxComponent->CastShadow = false;
 	HitBoxComponent->AttachTo(MeshPit, TEXT("WeaponRight"));
 	HitBoxComponent->SetSphereRadius(7.f);
-	//HitBoxComponent->SetSimulatePhysics(true);
-	//HitBoxComponent->SetNotifyRigidBodyCollision(true);
-	HitBoxComponent->BodyInstance.SetCollisionProfileName("BlockAllDynamic"); //BlockAllDynamic//OverlapAll
+	HitBoxComponent->BodyInstance.SetCollisionProfileName("BlockAllDynamic"); 
 
 
-
-	/*HitBoxDetection = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
-	HitBoxDetection->SetupAttachment(MeshPit);
-	HitBoxDetection->AttachTo(MeshPit, TEXT("WeaponRight"));
-	HitBoxDetection->bDynamicObstacle = true;
-	HitBoxDetection->BodyInstance.SetCollisionProfileName("MyCollisionProfile");
-	HitBoxDetection->SetNotifyRigidBodyCollision(true);
-	
-	FScriptDelegate DelegateBegin;
-	DelegateBegin.BindUFunction(this, "OnTestOverlapBegin");
-	HitBoxDetection->OnComponentBeginOverlap.Add(DelegateBegin);
-	FScriptDelegate DelegateEnd;
-	DelegateEnd.BindUFunction(this, "OnTestOverlapEnd");
-	HitBoxDetection->OnComponentEndOverlap.Add(DelegateEnd);*/
-
-	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	//SetReplicateMovement(true);
 	SetReplicates(true);
 	bReplicates = true;
 
+}
+
+// Called when the game starts or when spawned
+void APlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	m_lifeCap = 100;
+	m_r_life = 50;
+	m_maxStamina = 200;
+	m_r_currentMaxStamina = 100;
+	m_r_currentStamina = m_r_currentMaxStamina;
+	bowEquiped = true;
+	twoHanderEquiped = false;
+	currentWeaponID = 0;
+	equipedWeapon = 1;
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -129,13 +125,13 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::PerformMineCast);
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::PerformHitCast);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::ServerPerformMineCast);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::ServerPerformHitCast);
 
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::DrawArrow);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::ServerDrawArrow);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerFire);
 
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::RightMouseClick);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerRightMouseClick);
 
 	// WeaponSlots
 	PlayerInputComponent->BindAction("WeaponSlot1", IE_Pressed, this, &APlayerCharacter::WeaponSlot1);
@@ -145,40 +141,38 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("WeaponSlot5", IE_Pressed, this, &APlayerCharacter::WeaponSlot5);
 }
 
-void APlayerCharacter::EnergizePlayer(float amount)
+
+// Called every frame
+void APlayerCharacter::Tick(float DeltaTime)
 {
-	CurrentMaxStamina += (amount / 4);
-	if (CurrentMaxStamina > MaxStamina) {
-		CurrentMaxStamina = MaxStamina;
-	}
-	CurrentStamina += amount;
-	if (CurrentStamina > CurrentMaxStamina) {
-		CurrentStamina = CurrentMaxStamina;
+	Super::Tick(DeltaTime);
+
+	if (bowEquiped) 
+	{
+		if (m_r_isDrawn) 
+		{
+			if (UpdateBowTension(DeltaTime)) 
+			{
+				ServerFire();
+			}
+		}
+		else 
+		{
+			RegainEnergy(DeltaTime);
+		}
 	}
 
+	UpdateLifeStatus();
+
+	SharePlayerPitch();
 }
 
-// Called when the game starts or when spawned
-void APlayerCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-	lifeCap = 100;
-	life = 50;
-	MaxStamina = 200;
-	CurrentMaxStamina = 100;
-	CurrentStamina = CurrentMaxStamina;
-	isBow = true;
-	is2H = false;
-	currentWeaponID = 0;
-	equipedWeapon = 1;
-}
-
-void APlayerCharacter::DropWeapon_Implementation()
+void APlayerCharacter::ServerDropWeapon_Implementation()
 {
 	//Get current weapon ID
 
 	//Loop through weapon array
-	for (int i = 0; i < dropWeapons.Num(); i++)
+	for (int i = 0; i < dropWeapons.Num(); ++i)
 	{
 		APickUpItem* item = dropWeapons[i].GetDefaultObject();
 		if (item->GetID() == currentWeaponID)
@@ -186,9 +180,9 @@ void APlayerCharacter::DropWeapon_Implementation()
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Dropped a weapon");
 
 			//Drop weapon
-			FVector f = CameraComponent->GetForwardVector();
-			FRotator camera = CameraComponent->GetComponentRotation();
-			FVector pos = CameraComponent->GetComponentLocation();
+			FVector f = cameraComponent->GetForwardVector();
+			FRotator camera = cameraComponent->GetComponentRotation();
+			FVector pos = cameraComponent->GetComponentLocation();
 			pos += f * 100.f;
 			FActorSpawnParameters spawnParams;
 			spawnParams.Owner = this;
@@ -205,81 +199,32 @@ void APlayerCharacter::DropWeapon_Implementation()
 
 }
 
-bool APlayerCharacter::DropWeapon_Validate()
+bool APlayerCharacter::ServerDropWeapon_Validate()
 {
 	return true;
 }
 
-void APlayerCharacter::ServerFire_Implementation()
+bool APlayerCharacter::UpdateBowTension(float DeltaTime)
 {
-	if (isDrawn) {
-		FVector f = CameraComponent->GetForwardVector();
-		FRotator camera = CameraComponent->GetComponentRotation();
-		FVector pos = CameraComponent->GetComponentLocation();
-		pos += f * 150.f;
-		FActorSpawnParameters spawnParams;
-		spawnParams.Owner = this;
-		spawnParams.Instigator = Instigator;
+	m_r_power += .7f * DeltaTime;
+	m_r_currentStamina -= 10.f * DeltaTime;
 
-		if (power > 1&& isBow)
-		{
-			AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(arrowToCreate, pos, camera, spawnParams);
-			UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newArrow->GetRootComponent());
-			if (meshComp) {
-				meshComp->AddForce(f*100000.f*meshComp->GetMass()*power);
-			}
-		}
-		isDrawn = false;
+	if (m_r_currentStamina <= 0) {
+		return true;
+	}
+	else {
+		return false;
 	}
 }
 
-bool APlayerCharacter::ServerFire_Validate()
+void APlayerCharacter::RegainEnergy(float DeltaTime)
 {
-	return true;
-}
-
-void APlayerCharacter::DrawArrow_Implementation()
-{
-	if (CurrentStamina > 20.f && isBow) {
-		isDrawn = true;
+	m_r_power = 0.f;
+	m_r_currentStamina += 2.5f * DeltaTime;
+	if (m_r_currentStamina > m_r_currentMaxStamina)
+	{
+		m_r_currentStamina = m_r_currentMaxStamina;
 	}
-}
-
-bool APlayerCharacter::DrawArrow_Validate()
-{
-	return true;
-}
-
-// Called every frame
-void APlayerCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-		
-	if (life < 0) {
-		DestroyPlayer();
-		}
-		if (isDrawn && isBow) {
-			power += .7f * DeltaTime;
-			CurrentStamina -= 10.f * DeltaTime;
-			if (CurrentStamina <= 0) {
-				ServerFire();
-			}
-		}
-		else {
-			power = 0.f;
-			CurrentStamina += 2.5f * DeltaTime;
-			if (CurrentStamina > CurrentMaxStamina) {
-				CurrentStamina = CurrentMaxStamina;
-			}
-		}
-
-		if (!IsLocallyControlled()) {
-			FRotator newRot = CameraComponent->RelativeRotation;
-			newRot.Pitch = RemoteViewPitch * 360.0f / 255.0f;
-
-			CameraComponent->SetRelativeRotation(newRot);
-		}
-
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -301,6 +246,25 @@ void APlayerCharacter::MoveRight(float Value)
 	}
 }
 
+void APlayerCharacter::SharePlayerPitch()
+{
+	
+	if (!IsLocallyControlled())
+	{
+		FRotator newRot = cameraComponent->RelativeRotation;
+		newRot.Pitch = RemoteViewPitch * 360.0f / 255.0f;
+
+		cameraComponent->SetRelativeRotation(newRot);
+	}
+}
+
+void APlayerCharacter::UpdateLifeStatus()
+{
+	if (m_r_life < 0) {
+		DestroyPlayer();
+	}
+}
+
 void APlayerCharacter::HitPlayer(float damage)
 {
 	if (damage <= 0)
@@ -308,13 +272,13 @@ void APlayerCharacter::HitPlayer(float damage)
 		UE_LOG(LogTemp, Warning, TEXT("Can't damage negative!\n Use heal instead!"));
 		return;
 	}
-	life -= damage;
+	m_r_life -= damage;
 
-	FString NewString = FString::FromInt(life);
+	FString NewString = FString::FromInt(m_r_life);
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, NewString);
 
-	if (life <= 0) {
+	if (m_r_life <= 0) {
 
 			UE_LOG(LogTemp, Warning, TEXT("Player Die"));
 			DestroyPlayer();
@@ -328,116 +292,71 @@ void APlayerCharacter::HealPlayer(float heal)
 		UE_LOG(LogTemp, Warning, TEXT("Can't heal negative!\n Use damage instead!"));
 		return;
 	}
-	life += heal;
-	if (life > lifeCap) {
-		life = lifeCap;
+	m_r_life += heal;
+	if (m_r_life > m_lifeCap) {
+		m_r_life = m_lifeCap;
 	}
 
-	FString NewString = FString::FromInt(life);
+	FString NewString = FString::FromInt(m_r_life);
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, NewString);
 
 }
 
-float APlayerCharacter::GetCurrentStam()
+void APlayerCharacter::EnergizePlayer(float amount)
 {
-	return CurrentStamina;
-}
-
-float APlayerCharacter::GetCurrentMaxStam()
-{
-	return CurrentMaxStamina;
-}
-
-float APlayerCharacter::GetCurrentLife()
-{
-	return life;
-}
-
-FText APlayerCharacter::GetResourceZero()
-{		FString VeryCleanString = FString::FromInt(Resources[0]);
-		return FText::FromString(VeryCleanString);
-}
-
-FText APlayerCharacter::GetResourceOne()
-{
-		FString VeryCleanString = FString::FromInt(Resources[1]);
-		return FText::FromString(VeryCleanString);
-}
-
-FText APlayerCharacter::GetResourceTwo()
-{
-		FString VeryCleanString = FString::FromInt(Resources[2]);
-		return FText::FromString(VeryCleanString);
-}
-
-
-void APlayerCharacter::PerformMineCast_Implementation() {
-
-	//resultRaycast
-	HitResult = new FHitResult();
-	//Startpoint raycast
-	FVector StartTrace = CameraComponent->GetComponentLocation();
-	//Direction raycast
-	FVector ForwardVector = CameraComponent->GetForwardVector();
-	//Endpoint raycast
-	FVector EndTrace = StartTrace + (ForwardVector * 1000.f);
-	//List of items to not collide with.
-	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
-	TraceParams->AddIgnoredActor(this);
-
-	//Attempt raycast
-	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
-
-		//Info of jus cast raycast
-		//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
-		FString temp = HitResult->Location.ToString();
-	//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
-
-		//check if it was a ore.
-		AOre* hitTemp = Cast<AOre>(HitResult->Actor);
-
-		if ((hitTemp && equipedWeapon == 2 )||(hitTemp && equipedWeapon == 3)) {
-			if (FVector::Dist(hitTemp->GetActorLocation(), GetActorLocation()) > 350.f) {
-				hitTemp->OreHitSpawn(HitResult->Location);
-			}
-			else {
-
-				Resources[hitTemp->resourceID]+= hitTemp->resourceAmount;
-				hitTemp->OreEmpty();
-			}
-		}
-
-		AMeatActor* meattemp = Cast<AMeatActor>(HitResult->Actor);
-
-		if (meattemp)//Check if the raycasted thing is meat
-		{
-			//Debug tool
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "YAY VLEES!");
-
-			//Increase life and staminarr
-			HealPlayer(50);
-			EnergizePlayer(20);
-
-			//destroy meat object
-			meattemp->EatMeat();
-		}
+	m_r_currentMaxStamina += (amount / 4);
+	if (m_r_currentMaxStamina > m_maxStamina) {
+		m_r_currentMaxStamina = m_maxStamina;
+	}
+	m_r_currentStamina += amount;
+	if (m_r_currentStamina > m_r_currentMaxStamina) {
+		m_r_currentStamina = m_r_currentMaxStamina;
 	}
 
 }
 
-bool APlayerCharacter::PerformMineCast_Validate() {
-	return true;
+float APlayerCharacter::GetCurrentStam()
+{
+	return m_r_currentStamina;
 }
 
-void APlayerCharacter::RightMouseClick_Implementation()
+float APlayerCharacter::GetCurrentMaxStam()
+{
+	return m_r_currentMaxStamina;
+}
+
+float APlayerCharacter::GetCurrentLife()
+{
+	return m_r_life;
+}
+
+FText APlayerCharacter::GetResourceZero()
+{		
+		FString veryCleanString = FString::FromInt(m_r_resources[0]);
+		return FText::FromString(veryCleanString);
+}
+
+FText APlayerCharacter::GetResourceOne()
+{
+		FString veryCleanString = FString::FromInt(m_r_resources[1]);
+		return FText::FromString(veryCleanString);
+}
+
+FText APlayerCharacter::GetResourceTwo()
+{
+		FString veryCleanString = FString::FromInt(m_r_resources[2]);
+		return FText::FromString(veryCleanString);
+}
+
+void APlayerCharacter::ServerRightMouseClick_Implementation()
 {
 	//resultRaycast
-	HitResult = new FHitResult();
+	m_hitResult = new FHitResult();
 	//Startpoint raycast
-	FVector StartTrace = CameraComponent->GetComponentLocation();
+	FVector StartTrace = cameraComponent->GetComponentLocation();
 	//Direction raycast
-	FVector ForwardVector = CameraComponent->GetForwardVector();
+	FVector ForwardVector = cameraComponent->GetForwardVector();
 	//Endpoint raycast
 	FVector EndTrace = StartTrace + (ForwardVector * 1000.f);
 	//List of items to not collide with.
@@ -445,24 +364,24 @@ void APlayerCharacter::RightMouseClick_Implementation()
 	TraceParams->AddIgnoredActor(this);
 
 	//Attempt raycast
-	if (GetWorld()->LineTraceSingleByChannel(*HitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
+	if (GetWorld()->LineTraceSingleByChannel(*m_hitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
 
 		//Info of jus cast raycast
 		//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true, 5.f);
-		FString temp = HitResult->Location.ToString();
+		FString temp = m_hitResult->Location.ToString();
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
 
-		APickUpItem* tempPickUp = Cast<APickUpItem>(HitResult->Actor);
+		APickUpItem* tempPickUp = Cast<APickUpItem>(m_hitResult->Actor);
 		if (tempPickUp)
 		{
-			DropWeapon();
+			ServerDropWeapon();
 			currentWeaponID = tempPickUp->GetID();
 			tempPickUp->Pickup();
 		}
 	}
 }
 
-bool APlayerCharacter::RightMouseClick_Validate()
+bool APlayerCharacter::ServerRightMouseClick_Validate()
 {
 	return true;
 }
@@ -485,18 +404,18 @@ void APlayerCharacter::DestroyPlayer()
 			UE_LOG(LogTemp, Warning, TEXT("WTF... Which lvl are you playing"));
 		}
 		//Destroy();
-		LeaveGame();
+		ServerLeaveGame();
 
 		UGameplayStatics::OpenLevel(this, FName(TEXT("FirstPersonExampleMap")));
 	}
 }
 
-void APlayerCharacter::LeaveGame_Implementation()
+void APlayerCharacter::ServerLeaveGame_Implementation()
 {
 	Destroy();
 }
 
-bool APlayerCharacter::LeaveGame_Validate()
+bool APlayerCharacter::ServerLeaveGame_Validate()
 {
 	return true;
 }
@@ -512,124 +431,223 @@ void APlayerCharacter::WeaponVisibility()
 	MeshShield->SetVisibility(false);
 	MeshDagger->SetVisibility(false);
 }
+
 void APlayerCharacter::WeaponSlot1_Implementation()
 {
 	WeaponVisibility();
 	MeshBow->SetVisibility(true);
 	MeshArrow->SetVisibility(true);
-	isBow = true;
-	is2H = false;
+	bowEquiped = true;
+	twoHanderEquiped = false;
 	equipedWeapon = 1;
-}
-
-void APlayerCharacter::WeaponSlot2_Implementation()
-{
-	WeaponVisibility();
-	MeshAxe->SetVisibility(true);
-	isBow = false;
-	is2H = false;
-	equipedWeapon = 2;
-}
-void APlayerCharacter::WeaponSlot3_Implementation()
-{
-	WeaponVisibility();
-	MeshPickaxe->SetVisibility(true);
-	isBow = false;
-	is2H = false;
-	equipedWeapon = 3;
-}
-
-void APlayerCharacter::WeaponSlot4_Implementation()
-{
-	WeaponVisibility();
-	MeshSword->SetVisibility(true);
-	isBow = false;
-	is2H = false;
-	equipedWeapon = 4;
-}
-
-void APlayerCharacter::WeaponSlot5_Implementation()
-{
-	WeaponVisibility();
-	Mesh2HSword->SetVisibility(true);
-	isBow = false;
-	is2H = true;
-	equipedWeapon = 5;
 }
 
 bool APlayerCharacter::WeaponSlot1_Validate()
 {
 	return true;
 }
+
+void APlayerCharacter::WeaponSlot2_Implementation()
+{
+	WeaponVisibility();
+	MeshAxe->SetVisibility(true);
+	bowEquiped = false;
+	twoHanderEquiped = false;
+	equipedWeapon = 2;
+}
+
 bool APlayerCharacter::WeaponSlot2_Validate()
 {
 	return true;
 }
+
+void APlayerCharacter::WeaponSlot3_Implementation()
+{
+	WeaponVisibility();
+	MeshPickaxe->SetVisibility(true);
+	bowEquiped = false;
+	twoHanderEquiped = false;
+	equipedWeapon = 3;
+}
+
 bool APlayerCharacter::WeaponSlot3_Validate()
 {
 	return true;
 }
+
+void APlayerCharacter::WeaponSlot4_Implementation()
+{
+	WeaponVisibility();
+	MeshSword->SetVisibility(true);
+	bowEquiped = false;
+	twoHanderEquiped = false;
+	equipedWeapon = 4;
+}
+
 bool APlayerCharacter::WeaponSlot4_Validate()
 {
 	return true;
 }
+
+void APlayerCharacter::WeaponSlot5_Implementation()
+{
+	WeaponVisibility();
+	Mesh2HSword->SetVisibility(true);
+	bowEquiped = false;
+	twoHanderEquiped = true;
+	equipedWeapon = 5;
+}
+
 bool APlayerCharacter::WeaponSlot5_Validate()
 {
 	return true;
 }
 
-void APlayerCharacter::PerformHitCast_Implementation() {
-	
-	
+
+void APlayerCharacter::ServerPerformMineCast_Implementation() {
+
 	//resultRaycast
+	m_hitResult = new FHitResult();
+	//Startpoint raycast
+	FVector startTrace = cameraComponent->GetComponentLocation();
+	//Direction raycast
+	FVector forwardVector = cameraComponent->GetForwardVector();
+	//Endpoint raycast
+	FVector endTrace = startTrace + (forwardVector * 1000.f);
+	//List of items to not collide with.
+	FCollisionQueryParams* traceParams = new FCollisionQueryParams;
+	traceParams->AddIgnoredActor(this);
+
+	//Attempt raycast
+	if (GetWorld()->LineTraceSingleByChannel(*m_hitResult, startTrace, endTrace, ECC_Visibility, *traceParams)) {
+
+		//check if it was a ore.
+		AOre* hitTemp = Cast<AOre>(m_hitResult->Actor);
+
+		//if it was a ore check how close you are. if to close just add to player else spawn a item.
+		if ((hitTemp && equipedWeapon == 2) || (hitTemp && equipedWeapon == 3)) 
+		{
+			if (FVector::Dist(hitTemp->GetActorLocation(), GetActorLocation()) > 350.f) 
+			{
+				hitTemp->OreHitSpawn(m_hitResult->Location);
+			}
+			else 
+			{
+
+				m_r_resources[hitTemp->GetResourceID()] += hitTemp->GetResourceAmount();
+				hitTemp->OreEmpty();
+			}
+		}
+
+		//check if it was a meat item.
+		AMeatActor* meattemp = Cast<AMeatActor>(m_hitResult->Actor);
+
+		if (meattemp)
+		{
+			//Increase life and stamina
+			HealPlayer(50);
+			EnergizePlayer(20);
+
+			//destroy meat object
+			meattemp->EatMeat();
+		}
+	}
+
+}
+
+bool APlayerCharacter::ServerPerformMineCast_Validate() {
+	return true;
+}
+
+void APlayerCharacter::ServerFire_Implementation()
+{
+	if (m_r_isDrawn)
+	{
+		FVector forwardVector = cameraComponent->GetForwardVector();
+		FRotator cameraRot = cameraComponent->GetComponentRotation();
+		FVector position = cameraComponent->GetComponentLocation();
+		position += forwardVector * 150.f;
+		FActorSpawnParameters spawnParams;
+		spawnParams.Owner = this;
+		spawnParams.Instigator = Instigator;
+
+		if (m_r_power > 1 && bowEquiped)
+		{
+			AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(arrowToCreate, position, cameraRot, spawnParams);
+			UStaticMeshComponent* meshComp = Cast<UStaticMeshComponent>(newArrow->GetRootComponent());
+			if (meshComp) {
+				meshComp->AddForce(forwardVector*100000.f*meshComp->GetMass()*m_r_power);
+			}
+		}
+		m_r_isDrawn = false;
+	}
+}
+
+
+bool APlayerCharacter::ServerFire_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::ServerDrawArrow_Implementation()
+{
+	if (m_r_currentStamina > 20.f && bowEquiped) {
+		m_r_isDrawn = true;
+	}
+}
+
+bool APlayerCharacter::ServerDrawArrow_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::ServerPerformHitCast_Implementation() {
+	
+	
+	/**resultRaycast*/
 	FHitResult* weaponHitResult = new FHitResult();
 	//Startpoint raycast
-	FVector StartTrace = CameraComponent->GetComponentLocation();
+	FVector StartTrace = cameraComponent->GetComponentLocation();
 	//Direction raycast
-	FVector ForwardVector = CameraComponent->GetForwardVector();
+	FVector ForwardVector = cameraComponent->GetForwardVector();
 	//Endpoint raycast
 	FVector EndTrace = StartTrace + (ForwardVector * 1000.f);
 	//List of items to not collide with.
 	FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
 	TraceParams->AddIgnoredActor(this);
 	//Attempt raycast
-	if (GetWorld()->LineTraceSingleByChannel(*weaponHitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams)) {
+	if (GetWorld()->LineTraceSingleByChannel(*weaponHitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams))
+	{
+		// Checking if it is PlayerCharacter it hits
 		APlayerCharacter* temp = Cast<APlayerCharacter>(weaponHitResult->Actor);
-
-		//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(0,255, 0), true, 5.f);
-		
-			if (temp) 
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), "100"));
-				if(equipedWeapon == 2)
-					temp->HitPlayer(10);
-				if (equipedWeapon == 3)
-					temp->HitPlayer(5);
-				if (equipedWeapon == 4)
-					temp->HitPlayer(25);
-				if (equipedWeapon == 5)
-					temp->HitPlayer(40);
-			}
+		if (temp) 
+		{
+			//checking which weapon your holding to give the correct damage
+			if(equipedWeapon == 2)
+				temp->HitPlayer(axeDamage);
+			if (equipedWeapon == 3)
+				temp->HitPlayer(pickAxeDamage);
+			if (equipedWeapon == 4)
+				temp->HitPlayer(swordDamage);
+			if (equipedWeapon == 5)
+				temp->HitPlayer(sword2HDamage);
+		}
 	}
 
 }
 
-bool APlayerCharacter::PerformHitCast_Validate() {
+bool APlayerCharacter::ServerPerformHitCast_Validate() {
 	return true;
 }
-
 	
-	
-
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const {
 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(APlayerCharacter, life);
-	DOREPLIFETIME(APlayerCharacter, Resources);
-	
-	DOREPLIFETIME(APlayerCharacter, hudCountDown);
-	DOREPLIFETIME(APlayerCharacter, CurrentMaxStamina);
-	DOREPLIFETIME(APlayerCharacter, CurrentStamina);
-	DOREPLIFETIME(APlayerCharacter, power);
-	DOREPLIFETIME(APlayerCharacter, isDrawn);
+	DOREPLIFETIME(APlayerCharacter, m_r_life);
+	DOREPLIFETIME(APlayerCharacter, m_r_resources);
+
+	DOREPLIFETIME(APlayerCharacter, m_r_currentMaxStamina);
+	DOREPLIFETIME(APlayerCharacter, m_r_currentStamina);
+	DOREPLIFETIME(APlayerCharacter, m_r_power);
+	DOREPLIFETIME(APlayerCharacter, m_r_isDrawn);
 }

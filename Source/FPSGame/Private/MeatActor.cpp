@@ -5,8 +5,8 @@
 // Sets default values
 AMeatActor::AMeatActor()
 {
-	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
-	RootComponent = MeshComp;
+	meshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
+	RootComponent = meshComp;
 }
 
 // Called when the game starts or when spawned

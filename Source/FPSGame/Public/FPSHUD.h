@@ -11,6 +11,11 @@
 
 class UTexture2D;
 
+//! The HUD of the player
+/*!
+ *This class hold all the values and function of the player HUD
+ *This class will also draw it on the screen of the player
+ **/
 UCLASS()
 class AFPSHUD : public AHUD
 {
@@ -18,30 +23,22 @@ class AFPSHUD : public AHUD
 
 protected:
 
-
-
-
 	/** Crosshair asset pointer */
 	UTexture2D* crosshairTex;
 
-	UFont* hudFont;
-
-
 public:
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stamina", Meta = (BlueprintProtected = "true"))
-	TSubclassOf<class UUserWidget> PlayerHUDClass;
-
-	UPROPERTY()
-	class UUserWidget* CurrentWidget;
-
-	FCanvasTextItem* TileItem2Text;
 
 	AFPSHUD();
 
+	/**This method will draw the static parts of the HUD on the players screen */
 	virtual void DrawHUD() override;
 
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Huds", Meta = (BlueprintProtected = "true"))
+		TSubclassOf<class UUserWidget> playerHUDClass;
+
+	UPROPERTY()
+		class UUserWidget* currentWidget;
 };
 

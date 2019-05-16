@@ -22,28 +22,29 @@ void AFPSHUD::DrawHUD()
 	Super::DrawHUD();
 
 	// find center of the Canvas
-	const FVector2D Center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
+	const FVector2D center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
 
-	const FVector2D crosshairDrawPosition((Center.X), (Center.Y));
-
-	// draw  images
-	FCanvasTileItem TileItem(crosshairDrawPosition, crosshairTex->Resource, FLinearColor::White);
-
-	TileItem.BlendMode  = SE_BLEND_Translucent;
+	// draw static images
+	FCanvasTileItem tileItem(center, crosshairTex->Resource, FLinearColor::White);
+	
+	// make them just their image with no background
+	tileItem.BlendMode  = SE_BLEND_Translucent;
 	
 	// Tiles for the draw system 
-	Canvas->DrawItem(TileItem);
+	Canvas->DrawItem(tileItem);
 }
 
 void AFPSHUD::BeginPlay() 
 {
 	Super::BeginPlay();	
-
-	if (PlayerHUDClass != nullptr) {
-		CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), PlayerHUDClass);
-
-		if (CurrentWidget != nullptr) {
-			CurrentWidget->AddToViewport();
+	//assign the correct hud in the future there could be more huds such as inventory
+	if (playerHUDClass != nullptr) {
+		
+		//assign non static part of the hud
+		currentWidget = CreateWidget<UUserWidget>(GetWorld(), playerHUDClass);
+		
+		if (currentWidget != nullptr) {
+			currentWidget->AddToViewport();
 		}
 	}
 }

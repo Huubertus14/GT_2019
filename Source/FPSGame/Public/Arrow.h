@@ -5,44 +5,35 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Arrow.generated.h"
-
-
+//!The class of the arrow
+/*!
+ *This holds all the info of a arrow
+ *Like damage, rotation etc
+ */
 UCLASS()
 class FPSGAME_API AArrow : public AActor
 {
 	GENERATED_BODY()
 
-		UPROPERTY(VisibleAnywhere)
-		class UStaticMeshComponent* arrowMesh;
-
-
-
 public:
-	// Sets default values for this actor's properties
 	AArrow();
-	float forward;
-	float speed;
-	float gravity;
-	FVector location;
-	int lifeSpan;
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerMovement(FVector _pos, FRotator _rot);
 
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere)
-		UStaticMeshComponent* mesh;
+	/** How much damage an arrow will do on collision */
+	UPROPERTY(EditAnywhere, Category = "Projectile Damage")
+		int arrowDamage;
 
-	FORCEINLINE class UStaticMeshComponent* GetArrowMesh() const { return arrowMesh; }
+	UPROPERTY(EditAnywhere, Category = "Projectile Mesh")
+		UStaticMeshComponent* meshComponent;
 
+	/**This mehtod is called when the arrow hits something */
 	UFUNCTION()
 		void OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& hit);
+
+private:
+	float m_lifeSpan;
 
 };
