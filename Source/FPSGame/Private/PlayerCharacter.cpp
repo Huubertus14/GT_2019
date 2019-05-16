@@ -17,7 +17,7 @@ APlayerCharacter::APlayerCharacter()
 {
 	for (int i = 0; i < 3; ++i)
 	{
-		m_r_resources.Add(0);
+		r_resources.Add(0);
 	}
 
 	// Create a CameraComponent	
@@ -109,7 +109,7 @@ void APlayerCharacter::BeginPlay()
 	bowEquiped = true;
 	twoHanderEquiped = false;
 	currentWeaponID = 0;
-	equipedWeapon = 1;
+	r_equipedWeapon = 1;
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -131,7 +131,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::ServerDrawArrow);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerFire);
 
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerRightMouseClick);
+	PlayerInputComponent->BindAction("ServerPickupThrow", IE_Released, this, &APlayerCharacter::ServerPickupThrow);
 
 	// WeaponSlots
 	PlayerInputComponent->BindAction("WeaponSlot1", IE_Pressed, this, &APlayerCharacter::WeaponSlot1);
@@ -165,43 +165,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 	UpdateLifeStatus();
 
 	SharePlayerPitch();
-}
-
-void APlayerCharacter::ServerDropWeapon_Implementation()
-{
-	//Get current weapon ID
-
-	//Loop through weapon array
-	for (int i = 0; i < dropWeapons.Num(); ++i)
-	{
-		APickUpItem* item = dropWeapons[i].GetDefaultObject();
-		if (item->GetID() == currentWeaponID)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Dropped a weapon");
-
-			//Drop weapon
-			FVector f = cameraComponent->GetForwardVector();
-			FRotator camera = cameraComponent->GetComponentRotation();
-			FVector pos = cameraComponent->GetComponentLocation();
-			pos += f * 100.f;
-			FActorSpawnParameters spawnParams;
-			spawnParams.Owner = this;
-			spawnParams.Instigator = Instigator;
-
-			//Spawn new weapon in the world
-			APickUpItem* newArrow = GetWorld()->SpawnActor<APickUpItem>(dropWeapons[i], pos, camera, spawnParams);
-			
-			//Set current weapon
-
-			return;
-		}
-	}
-
-}
-
-bool APlayerCharacter::ServerDropWeapon_Validate()
-{
-	return true;
 }
 
 bool APlayerCharacter::UpdateBowTension(float DeltaTime)
@@ -333,23 +296,23 @@ float APlayerCharacter::GetCurrentLife()
 
 FText APlayerCharacter::GetResourceZero()
 {		
-		FString veryCleanString = FString::FromInt(m_r_resources[0]);
+		FString veryCleanString = FString::FromInt(r_resources[0]);
 		return FText::FromString(veryCleanString);
 }
 
 FText APlayerCharacter::GetResourceOne()
 {
-		FString veryCleanString = FString::FromInt(m_r_resources[1]);
+		FString veryCleanString = FString::FromInt(r_resources[1]);
 		return FText::FromString(veryCleanString);
 }
 
 FText APlayerCharacter::GetResourceTwo()
 {
-		FString veryCleanString = FString::FromInt(m_r_resources[2]);
+		FString veryCleanString = FString::FromInt(r_resources[2]);
 		return FText::FromString(veryCleanString);
 }
 
-void APlayerCharacter::ServerRightMouseClick_Implementation()
+void APlayerCharacter::ServerPickupThrow_Implementation()
 {
 	//resultRaycast
 	m_hitResult = new FHitResult();
@@ -372,16 +335,54 @@ void APlayerCharacter::ServerRightMouseClick_Implementation()
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, temp);
 
 		APickUpItem* tempPickUp = Cast<APickUpItem>(m_hitResult->Actor);
+
 		if (tempPickUp)
 		{
 			ServerDropWeapon();
-			currentWeaponID = tempPickUp->GetID();
+			currentWeaponID = tempPickUp->GetWeaponID();
 			tempPickUp->Pickup();
 		}
 	}
 }
 
-bool APlayerCharacter::ServerRightMouseClick_Validate()
+bool APlayerCharacter::ServerPickupThrow_Validate()
+{
+	return true;
+}
+
+void APlayerCharacter::ServerDropWeapon_Implementation()
+{
+	//Get current weapon ID
+
+	//Loop through weapon array
+	for (int i = 0; i < dropWeapons.Num(); ++i)
+	{
+		APickUpItem* actualWeapon = dropWeapons[i].GetDefaultObject();
+
+		if (actualWeapon->GetWeaponID() == currentWeaponID)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Dropped a weapon");
+
+			//Drop weapon
+			FVector forwardVector = cameraComponent->GetForwardVector();
+			FRotator cameraRotation = cameraComponent->GetComponentRotation();
+			FVector cameraPosition = cameraComponent->GetComponentLocation();
+			cameraPosition += forwardVector * 100.f;
+			FActorSpawnParameters spawnParams;
+			spawnParams.Owner = this;
+			spawnParams.Instigator = Instigator;
+
+			//Spawn new weapon in the world
+			APickUpItem* dropedWeapon = GetWorld()->SpawnActor<APickUpItem>(dropWeapons[i], cameraPosition, cameraRotation, spawnParams);
+
+			//Set current weapon
+
+			return;
+		}
+	}
+}
+
+bool APlayerCharacter::ServerDropWeapon_Validate()
 {
 	return true;
 }
@@ -439,7 +440,7 @@ void APlayerCharacter::WeaponSlot1_Implementation()
 	MeshArrow->SetVisibility(true);
 	bowEquiped = true;
 	twoHanderEquiped = false;
-	equipedWeapon = 1;
+	r_equipedWeapon = 1;
 }
 
 bool APlayerCharacter::WeaponSlot1_Validate()
@@ -453,7 +454,7 @@ void APlayerCharacter::WeaponSlot2_Implementation()
 	MeshAxe->SetVisibility(true);
 	bowEquiped = false;
 	twoHanderEquiped = false;
-	equipedWeapon = 2;
+	r_equipedWeapon = 2;
 }
 
 bool APlayerCharacter::WeaponSlot2_Validate()
@@ -467,7 +468,7 @@ void APlayerCharacter::WeaponSlot3_Implementation()
 	MeshPickaxe->SetVisibility(true);
 	bowEquiped = false;
 	twoHanderEquiped = false;
-	equipedWeapon = 3;
+	r_equipedWeapon = 3;
 }
 
 bool APlayerCharacter::WeaponSlot3_Validate()
@@ -481,7 +482,7 @@ void APlayerCharacter::WeaponSlot4_Implementation()
 	MeshSword->SetVisibility(true);
 	bowEquiped = false;
 	twoHanderEquiped = false;
-	equipedWeapon = 4;
+	r_equipedWeapon = 4;
 }
 
 bool APlayerCharacter::WeaponSlot4_Validate()
@@ -495,7 +496,7 @@ void APlayerCharacter::WeaponSlot5_Implementation()
 	Mesh2HSword->SetVisibility(true);
 	bowEquiped = false;
 	twoHanderEquiped = true;
-	equipedWeapon = 5;
+	r_equipedWeapon = 5;
 }
 
 bool APlayerCharacter::WeaponSlot5_Validate()
@@ -525,7 +526,7 @@ void APlayerCharacter::ServerPerformMineCast_Implementation() {
 		AOre* hitTemp = Cast<AOre>(m_hitResult->Actor);
 
 		//if it was a ore check how close you are. if to close just add to player else spawn a item.
-		if ((hitTemp && equipedWeapon == 2) || (hitTemp && equipedWeapon == 3)) 
+		if ((hitTemp && r_equipedWeapon == 2) || (hitTemp && r_equipedWeapon == 3)) 
 		{
 			if (FVector::Dist(hitTemp->GetActorLocation(), GetActorLocation()) > 350.f) 
 			{
@@ -644,7 +645,7 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & 
 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(APlayerCharacter, m_r_life);
-	DOREPLIFETIME(APlayerCharacter, m_r_resources);
+	DOREPLIFETIME(APlayerCharacter, r_resources);
 
 	DOREPLIFETIME(APlayerCharacter, m_r_currentMaxStamina);
 	DOREPLIFETIME(APlayerCharacter, m_r_currentStamina);

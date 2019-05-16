@@ -31,42 +31,59 @@ public:
 
 	/** The replicated recources */
 	UPROPERTY(Replicated)
-		TArray<int32> m_r_resources;
+		TArray<int32> r_resources;
+
+	/** Array which contains all the drop weapons
+	 *A player can possibly have*/
+	UPROPERTY(EditAnywhere, Category = "Drop Weapons")
+		TArray<TSubclassOf<class APickUpItem>> dropWeapons;
 
 	/** The hitbox of the player*/
 	UPROPERTY(VisibleAnywhere)
 		class USphereComponent* HitBoxComponent;
 
+	/** Unreal atribute of the camera component*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+		UCameraComponent* cameraComponent;
+
 	/** The model of the player*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		USkeletalMeshComponent* MeshPit;
+
 	/** Mesh of the bow which it will hold
 	 *bow is defined in the BP of the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		UStaticMeshComponent* MeshBow;
+
 	/** The mesh of the arrow which is seen in the hands of the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		UStaticMeshComponent* MeshArrow;
+
 	/** Mesh of the Axe which it will hold
 	 *Axe is defined in the BP of the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		USkeletalMeshComponent* MeshAxe;
+
 	/** Mesh of the Pickaxe which it will hold
 	 *PickAxe is defined in the BP of the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		USkeletalMeshComponent* MeshPickaxe;
+
 	/** Mesh of the sword which it will hold
 	 *sword is defined in the BP of the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		UStaticMeshComponent* MeshSword;
+
 	/** Mesh of the 2hSword which it will hold
 	 *2hSword is defined in the BP of the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		UStaticMeshComponent* Mesh2HSword;
+
 	/** Mesh of the shield which it will hold
 	 *shield is defined in the BP of the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 		UStaticMeshComponent* MeshShield;
+
 	/** Mesh of the dagger which it will hold
 	 *dagger is defined in the BP of the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
@@ -152,24 +169,10 @@ protected:
 	/**Called when the game starts or when spawned*/
 	virtual void BeginPlay() override;
 
-	/**This is an array which contains all the drop weapons a player can possibly have*/
-	UPROPERTY(EditAnywhere, Category = "Drop Weapons")
-	TArray<TSubclassOf<class APickUpItem>> dropWeapons;
-
 	/** The ID of the current held weapon*/
 	int currentWeaponID;
 
-	/**Server Function which will drop the current weapon*/
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerDropWeapon();
-
-	/**Unreal atribute of the camera component*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	UCameraComponent* cameraComponent;
-
-	/**Server function which will perform the acton of a rightmouse click*/
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerRightMouseClick();
+	
 
 
 public:
@@ -271,9 +274,18 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerDrawArrow();
 
+	/**Server Function which will drop the current weapon*/
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerDropWeapon();
+
+	/**Server function which will execute the pickup
+	*Or throw action*/
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerPickupThrow();
+
 	/**The weapon the player is wielding with its id */
 	UPROPERTY(Replicated)
-		int equipedWeapon;
+		int r_equipedWeapon;
 
 	/**Bow is equiped on the player.
 	 * Checked for the shot function
