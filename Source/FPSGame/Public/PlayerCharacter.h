@@ -31,7 +31,7 @@ public:
 
 	/** The replicated recources */
 	UPROPERTY(Replicated)
-		TArray<int32> r_resources;
+		TArray<int32> m_r_resources;
 
 	/** Array which contains all the drop weapons
 	 *A player can possibly have*/

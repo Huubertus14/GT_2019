@@ -17,7 +17,7 @@ APlayerCharacter::APlayerCharacter()
 {
 	for (int i = 0; i < 3; ++i)
 	{
-		r_resources.Add(0);
+		m_r_resources.Add(0);
 	}
 
 	// Create a CameraComponent	
@@ -296,19 +296,19 @@ float APlayerCharacter::GetCurrentLife()
 
 FText APlayerCharacter::GetResourceZero()
 {		
-		FString veryCleanString = FString::FromInt(r_resources[0]);
+		FString veryCleanString = FString::FromInt(m_r_resources[0]);
 		return FText::FromString(veryCleanString);
 }
 
 FText APlayerCharacter::GetResourceOne()
 {
-		FString veryCleanString = FString::FromInt(r_resources[1]);
+		FString veryCleanString = FString::FromInt(m_r_resources[1]);
 		return FText::FromString(veryCleanString);
 }
 
 FText APlayerCharacter::GetResourceTwo()
 {
-		FString veryCleanString = FString::FromInt(r_resources[2]);
+		FString veryCleanString = FString::FromInt(m_r_resources[2]);
 		return FText::FromString(veryCleanString);
 }
 
@@ -624,13 +624,13 @@ void APlayerCharacter::ServerPerformHitCast_Implementation() {
 		if (temp) 
 		{
 			//checking which weapon your holding to give the correct damage
-			if(equipedWeapon == 2)
+			if(currentWeaponID == 2)
 				temp->HitPlayer(axeDamage);
-			if (equipedWeapon == 3)
+			if (currentWeaponID == 3)
 				temp->HitPlayer(pickAxeDamage);
-			if (equipedWeapon == 4)
+			if (currentWeaponID == 4)
 				temp->HitPlayer(swordDamage);
-			if (equipedWeapon == 5)
+			if (currentWeaponID == 5)
 				temp->HitPlayer(sword2HDamage);
 		}
 	}
@@ -645,7 +645,7 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & 
 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(APlayerCharacter, m_r_life);
-	DOREPLIFETIME(APlayerCharacter, r_resources);
+	DOREPLIFETIME(APlayerCharacter, m_r_resources);
 
 	DOREPLIFETIME(APlayerCharacter, m_r_currentMaxStamina);
 	DOREPLIFETIME(APlayerCharacter, m_r_currentStamina);
