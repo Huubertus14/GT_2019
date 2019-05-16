@@ -534,7 +534,7 @@ void APlayerCharacter::ServerPerformMineCast_Implementation() {
 			else 
 			{
 
-				m_r_resources[hitTemp->GetResourceID()] += hitTemp->GetResourceID();
+				m_r_resources[hitTemp->GetResourceID()] += hitTemp->GetResourceAmount();
 				hitTemp->OreEmpty();
 			}
 		}
