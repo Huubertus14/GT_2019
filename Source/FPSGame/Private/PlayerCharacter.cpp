@@ -534,7 +534,7 @@ void APlayerCharacter::ServerPerformMineCast_Implementation() {
 			else 
 			{
 
-				m_r_resources[hitTemp->GetResourceID()] += hitTemp->GetResourceID();
+				m_r_resources[hitTemp->GetResourceID()] += hitTemp->GetResourceAmount();
 				hitTemp->OreEmpty();
 			}
 		}
@@ -618,19 +618,19 @@ void APlayerCharacter::ServerPerformHitCast_Implementation() {
 	//Attempt raycast
 	if (GetWorld()->LineTraceSingleByChannel(*weaponHitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams))
 	{
+		// Checking if it is PlayerCharacter it hits
 		APlayerCharacter* temp = Cast<APlayerCharacter>(weaponHitResult->Actor);
-
 		if (temp) 
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("You Hit: %s"), "100"));
+			//checking which weapon your holding to give the correct damage
 			if(equipedWeapon == 2)
-				temp->HitPlayer(10);
+				temp->HitPlayer(axeDamage);
 			if (equipedWeapon == 3)
-				temp->HitPlayer(5);
+				temp->HitPlayer(pickAxeDamage);
 			if (equipedWeapon == 4)
-				temp->HitPlayer(25);
+				temp->HitPlayer(swordDamage);
 			if (equipedWeapon == 5)
-				temp->HitPlayer(40);
+				temp->HitPlayer(sword2HDamage);
 		}
 	}
 

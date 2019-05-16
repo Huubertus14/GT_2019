@@ -141,6 +141,12 @@ private:
 	UPROPERTY(Replicated, VisibleAnywhere, Category = "Stamina")
 		float m_r_currentStamina;
 
+	/**Weapon Damage*/
+	int axeDamage;
+	int pickAxeDamage;
+	int swordDamage;
+	int sword2HDamage;
+
 	
 protected:
 	/**Called when the game starts or when spawned*/
@@ -230,19 +236,34 @@ public:
 	/*Sets all weapons invisible*/
 	void WeaponVisibility();
 	
-	/** weaponSwitching */
+	/** WeaponSwitching
+	* At the start calls the function WeaponVisibility to make sure
+	* everything that is not suppose to be on is off, so there are no Graphical errors
+	*/
 	UFUNCTION(Server, Reliable, WithValidation)
 		void WeaponSlot1();
-	/** weaponSwitching */
+	/** WeaponSwitching
+	* At the start calls the function WeaponVisibility to make sure
+	* everything that is not suppose to be on is off, so there are no Graphical errors
+	*/
 	UFUNCTION(Server, Reliable, WithValidation)
 		void WeaponSlot2();
-	/** weaponSwitching */
+	/** WeaponSwitching
+	* At the start calls the function WeaponVisibility to make sure
+	* everything that is not suppose to be on is off, so there are no Graphical errors
+	*/
 	UFUNCTION(Server, Reliable, WithValidation)
 		void WeaponSlot3();
-	/** weaponSwitching */
+	/** WeaponSwitching
+	* At the start calls the function WeaponVisibility to make sure
+	* everything that is not suppose to be on is off, so there are no Graphical errors
+	*/
 	UFUNCTION(Server, Reliable, WithValidation)
 		void WeaponSlot4();
-	/** weaponSwitching */
+	/** WeaponSwitching
+	* At the start calls the function WeaponVisibility to make sure
+	* everything that is not suppose to be on is off, so there are no Graphical errors
+	*/
 	UFUNCTION(Server, Reliable, WithValidation)
 		void WeaponSlot5();
 	
