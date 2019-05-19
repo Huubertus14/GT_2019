@@ -8,6 +8,7 @@
 #include "Engine.h"
 #include "MeatActor.h"
 #include "Arrow.h"
+#include "Woodcutter.h"
 #include "UnrealNetwork.h"
 
 
@@ -132,6 +133,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerFire);
 
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerRightMouseClick);
+
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::ServerHutPlacement);
 
 	// WeaponSlots
 	PlayerInputComponent->BindAction("WeaponSlot1", IE_Pressed, this, &APlayerCharacter::WeaponSlot1);
@@ -554,9 +557,19 @@ void APlayerCharacter::ServerPerformMineCast_Implementation() {
 	}
 
 }
-
 bool APlayerCharacter::ServerPerformMineCast_Validate() {
 	return true;
+}
+
+void APlayerCharacter::ServerHutPlacement()
+{
+	FRotator cameraRot = cameraComponent->GetComponentRotation();
+	FVector position = GetActorLocation();
+	FActorSpawnParameters spawnParams;
+	spawnParams.Owner = this;
+	spawnParams.Instigator = Instigator;
+	//AActor* newWoodcutterHut = GetWorld()->SpawnActor<AActor>(GetClass(), position, cameraRot, spawnParams);
+	AWoodcutter* newWoodcutterHut = GetWorld()->SpawnActor<AWoodcutter>(AWoodcutter::StaticClass(), position, cameraRot, spawnParams);
 }
 
 void APlayerCharacter::ServerFire_Implementation()
@@ -571,6 +584,7 @@ void APlayerCharacter::ServerFire_Implementation()
 		spawnParams.Owner = this;
 		spawnParams.Instigator = Instigator;
 
+
 		if (m_r_power > 1 && bowEquiped)
 		{
 			AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(arrowToCreate, position, cameraRot, spawnParams);
@@ -578,6 +592,7 @@ void APlayerCharacter::ServerFire_Implementation()
 			if (meshComp) {
 				meshComp->AddForce(forwardVector*100000.f*meshComp->GetMass()*m_r_power);
 			}
+			
 		}
 		m_r_isDrawn = false;
 	}
