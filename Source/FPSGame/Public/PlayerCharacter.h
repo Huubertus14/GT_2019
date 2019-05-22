@@ -241,7 +241,15 @@ public:
 	/**Server function which will spawn a hut in the world
 	*/
 	//UFUNCTION(Server, Reliable, WithValidation)
+		void ServerHutSpawn();
+
+	/**Server function which will place a hut in the world
+	*/
+	//UFUNCTION(Server, Reliable, WithValidation)
 		void ServerHutPlacement();
+
+		AWoodcutter* newWoodcutterHut;
+		bool hutPlacement;
 
 	/*Sets all weapons invisible*/
 	void WeaponVisibility();

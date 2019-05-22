@@ -134,7 +134,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerRightMouseClick);
 
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::ServerHutPlacement);
+	
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::ServerHutSpawn);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerHutPlacement);
 
 	// WeaponSlots
 	PlayerInputComponent->BindAction("WeaponSlot1", IE_Pressed, this, &APlayerCharacter::WeaponSlot1);
@@ -163,6 +165,18 @@ void APlayerCharacter::Tick(float DeltaTime)
 		{
 			RegainEnergy(DeltaTime);
 		}
+	}
+	if (hutPlacement)
+	{
+		FVector forwardVector = cameraComponent->GetForwardVector();
+		FRotator cameraRot = cameraComponent->GetComponentRotation();
+		cameraRot.Pitch = 0;
+		cameraRot.Yaw = cameraRot.Yaw + 90;
+		FVector position = GetActorLocation();
+		position += forwardVector * 750.f;
+		position.Z = 100;
+		newWoodcutterHut->SetActorLocation(position);
+		newWoodcutterHut->SetActorRotation(cameraRot);
 	}
 
 	UpdateLifeStatus();
@@ -561,15 +575,25 @@ bool APlayerCharacter::ServerPerformMineCast_Validate() {
 	return true;
 }
 
-void APlayerCharacter::ServerHutPlacement()
+void APlayerCharacter::ServerHutSpawn()
 {
+	FVector forwardVector = cameraComponent->GetForwardVector();
 	FRotator cameraRot = cameraComponent->GetComponentRotation();
+	cameraRot.Pitch = 0;
+	cameraRot.Yaw = cameraRot.Yaw + 90;
 	FVector position = GetActorLocation();
+	position += forwardVector * 750.f;
+	position.Z = 100;
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
 	spawnParams.Instigator = Instigator;
-	//AActor* newWoodcutterHut = GetWorld()->SpawnActor<AActor>(GetClass(), position, cameraRot, spawnParams);
-	AWoodcutter* newWoodcutterHut = GetWorld()->SpawnActor<AWoodcutter>(AWoodcutter::StaticClass(), position, cameraRot, spawnParams);
+	newWoodcutterHut = GetWorld()->SpawnActor<AWoodcutter>(AWoodcutter::StaticClass(), position, cameraRot, spawnParams);
+	hutPlacement = true;
+
+}
+void APlayerCharacter::ServerHutPlacement()
+{
+	hutPlacement = false;
 }
 
 void APlayerCharacter::ServerFire_Implementation()
