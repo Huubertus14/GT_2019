@@ -34,11 +34,23 @@ public:
 	virtual void DrawHUD() override;
 
 	virtual void BeginPlay() override;
+	
+	UFUNCTION()
+	void SwitchCraftingHud();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Huds", Meta = (BlueprintProtected = "true"))
 		TSubclassOf<class UUserWidget> playerHUDClass;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Huds", Meta = (BlueprintProtected = "true"))
+		TSubclassOf<class UUserWidget> playerCraftingHudClass;
+
+	UPROPERTY()
+		bool mainWidgetWorking;
 
 	UPROPERTY()
 		class UUserWidget* currentWidget;
+	UPROPERTY()
+		class UUserWidget* craftingWidget;
+
 };
 

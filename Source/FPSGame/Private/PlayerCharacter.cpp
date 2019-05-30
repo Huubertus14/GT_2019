@@ -110,6 +110,10 @@ void APlayerCharacter::BeginPlay()
 	twoHanderEquiped = false;
 	currentWeaponID = 0;
 	r_equipedWeapon = 1;
+	hud = Cast<AFPSHUD>(UGameplayStatics::GetPlayerController(this, 0)->GetHUD());	
+	PC = Cast<APlayerController>(GetController());
+	GEngine->GameViewport->Viewport->LockMouseToViewport(true);
+	
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -118,6 +122,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	check(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Craft", IE_Pressed, this, &APlayerCharacter::HudCall);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRight);
@@ -140,7 +145,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("WeaponSlot4", IE_Pressed, this, &APlayerCharacter::WeaponSlot4);
 	PlayerInputComponent->BindAction("WeaponSlot5", IE_Pressed, this, &APlayerCharacter::WeaponSlot5);
 }
-
 
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
@@ -165,6 +169,22 @@ void APlayerCharacter::Tick(float DeltaTime)
 	UpdateLifeStatus();
 
 	SharePlayerPitch();
+}
+
+void APlayerCharacter::HudCall() {
+	hud->SwitchCraftingHud();
+
+	if (!hud->mainWidgetWorking) {
+			PC->bShowMouseCursor = true;
+			PC->bEnableClickEvents = true;
+			PC->bEnableMouseOverEvents = true;
+	}
+	else {
+		
+		PC->bShowMouseCursor = false;
+		PC->bEnableClickEvents = false;
+		PC->bEnableMouseOverEvents = false;
+	}
 }
 
 bool APlayerCharacter::UpdateBowTension(float DeltaTime)

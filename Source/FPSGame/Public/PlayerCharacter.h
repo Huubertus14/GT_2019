@@ -181,7 +181,11 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	/** Called every frame*/
+
 	virtual void Tick(float DeltaTime) override;
+	
+	UFUNCTION(BlueprintCallable)
+	void HudCall();
 
 	/**Handles the movement forward and backwards of the player*/
 	void MoveForward(float Value);
@@ -298,5 +302,10 @@ public:
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		bool twoHanderEquiped;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		AFPSHUD* hud;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		APlayerController* PC;
 
 };
