@@ -10,6 +10,7 @@
 #include "Ore.h"
 #include "PickUpItem.h"
 #include "FPSHUD.h"
+#include "Building.h"
 #include "PlayerCharacter.generated.h"
 
 
@@ -137,7 +138,7 @@ private:
 
 	/**The result returned when a raycast is cast.*/
 	FHitResult* m_hitResult;
-	
+
 	/** This value indicates the max life of a player*/
 	UPROPERTY(VisibleAnywhere, Category = "Health")
 		float m_lifeCap;
@@ -164,7 +165,7 @@ private:
 	int swordDamage;
 	int sword2HDamage;
 
-	
+
 protected:
 	/**Called when the game starts or when spawned*/
 	virtual void BeginPlay() override;
@@ -172,7 +173,7 @@ protected:
 	/** The ID of the current held weapon*/
 	int currentWeaponID;
 
-	
+
 
 
 public:
@@ -183,9 +184,9 @@ public:
 	/** Called every frame*/
 
 	virtual void Tick(float DeltaTime) override;
-	
+
 	UFUNCTION(BlueprintCallable)
-	void HudCall();
+		void HudCall();
 
 	/**Handles the movement forward and backwards of the player*/
 	void MoveForward(float Value);
@@ -199,6 +200,21 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerLeaveGame();
 
+	UFUNCTION(BlueprintCallable)
+		void SetBuild(int id);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerBuild();
+
+	UPROPERTY(Replicated)
+		TSubclassOf<ABuilding> r_building;
+
+	UPROPERTY(EditAnywhere, Category = "Building")
+		TSubclassOf<class ABuilding> buildingWall;
+	UPROPERTY(EditAnywhere, Category = "Building")
+		TSubclassOf<class ABuilding> buildingGate;
+	UPROPERTY()
+		bool building;
 	/**Temporarly not used*/
 	UFUNCTION()
 		void DestroyPlayer();
