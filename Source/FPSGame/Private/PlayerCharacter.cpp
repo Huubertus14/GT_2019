@@ -584,14 +584,12 @@ bool APlayerCharacter::ServerPerformMineCast_Validate() {
 }
 
 void APlayerCharacter::ServerBuild_Implementation() {
-	print("WORKING 1");
 	if (r_building) {
-		print("WORKING 2");
 		building = true;
 	}
 	if (building) {
-		print("WORKING 3");
 		FRotator cameraRot = cameraComponent->GetComponentRotation(); 
+		cameraRot.Pitch = 0;
 
 		FActorSpawnParameters spawnParams;
 		/**resultRaycast*/
@@ -608,7 +606,47 @@ void APlayerCharacter::ServerBuild_Implementation() {
 		//Attempt raycast
 		if (GetWorld()->LineTraceSingleByChannel(*hitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams))
 		{
-			print("WORKING 4");
+			if (r_building == buildingWall) {
+				if (m_r_resources[1] >= 300) {
+					if (m_r_resources[2] >= 150) {
+						m_r_resources[1] -= 300;
+						m_r_resources[2] -= 150;
+					}
+					else {
+						print("insufficient funds!");
+						r_building = nullptr;
+						building = false;
+						return;
+					}
+				}
+				else {
+					print("insufficient funds!");
+					r_building = nullptr;
+					building = false;
+					return;
+				}
+			}
+			else if (r_building == buildingGate) {
+				if (m_r_resources[1] >= 150) {
+					if (m_r_resources[2] >= 50) {
+						m_r_resources[1] -= 150;
+						m_r_resources[2] -= 50;
+					}
+					else {
+						print("insufficient funds!");
+						r_building = nullptr;
+						building = false;
+						return;
+					}
+				}
+				else {
+					print("insufficient funds!");
+					r_building = nullptr;
+					building = false;
+					return;
+				}
+			}
+
 			GetWorld()->SpawnActor<ABuilding>(r_building, hitResult->Location, cameraRot, spawnParams);
 			r_building = nullptr;
 			building = false;
