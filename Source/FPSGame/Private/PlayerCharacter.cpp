@@ -110,6 +110,11 @@ void APlayerCharacter::BeginPlay()
 	twoHanderEquiped = false;
 	currentWeaponID = 2;
 	r_equipedWeapon = 1;
+	hud = Cast<AFPSHUD>(UGameplayStatics::GetPlayerController(this, 0)->GetHUD());	
+	PC = Cast<APlayerController>(GetController());
+	GEngine->GameViewport->Viewport->LockMouseToViewport(true);
+	building = false;
+	
 }
 
 void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -123,6 +128,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	check(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Craft", IE_Pressed, this, &APlayerCharacter::HudCall);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRight);
@@ -132,6 +138,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::ServerPerformMineCast);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::ServerPerformHitCast);
+
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::ServerBuild);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::ServerDrawArrow);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerFire);
@@ -169,6 +177,22 @@ void APlayerCharacter::Tick(float DeltaTime)
 	UpdateLifeStatus();
 
 	SharePlayerPitch();
+}
+
+void APlayerCharacter::HudCall() {
+	hud->SwitchCraftingHud();
+
+	if (!hud->mainWidgetWorking) {
+			PC->bShowMouseCursor = true;
+			PC->bEnableClickEvents = true;
+			PC->bEnableMouseOverEvents = true;
+	}
+	else {
+		
+		PC->bShowMouseCursor = false;
+		PC->bEnableClickEvents = false;
+		PC->bEnableMouseOverEvents = false;
+	}
 }
 
 bool APlayerCharacter::UpdateBowTension(float DeltaTime)
@@ -212,6 +236,7 @@ void APlayerCharacter::MoveRight(float Value)
 
 	}
 }
+
 
 void APlayerCharacter::SharePlayerPitch()
 {
@@ -501,7 +526,6 @@ bool APlayerCharacter::WeaponSlot5_Validate()
 	return true;
 }
 
-
 void APlayerCharacter::ServerPerformMineCast_Implementation() {
 
 	//resultRaycast
@@ -556,6 +580,57 @@ void APlayerCharacter::ServerPerformMineCast_Implementation() {
 bool APlayerCharacter::ServerPerformMineCast_Validate() {
 	return true;
 }
+
+void APlayerCharacter::ServerBuild_Implementation() {
+	print("WORKING 1");
+	if (r_building) {
+		print("WORKING 2");
+		building = true;
+	}
+	if (building) {
+		print("WORKING 3");
+		FRotator cameraRot = cameraComponent->GetComponentRotation(); 
+
+		FActorSpawnParameters spawnParams;
+		/**resultRaycast*/
+		FHitResult* hitResult = new FHitResult();
+		//Startpoint raycast
+		FVector StartTrace = cameraComponent->GetComponentLocation();
+		//Direction raycast
+		FVector ForwardVector = cameraComponent->GetForwardVector();
+		//Endpoint raycast
+		FVector EndTrace = StartTrace + (ForwardVector * 10000.f);
+		//List of items to not collide with.
+		FCollisionQueryParams* TraceParams = new FCollisionQueryParams;
+		TraceParams->AddIgnoredActor(this);
+		//Attempt raycast
+		if (GetWorld()->LineTraceSingleByChannel(*hitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams))
+		{
+			print("WORKING 4");
+			GetWorld()->SpawnActor<ABuilding>(r_building, hitResult->Location, cameraRot, spawnParams);
+			r_building = nullptr;
+			building = false;
+		}
+
+	}
+}
+
+bool APlayerCharacter::ServerBuild_Validate() {
+	return true;
+}
+
+void APlayerCharacter::SetBuild(int id)
+{
+	if (id == 0) {
+		r_building = buildingWall;
+	}
+	else if (id == 1) {
+		r_building = buildingGate;
+	}
+
+}
+
+
 
 void APlayerCharacter::ServerFire_Implementation()
 {
@@ -661,4 +736,5 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & 
 	DOREPLIFETIME(APlayerCharacter, m_r_currentStamina);
 	DOREPLIFETIME(APlayerCharacter, m_r_power);
 	DOREPLIFETIME(APlayerCharacter, m_r_isDrawn);
+	DOREPLIFETIME(APlayerCharacter, r_building);
 }

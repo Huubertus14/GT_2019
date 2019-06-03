@@ -10,6 +10,7 @@
 #include "Ore.h"
 #include "PickUpItem.h"
 #include "FPSHUD.h"
+#include "Building.h"
 #include "PlayerCharacter.generated.h"
 
 
@@ -184,7 +185,11 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	/** Called every frame*/
+
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintCallable)
+		void HudCall();
 
 	/**Handles the movement forward and backwards of the player*/
 	void MoveForward(float Value);
@@ -198,6 +203,21 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerLeaveGame();
 
+	UFUNCTION(BlueprintCallable)
+		void SetBuild(int id);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerBuild();
+
+	UPROPERTY(Replicated)
+		TSubclassOf<ABuilding> r_building;
+
+	UPROPERTY(EditAnywhere, Category = "Building")
+		TSubclassOf<class ABuilding> buildingWall;
+	UPROPERTY(EditAnywhere, Category = "Building")
+		TSubclassOf<class ABuilding> buildingGate;
+	UPROPERTY()
+		bool building;
 	/**Temporarly not used*/
 	UFUNCTION()
 		void DestroyPlayer();
@@ -301,5 +321,10 @@ public:
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		bool twoHanderEquiped;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		AFPSHUD* hud;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		APlayerController* PC;
 
 };

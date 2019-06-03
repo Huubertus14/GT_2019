@@ -42,9 +42,28 @@ void AFPSHUD::BeginPlay()
 		
 		//assign non static part of the hud
 		currentWidget = CreateWidget<UUserWidget>(GetWorld(), playerHUDClass);
+		craftingWidget = CreateWidget<UUserWidget>(GetWorld(), playerCraftingHudClass);
 		
 		if (currentWidget != nullptr) {
 			currentWidget->AddToViewport();
+			mainWidgetWorking = true;
 		}
+
 	}
 }
+
+void AFPSHUD::SwitchCraftingHud() {
+
+	if (mainWidgetWorking) {
+		craftingWidget->AddToViewport();
+		currentWidget->RemoveFromViewport();
+		mainWidgetWorking = false;
+	}
+	else {
+		currentWidget->AddToViewport();
+		craftingWidget->RemoveFromViewport();
+		mainWidgetWorking = true;
+	}
+
+}
+
