@@ -95,6 +95,10 @@ public:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<class AArrow> arrowToCreate;
 
+	/** Actor of the woodcutterhut which the player will place
+	 *woodcutterhut is defined in the BP of the player */
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<class AWoodcutter> woodcutterHutToCreate;
 
 	/**Methode called when the player is hit*/
 	void HitPlayer(float damage);
@@ -253,11 +257,24 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerPerformHitCast();
 
-	/**Serever function which will launch an arrow in the world
+	/**Server function which will launch an arrow in the world
 	* !!!! MAGIC NUMBER!!!!
 	*/
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerFire();
+
+	/**Server function which will spawn a hut in the world
+	*/
+	//UFUNCTION(Server, Reliable, WithValidation)
+		void ServerHutSpawn();
+
+	/**Server function which will place a hut in the world
+	*/
+	//UFUNCTION(Server, Reliable, WithValidation)
+		void ServerHutPlacement();
+
+		AWoodcutter* newWoodcutterHut;
+		bool hutPlacement;
 
 	/*Sets all weapons invisible*/
 	void WeaponVisibility();

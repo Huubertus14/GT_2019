@@ -8,6 +8,7 @@
 #include "Engine.h"
 #include "MeatActor.h"
 #include "Arrow.h"
+#include "Woodcutter.h"
 #include "UnrealNetwork.h"
 
 
@@ -146,6 +147,10 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAction("ServerPickupThrow", IE_Released, this, &APlayerCharacter::ServerPickupThrow);
 
+	
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::ServerHutSpawn);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerHutPlacement);
+
 	// WeaponSlots
 	PlayerInputComponent->BindAction("WeaponSlot1", IE_Pressed, this, &APlayerCharacter::WeaponSlot1);
 	PlayerInputComponent->BindAction("WeaponSlot2", IE_Pressed, this, &APlayerCharacter::WeaponSlot2);
@@ -172,6 +177,18 @@ void APlayerCharacter::Tick(float DeltaTime)
 		{
 			RegainEnergy(DeltaTime);
 		}
+	}
+	if (hutPlacement)
+	{
+		FVector forwardVector = cameraComponent->GetForwardVector();
+		FRotator cameraRot = cameraComponent->GetComponentRotation();
+		cameraRot.Pitch = 0;
+		cameraRot.Yaw = cameraRot.Yaw + 90;
+		FVector position = GetActorLocation();
+		position += forwardVector * 750.f;
+		position.Z = 100;
+		newWoodcutterHut->SetActorLocation(position);
+		newWoodcutterHut->SetActorRotation(cameraRot);
 	}
 
 	UpdateLifeStatus();
@@ -576,9 +593,29 @@ void APlayerCharacter::ServerPerformMineCast_Implementation() {
 	}
 
 }
-
 bool APlayerCharacter::ServerPerformMineCast_Validate() {
 	return true;
+}
+
+void APlayerCharacter::ServerHutSpawn()
+{
+	FVector forwardVector = cameraComponent->GetForwardVector();
+	FRotator cameraRot = cameraComponent->GetComponentRotation();
+	cameraRot.Pitch = 0;
+	cameraRot.Yaw = cameraRot.Yaw + 90;
+	FVector position = GetActorLocation();
+	position += forwardVector * 750.f;
+	position.Z = 100;
+	FActorSpawnParameters spawnParams;
+	spawnParams.Owner = this;
+	spawnParams.Instigator = Instigator;
+	newWoodcutterHut = GetWorld()->SpawnActor<AWoodcutter>(AWoodcutter::StaticClass(), position, cameraRot, spawnParams);
+	hutPlacement = true;
+
+}
+void APlayerCharacter::ServerHutPlacement()
+{
+	hutPlacement = false;
 }
 
 void APlayerCharacter::ServerBuild_Implementation() {
@@ -644,6 +681,7 @@ void APlayerCharacter::ServerFire_Implementation()
 		spawnParams.Owner = this;
 		spawnParams.Instigator = Instigator;
 
+
 		if (m_r_power > 1 && bowEquiped)
 		{
 			AArrow* newArrow = GetWorld()->SpawnActor<AArrow>(arrowToCreate, position, cameraRot, spawnParams);
@@ -651,6 +689,7 @@ void APlayerCharacter::ServerFire_Implementation()
 			if (meshComp) {
 				meshComp->AddForce(forwardVector*100000.f*meshComp->GetMass()*m_r_power);
 			}
+			
 		}
 		m_r_isDrawn = false;
 	}
