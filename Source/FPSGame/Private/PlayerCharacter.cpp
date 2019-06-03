@@ -25,12 +25,12 @@ APlayerCharacter::APlayerCharacter()
 	cameraComponent->SetupAttachment(GetCapsuleComponent());
 	cameraComponent->RelativeLocation = FVector(0, 0, BaseEyeHeight); // Position the camera
 	cameraComponent->bUsePawnControlRotation = true;
-  
+
 	//MeshCharacter
 	MeshPit = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh"));
 	MeshPit->SetupAttachment(RootComponent);
 	MeshPit->CastShadow = false;
-	
+
 	//MeshWeapons
 	MeshBow = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BowMesh"));
 	MeshBow->SetupAttachment(MeshPit);
@@ -67,7 +67,7 @@ APlayerCharacter::APlayerCharacter()
 	Mesh2HSword->CastShadow = false;
 	Mesh2HSword->AttachTo(MeshPit, TEXT("WeaponRight"));
 	Mesh2HSword->SetVisibility(false);
-	
+
 	MeshShield = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShieldMesh"));
 	MeshShield->SetupAttachment(MeshPit);
 	MeshShield->CastShadow = false;
@@ -86,7 +86,7 @@ APlayerCharacter::APlayerCharacter()
 	HitBoxComponent->SetupAttachment(MeshPit);
 	HitBoxComponent->AttachTo(MeshPit, TEXT("WeaponRight"));
 	HitBoxComponent->SetSphereRadius(7.f);
-	HitBoxComponent->BodyInstance.SetCollisionProfileName("BlockAllDynamic"); 
+	HitBoxComponent->BodyInstance.SetCollisionProfileName("BlockAllDynamic");
 
 
 	PrimaryActorTick.bCanEverTick = true;
@@ -108,8 +108,13 @@ void APlayerCharacter::BeginPlay()
 	m_r_currentStamina = m_r_currentMaxStamina;
 	bowEquiped = true;
 	twoHanderEquiped = false;
-	currentWeaponID = 0;
+	currentWeaponID = 2;
 	r_equipedWeapon = 1;
+}
+
+void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -141,22 +146,21 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("WeaponSlot5", IE_Pressed, this, &APlayerCharacter::WeaponSlot5);
 }
 
-
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bowEquiped) 
+	if (bowEquiped)
 	{
-		if (m_r_isDrawn) 
+		if (m_r_isDrawn)
 		{
-			if (UpdateBowTension(DeltaTime)) 
+			if (UpdateBowTension(DeltaTime))
 			{
 				ServerFire();
 			}
 		}
-		else 
+		else
 		{
 			RegainEnergy(DeltaTime);
 		}
@@ -211,7 +215,7 @@ void APlayerCharacter::MoveRight(float Value)
 
 void APlayerCharacter::SharePlayerPitch()
 {
-	
+
 	if (!IsLocallyControlled())
 	{
 		FRotator newRot = cameraComponent->RelativeRotation;
@@ -243,14 +247,18 @@ void APlayerCharacter::HitPlayer(float damage)
 
 	if (m_r_life <= 0) {
 
-			UE_LOG(LogTemp, Warning, TEXT("Player Die"));
-			DestroyPlayer();
+		UE_LOG(LogTemp, Warning, TEXT("Player Die"));
+		DestroyPlayer();
+		//ServerLeaveGame();
+	//Destroy();
+
+	//Go to the main menu
 	}
 }
 
 void APlayerCharacter::HealPlayer(float heal)
 {
-	if (heal<= 0)
+	if (heal <= 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Can't heal negative!\n Use damage instead!"));
 		return;
@@ -295,21 +303,21 @@ float APlayerCharacter::GetCurrentLife()
 }
 
 FText APlayerCharacter::GetResourceZero()
-{		
-		FString veryCleanString = FString::FromInt(m_r_resources[0]);
-		return FText::FromString(veryCleanString);
+{
+	FString veryCleanString = FString::FromInt(m_r_resources[0]);
+	return FText::FromString(veryCleanString);
 }
 
 FText APlayerCharacter::GetResourceOne()
 {
-		FString veryCleanString = FString::FromInt(m_r_resources[1]);
-		return FText::FromString(veryCleanString);
+	FString veryCleanString = FString::FromInt(m_r_resources[1]);
+	return FText::FromString(veryCleanString);
 }
 
 FText APlayerCharacter::GetResourceTwo()
 {
-		FString veryCleanString = FString::FromInt(m_r_resources[2]);
-		return FText::FromString(veryCleanString);
+	FString veryCleanString = FString::FromInt(m_r_resources[2]);
+	return FText::FromString(veryCleanString);
 }
 
 void APlayerCharacter::ServerPickupThrow_Implementation()
@@ -391,29 +399,18 @@ void APlayerCharacter::DestroyPlayer()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Player left"));
 
-	if (GetNetMode() != ENetMode::NM_ListenServer)
-	{
-		UWorld* TheWorld = GetWorld();
-		FString CurrentLevel = TheWorld->GetMapName();
+	//Destroy();
+	//ServerLeaveGame();
 
-		if (CurrentLevel == "Map2") // player is in a session
-		{
-			//Change to the main menu
-			UGameplayStatics::OpenLevel(GetWorld(), "FirstPersonExampleMap");
-		}
-		else {
-			UE_LOG(LogTemp, Warning, TEXT("WTF... Which lvl are you playing"));
-		}
-		//Destroy();
-		ServerLeaveGame();
+	Destroy(this);
 
-		UGameplayStatics::OpenLevel(this, FName(TEXT("FirstPersonExampleMap")));
-	}
+	EndPlay(EEndPlayReason::Quit);
+
 }
 
 void APlayerCharacter::ServerLeaveGame_Implementation()
 {
-	Destroy();
+	Destroy(this);
 }
 
 bool APlayerCharacter::ServerLeaveGame_Validate()
@@ -526,13 +523,13 @@ void APlayerCharacter::ServerPerformMineCast_Implementation() {
 		AOre* hitTemp = Cast<AOre>(m_hitResult->Actor);
 
 		//if it was a ore check how close you are. if to close just add to player else spawn a item.
-		if ((hitTemp && r_equipedWeapon == 2) || (hitTemp && r_equipedWeapon == 3)) 
+		if ((hitTemp && r_equipedWeapon == 2) || (hitTemp && r_equipedWeapon == 3))
 		{
-			if (FVector::Dist(hitTemp->GetActorLocation(), GetActorLocation()) > 350.f) 
+			if (FVector::Dist(hitTemp->GetActorLocation(), GetActorLocation()) > 350.f)
 			{
 				hitTemp->OreHitSpawn(m_hitResult->Location);
 			}
-			else 
+			else
 			{
 
 				m_r_resources[hitTemp->GetResourceID()] += hitTemp->GetResourceAmount();
@@ -603,8 +600,8 @@ bool APlayerCharacter::ServerDrawArrow_Validate()
 }
 
 void APlayerCharacter::ServerPerformHitCast_Implementation() {
-	
-	
+
+
 	/**resultRaycast*/
 	FHitResult* weaponHitResult = new FHitResult();
 	//Startpoint raycast
@@ -619,19 +616,32 @@ void APlayerCharacter::ServerPerformHitCast_Implementation() {
 	//Attempt raycast
 	if (GetWorld()->LineTraceSingleByChannel(*weaponHitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams))
 	{
+		print("Ray casted");
 		// Checking if it is PlayerCharacter it hits
 		APlayerCharacter* temp = Cast<APlayerCharacter>(weaponHitResult->Actor);
-		if (temp) 
+		if (temp)
 		{
+			print("Hit a player");
 			//checking which weapon your holding to give the correct damage
-			if(currentWeaponID == 2)
-				temp->HitPlayer(axeDamage);
-			if (currentWeaponID == 3)
-				temp->HitPlayer(pickAxeDamage);
-			if (currentWeaponID == 4)
-				temp->HitPlayer(swordDamage);
-			if (currentWeaponID == 5)
-				temp->HitPlayer(sword2HDamage);
+			if (currentWeaponID == 2) {
+				temp->HitPlayer(20);
+
+				print("2");
+			}
+			if (currentWeaponID == 3) {
+				temp->HitPlayer(20);
+
+				print("3");
+			}
+			if (currentWeaponID == 4) {
+				temp->HitPlayer(20);
+
+				print("4");
+			}
+			if (currentWeaponID == 5) {
+				temp->HitPlayer(20);
+				print("5");
+			}
 		}
 	}
 
@@ -640,7 +650,7 @@ void APlayerCharacter::ServerPerformHitCast_Implementation() {
 bool APlayerCharacter::ServerPerformHitCast_Validate() {
 	return true;
 }
-	
+
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const {
 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

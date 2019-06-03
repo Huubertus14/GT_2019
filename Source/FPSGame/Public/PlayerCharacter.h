@@ -17,7 +17,7 @@
 class UCameraComponent;
 
 //! The player class
-/*! 
+/*!
  *This class will handle all the things a player needs to do and say to the server
  *Like movement, shooting arrow, keep track of score etc.
 */
@@ -94,6 +94,7 @@ public:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<class AArrow> arrowToCreate;
 
+
 	/**Methode called when the player is hit*/
 	void HitPlayer(float damage);
 
@@ -137,7 +138,7 @@ private:
 
 	/**The result returned when a raycast is cast.*/
 	FHitResult* m_hitResult;
-	
+
 	/** This value indicates the max life of a player*/
 	UPROPERTY(VisibleAnywhere, Category = "Health")
 		float m_lifeCap;
@@ -164,15 +165,17 @@ private:
 	int swordDamage;
 	int sword2HDamage;
 
-	
+
 protected:
 	/**Called when the game starts or when spawned*/
 	virtual void BeginPlay() override;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	/** The ID of the current held weapon*/
 	int currentWeaponID;
 
-	
+
 
 
 public:
@@ -238,7 +241,7 @@ public:
 
 	/*Sets all weapons invisible*/
 	void WeaponVisibility();
-	
+
 	/** WeaponSwitching
 	* At the start calls the function WeaponVisibility to make sure
 	* everything that is not suppose to be on is off, so there are no Graphical errors
@@ -269,7 +272,7 @@ public:
 	*/
 	UFUNCTION(Server, Reliable, WithValidation)
 		void WeaponSlot5();
-	
+
 	/**Charges a arrow when the bow is equiped and enough power is avaible */
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerDrawArrow();
