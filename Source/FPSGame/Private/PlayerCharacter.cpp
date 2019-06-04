@@ -114,7 +114,7 @@ void APlayerCharacter::BeginPlay()
 	hud = Cast<AFPSHUD>(UGameplayStatics::GetPlayerController(this, 0)->GetHUD());	
 	PC = Cast<APlayerController>(GetController());
 	GEngine->GameViewport->Viewport->LockMouseToViewport(true);
-	building = false;
+	r_building = false;
 	
 }
 
@@ -342,6 +342,11 @@ float APlayerCharacter::GetCurrentMaxStam()
 float APlayerCharacter::GetCurrentLife()
 {
 	return m_r_life;
+}
+
+int APlayerCharacter::GetWeaponID()
+{
+	return r_equipedWeapon;
 }
 
 FText APlayerCharacter::GetResourceZero()
@@ -620,9 +625,10 @@ void APlayerCharacter::ServerHutPlacement()
 
 void APlayerCharacter::ServerBuild_Implementation() {
 	if (r_building) {
-		building = true;
+		print("Building THERE!");
+		r_buildingChecked = true;
 	}
-	if (building) {
+	if (r_buildingChecked) {
 		FRotator cameraRot = cameraComponent->GetComponentRotation(); 
 		cameraRot.Pitch = 0;
 
@@ -650,14 +656,14 @@ void APlayerCharacter::ServerBuild_Implementation() {
 					else {
 						print("insufficient funds!");
 						r_building = nullptr;
-						building = false;
+						r_building = false;
 						return;
 					}
 				}
 				else {
 					print("insufficient funds!");
 					r_building = nullptr;
-					building = false;
+					r_building = false;
 					return;
 				}
 			}
@@ -670,21 +676,21 @@ void APlayerCharacter::ServerBuild_Implementation() {
 					else {
 						print("insufficient funds!");
 						r_building = nullptr;
-						building = false;
+						r_building = false;
 						return;
 					}
 				}
 				else {
 					print("insufficient funds!");
 					r_building = nullptr;
-					building = false;
+					r_building = false;
 					return;
 				}
 			}
 
 			GetWorld()->SpawnActor<ABuilding>(r_building, hitResult->Location, cameraRot, spawnParams);
 			r_building = nullptr;
-			building = false;
+			r_building = false;
 		}
 
 	}
@@ -694,7 +700,7 @@ bool APlayerCharacter::ServerBuild_Validate() {
 	return true;
 }
 
-void APlayerCharacter::SetBuild(int id)
+void APlayerCharacter::ServerSetBuild_Implementation(int id)
 {
 	if (id == 0) {
 		r_building = buildingWall;
@@ -703,6 +709,10 @@ void APlayerCharacter::SetBuild(int id)
 		r_building = buildingGate;
 	}
 
+}
+
+bool APlayerCharacter::ServerSetBuild_Validate(int id) {
+	return true;
 }
 
 
@@ -807,6 +817,9 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(APlayerCharacter, m_r_life);
 	DOREPLIFETIME(APlayerCharacter, m_r_resources);
+	DOREPLIFETIME(APlayerCharacter, r_equipedWeapon);
+	DOREPLIFETIME(APlayerCharacter, r_building);
+	DOREPLIFETIME(APlayerCharacter, r_buildingChecked);
 
 	DOREPLIFETIME(APlayerCharacter, m_r_currentMaxStamina);
 	DOREPLIFETIME(APlayerCharacter, m_r_currentStamina);

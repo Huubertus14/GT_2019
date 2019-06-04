@@ -119,6 +119,9 @@ public:
 		float GetCurrentLife();
 
 	/** resources accessor */
+	/** resources accessor */
+	UFUNCTION(BlueprintPure, Category = "Resources")
+		int GetWeaponID();
 	UFUNCTION(BlueprintPure, Category = "Resources")
 		FText GetResourceZero();
 	UFUNCTION(BlueprintPure, Category = "Resources")
@@ -205,8 +208,8 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerLeaveGame();
 
-	UFUNCTION(BlueprintCallable)
-		void SetBuild(int id);
+	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
+		void ServerSetBuild(int id);
 
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerBuild();
@@ -218,8 +221,8 @@ public:
 		TSubclassOf<class ABuilding> buildingWall;
 	UPROPERTY(EditAnywhere, Category = "Building")
 		TSubclassOf<class ABuilding> buildingGate;
-	UPROPERTY()
-		bool building;
+	UPROPERTY(Replicated)
+		bool r_buildingChecked;
 	/**Temporarly not used*/
 	UFUNCTION()
 		void DestroyPlayer();
@@ -325,6 +328,7 @@ public:
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
 		int r_equipedWeapon;
 
+	
 	/**Bow is equiped on the player.
 	 * Checked for the shot function
 	 */
