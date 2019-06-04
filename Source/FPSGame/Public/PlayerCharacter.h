@@ -13,8 +13,6 @@
 #include "Building.h"
 #include "PlayerCharacter.generated.h"
 
-
-
 class UCameraComponent;
 
 //! The player class
