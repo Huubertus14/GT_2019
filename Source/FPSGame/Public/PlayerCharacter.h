@@ -183,6 +183,10 @@ protected:
 
 public:
 
+	/** The ID of the current held weapon*/
+	UPROPERTY()
+	int currentWeaponID;
+
 	/** Called to bind functionality to input*/
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -322,7 +326,7 @@ public:
 		void ServerPickupThrow();
 
 	/**The weapon the player is wielding with its id */
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
 		int r_equipedWeapon;
 
 	/**Bow is equiped on the player.
