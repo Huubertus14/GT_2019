@@ -768,7 +768,6 @@ void APlayerCharacter::ServerPerformHitCast_Implementation() {
 	//Attempt raycast
 	if (GetWorld()->LineTraceSingleByChannel(*weaponHitResult, StartTrace, EndTrace, ECC_Visibility, *TraceParams))
 	{
-		print("Ray casted");
 		// Checking if it is PlayerCharacter it hits
 		APlayerCharacter* temp = Cast<APlayerCharacter>(weaponHitResult->Actor);
 		if (temp)

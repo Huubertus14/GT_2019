@@ -183,10 +183,6 @@ protected:
 
 public:
 
-	/** The ID of the current held weapon*/
-	UPROPERTY()
-	int currentWeaponID;
-
 	/** Called to bind functionality to input*/
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
