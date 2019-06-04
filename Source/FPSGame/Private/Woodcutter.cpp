@@ -42,6 +42,8 @@ void AWoodcutter::Spawn()
 	spawnParams.Instigator = Instigator;
 	FVector position = GetActorLocation();
 	FRotator rotation = GetActorRotation();
+	position.Z += 200;
 	AWorker* newWorker = GetWorld()->SpawnActor<AWorker>(AWorker::StaticClass(), position, rotation, spawnParams);
+	newWorker->HutPosition(position);
 }
 

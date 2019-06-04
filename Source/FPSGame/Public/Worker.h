@@ -27,4 +27,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void HutPosition(FVector pos);
+
+	FVector hutPosition;
+	bool gather;
+
 };
