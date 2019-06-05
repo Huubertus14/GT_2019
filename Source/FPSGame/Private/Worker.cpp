@@ -9,16 +9,16 @@ AWorker::AWorker()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	static ConstructorHelpers::FObjectFinder<UStaticMesh>MeshAsset(TEXT("StaticMesh'/Game/Models/Character/StaticMesh.StaticMesh'"));
-	UStaticMesh* Asset = MeshAsset.Object;
+	//static ConstructorHelpers::FObjectFinder<UStaticMesh>MeshAsset(TEXT("StaticMesh'/Game/Models/Character/StaticMesh.StaticMesh'"));
+	//UStaticMesh* Asset = MeshAsset.Object;
 
-	meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("mesh"));
-	meshComponent->SetStaticMesh(Asset);
-	meshComponent->SetSimulatePhysics(true);
-	meshComponent->BodyInstance.bLockXRotation = true;
-	meshComponent->BodyInstance.bLockYRotation = true;
-	meshComponent->SetWorldScale3D(FVector(3, 3, 3));
-	SetActorEnableCollision(true);
+	meshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("mesh"));
+	//meshComponent->SetStaticMesh(Asset);
+	//meshComponent->SetSimulatePhysics(true);
+	//meshComponent->BodyInstance.bLockXRotation = true;
+	//meshComponent->BodyInstance.bLockYRotation = true;
+	//meshComponent->SetWorldScale3D(FVector(3, 3, 3));
+	//SetActorEnableCollision(true);
 
 	gather = true;
 
