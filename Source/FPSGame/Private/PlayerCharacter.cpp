@@ -614,7 +614,7 @@ void APlayerCharacter::ServerHutSpawn()
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
 	spawnParams.Instigator = Instigator;
-	newWoodcutterHut = GetWorld()->SpawnActor<AWoodcutter>(AWoodcutter::StaticClass(), position, cameraRot, spawnParams);
+	newWoodcutterHut = GetWorld()->SpawnActor<AWoodcutter>(woodcutterHutToCreate, position, cameraRot, spawnParams);
 	hutPlacement = true;
 
 }
@@ -826,4 +826,5 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & 
 	DOREPLIFETIME(APlayerCharacter, m_r_power);
 	DOREPLIFETIME(APlayerCharacter, m_r_isDrawn);
 	DOREPLIFETIME(APlayerCharacter, r_building);
+	DOREPLIFETIME(APlayerCharacter, woodcutterHutToCreate);
 }

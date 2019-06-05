@@ -2,7 +2,7 @@
 
 
 #include "Woodcutter.h"
-#include "Worker.h"
+#include "UnrealNetwork.h"
 #include "Engine.h"
 
 // Sets default values
@@ -41,9 +41,15 @@ void AWoodcutter::Spawn()
 	spawnParams.Owner = this;
 	spawnParams.Instigator = Instigator;
 	FVector position = GetActorLocation();
+	position.Z = 200;
 	FRotator rotation = GetActorRotation();
-	position.Z += 200;
-	AWorker* newWorker = GetWorld()->SpawnActor<AWorker>(AWorker::StaticClass(), position, rotation, spawnParams);
-	newWorker->HutPosition(position);
+	
+	AWorker* newWorker = GetWorld()->SpawnActor<AWorker>(workerToCreate, position, rotation, spawnParams);
+	newWorker->hutPosition = position;
+}
+void AWoodcutter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const {
+
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AWoodcutter, workerToCreate);
 }
 

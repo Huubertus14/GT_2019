@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Runtime/Engine/Classes/Components/CapsuleComponent.h"
 #include "Worker.generated.h"
 
 UCLASS()
@@ -15,9 +16,8 @@ public:
 	// Sets default values for this actor's properties
 	AWorker();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	UPROPERTY(VisibleAnywhere, Category = "Mesh")
 		USkeletalMeshComponent* meshComponent;
-	
 
 protected:
 	// Called when the game starts or when spawned
@@ -27,7 +27,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void HutPosition(FVector pos);
 
 	FVector hutPosition;
 	bool gather;

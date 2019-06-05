@@ -9,22 +9,17 @@ AWorker::AWorker()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	//static ConstructorHelpers::FObjectFinder<UStaticMesh>MeshAsset(TEXT("StaticMesh'/Game/Models/Character/StaticMesh.StaticMesh'"));
-	//UStaticMesh* Asset = MeshAsset.Object;
 
 	meshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("mesh"));
-	//meshComponent->SetStaticMesh(Asset);
-	//meshComponent->SetSimulatePhysics(true);
-	//meshComponent->BodyInstance.bLockXRotation = true;
-	//meshComponent->BodyInstance.bLockYRotation = true;
-	//meshComponent->SetWorldScale3D(FVector(3, 3, 3));
-	//SetActorEnableCollision(true);
+
+	meshComponent->BodyInstance.bLockXRotation = true;
+	meshComponent->BodyInstance.bLockYRotation = true;
 
 	gather = true;
 
 	SetReplicates(true);
 	SetReplicateMovement(true);
-
+	
 }
 
 // Called when the game starts or when spawned
@@ -47,7 +42,7 @@ void AWorker::Tick(float DeltaTime)
 		float yY = -1498.8;
 		float zZ = 148.4;
 		FVector f = FVector(xX, yY, zZ);
-		
+
 		float dx = f.X - loc.X;
 		float dy = f.Y - loc.Y;
 		float length = FGenericPlatformMath::Sqrt(dx*dx + dy * dy);
@@ -58,14 +53,14 @@ void AWorker::Tick(float DeltaTime)
 		loc.X += dx;
 		loc.Y += dy;
 
-		
+
 		FRotator Rot = UKismetMathLibrary::FindLookAtRotation(loc, f);
 		Rot.Yaw -= 90;
 		SetActorRotation(Rot);
 		float distance = FVector::Distance(f, loc);
-		if (distance < 500)
+		if (distance < 400)
 			gather = false;
-		UE_LOG(LogTemp, Warning, TEXT("Distance: %f"), distance);
+		//UE_LOG(LogTemp, Warning, TEXT("Distance: %f"), distance);
 	}
 	else
 	{
@@ -85,16 +80,11 @@ void AWorker::Tick(float DeltaTime)
 		float distance = FVector::Distance(hutPosition, loc);
 		if (distance < 500)
 			gather = true;
-		UE_LOG(LogTemp, Warning, TEXT("Distance: %f"), distance);
+		//UE_LOG(LogTemp, Warning, TEXT("Distance: %f"), distance);
 	}
 	SetActorLocation(loc);
-	
-	
 
-}
 
-void AWorker::HutPosition(FVector pos)
-{
-	hutPosition = pos;
+
 }
 
