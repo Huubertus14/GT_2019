@@ -21,6 +21,8 @@ AArrow::AArrow()
 
 	m_lifeSpan = 300;
 
+	arrowDamage = 40;
+
 	SetReplicates(true);
 	SetReplicateMovement(true);
 }

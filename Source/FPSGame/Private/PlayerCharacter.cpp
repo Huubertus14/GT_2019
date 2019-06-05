@@ -109,7 +109,7 @@ void APlayerCharacter::BeginPlay()
 	m_r_currentStamina = m_r_currentMaxStamina;
 	bowEquiped = true;
 	twoHanderEquiped = false;
-	currentWeaponID = 2;
+	currentWeaponID = 1;
 	r_equipedWeapon = 1;
 	hud = Cast<AFPSHUD>(UGameplayStatics::GetPlayerController(this, 0)->GetHUD());	
 	PC = Cast<APlayerController>(GetController());
@@ -253,7 +253,6 @@ void APlayerCharacter::MoveRight(float Value)
 
 	}
 }
-
 
 void APlayerCharacter::SharePlayerPitch()
 {
@@ -715,8 +714,6 @@ bool APlayerCharacter::ServerSetBuild_Validate(int id) {
 	return true;
 }
 
-
-
 void APlayerCharacter::ServerFire_Implementation()
 {
 	if (m_r_isDrawn)
@@ -751,7 +748,7 @@ bool APlayerCharacter::ServerFire_Validate()
 
 void APlayerCharacter::ServerDrawArrow_Implementation()
 {
-	if (m_r_currentStamina > 20.f && bowEquiped) {
+	if (m_r_currentStamina > 0.0f && bowEquiped) {
 		m_r_isDrawn = true;
 	}
 }
@@ -784,22 +781,22 @@ void APlayerCharacter::ServerPerformHitCast_Implementation() {
 		{
 			print("Hit a player");
 			//checking which weapon your holding to give the correct damage
-			if (currentWeaponID == 2) {
+			if (r_equipedWeapon == 2) {
 				temp->HitPlayer(20);
 
 				print("2");
-			}
-			if (currentWeaponID == 3) {
+			}else
+			if (r_equipedWeapon == 3) {
 				temp->HitPlayer(20);
 
 				print("3");
-			}
-			if (currentWeaponID == 4) {
+			}else
+			if (r_equipedWeapon == 4) {
 				temp->HitPlayer(20);
 
 				print("4");
-			}
-			if (currentWeaponID == 5) {
+			}else
+			if (r_equipedWeapon == 5) {
 				temp->HitPlayer(20);
 				print("5");
 			}
