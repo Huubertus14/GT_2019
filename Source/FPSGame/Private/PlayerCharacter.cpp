@@ -148,8 +148,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("ServerPickupThrow", IE_Released, this, &APlayerCharacter::ServerPickupThrow);
 
 	
-	//PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::ServerHutSpawn);
-	//PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ServerHutPlacement);
+	PlayerInputComponent->BindAction("PlaceHut", IE_Pressed, this, &APlayerCharacter::ServerHutSpawn);
+	PlayerInputComponent->BindAction("PlaceHut", IE_Released, this, &APlayerCharacter::ServerHutPlacement);
 
 	// WeaponSlots
 	PlayerInputComponent->BindAction("WeaponSlot1", IE_Pressed, this, &APlayerCharacter::WeaponSlot1);
@@ -613,7 +613,7 @@ void APlayerCharacter::ServerHutSpawn()
 	FActorSpawnParameters spawnParams;
 	spawnParams.Owner = this;
 	spawnParams.Instigator = Instigator;
-	newWoodcutterHut = GetWorld()->SpawnActor<AWoodcutter>(AWoodcutter::StaticClass(), position, cameraRot, spawnParams);
+	newWoodcutterHut = GetWorld()->SpawnActor<AWoodcutter>(woodcutterHutToCreate, position, cameraRot, spawnParams);
 	hutPlacement = true;
 
 }
@@ -823,4 +823,5 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & 
 	DOREPLIFETIME(APlayerCharacter, m_r_power);
 	DOREPLIFETIME(APlayerCharacter, m_r_isDrawn);
 	DOREPLIFETIME(APlayerCharacter, r_building);
+	DOREPLIFETIME(APlayerCharacter, woodcutterHutToCreate);
 }

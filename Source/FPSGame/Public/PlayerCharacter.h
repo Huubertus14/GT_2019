@@ -11,6 +11,7 @@
 #include "PickUpItem.h"
 #include "FPSHUD.h"
 #include "Building.h"
+#include "Woodcutter.h"
 #include "PlayerCharacter.generated.h"
 
 class UCameraComponent;
@@ -95,8 +96,8 @@ public:
 
 	/** Actor of the woodcutterhut which the player will place
 	 *woodcutterhut is defined in the BP of the player */
-	UPROPERTY(EditAnywhere)
-		TSubclassOf<class AWoodcutter> woodcutterHutToCreate;
+	UPROPERTY(Replicated,EditAnywhere)
+		TSubclassOf<AWoodcutter> woodcutterHutToCreate;
 
 	/**Methode called when the player is hit*/
 	void HitPlayer(float damage);

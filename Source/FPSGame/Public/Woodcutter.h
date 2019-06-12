@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Worker.h"
 #include "Woodcutter.generated.h"
 
 UCLASS()
@@ -17,6 +18,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Mesh")
 		UStaticMeshComponent* meshComponent;
 
+	UPROPERTY(Replicated, EditAnywhere)
+		TSubclassOf<AWorker> workerToCreate;
 
 protected:
 	// Called when the game starts or when spawned
